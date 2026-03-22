@@ -1,0 +1,30 @@
+package com.serveflow.DTO;
+
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
+
+public record ProductRequestDTO (
+
+    @NotBlank(message = "Nome do produto é obrigatótio")
+    @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
+    String name,
+
+    @Size(max = 500, message = "Descrição deve ter no máximo 500 caracteres")
+    String description,
+
+    @NotBlank(message = "Categoria é obrigatória")
+    String category,
+
+    @NotBlank(message = "Marca é obrigatória")
+    String brand,
+
+    @NotNull(message = "Preço é obrigatório")
+    @DecimalMin(value = "0.01", message = "Preço deve ser maior que zero")
+    BigDecimal price,
+
+    @NotBlank(message = "Porção é obrigatória")
+    String portion
+){}
