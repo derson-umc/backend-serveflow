@@ -1,1 +1,1 @@
-# ServeFlow - Automação para Pequenos Restaurantes
+# ServeFlow - Sistema para Pequenos Restaurantes
