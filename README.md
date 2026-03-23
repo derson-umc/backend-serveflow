@@ -33,7 +33,7 @@ project-serveflow/
 │           └── application.properties # Configuracoes da aplicacao
 ├── docker-compose.yml                 # PostgreSQL + pgAdmin
 ├── .env                               # Credenciais (NAO vai pro Git)
-├── .env.example                       # Template de configuracao
+├── .env.password                      # Template de configuracao
 ├── .gitignore
 ├── pom.xml
 └── README.md
