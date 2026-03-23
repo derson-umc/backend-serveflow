@@ -30,6 +30,9 @@ build/
 *.iml
 *.ipr
 
+# File containing access credentials
+.env
+
 # NetBeans
 /nbproject/private/
 /nbbuild/
