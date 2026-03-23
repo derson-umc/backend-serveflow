@@ -1,8 +1,5 @@
 HELP.md
 
-# VARIÁVEIS DE AMBIENTE (NUNCA VERSIONAR)
-.env
-
 # MAVEN / BUILD
 target/
 !.mvn/wrapper/maven-wrapper.jar
