@@ -29,6 +29,12 @@ public class ProductController {
                 .body(service.create(request));
     }
 
+    @PostMapping("/batch")
+    public ResponseEntity<List<ProductResponseDTO>> createBatch(
+            @Valid @RequestBody List<ProductRequestDTO> dtos) {
+        return ResponseEntity.status(201).body(service.createBatch(dtos));
+    }
+
     @GetMapping
     public ResponseEntity<List<ProductResponseDTO>> getAll() {
         return ResponseEntity.ok(service.findAllActive());
