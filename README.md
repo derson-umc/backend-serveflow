@@ -70,7 +70,7 @@ POSTGRES_PORT=5432
 # pgAdmin
 PGADMIN_DEFAULT_EMAIL=seu_email@exemplo.com
 PGADMIN_DEFAULT_PASSWORD=sua_senha_pgadmin
-PGADMIN_PORT=15432
+PGADMIN_PORT=yyyyy
 ```
 
 O arquivo `.env` tem dados sensiveis e nao deve ser enviado para o Git. Ele ja esta no `.gitignore`.
@@ -90,11 +90,11 @@ Isso vai iniciar:
 | Servico    | Porta | O que faz                     |
 |------------|-------|-------------------------------|
 | PostgreSQL | 5432  | Banco de dados da aplicacao   |
-| pgAdmin    | 15432 | Interface web para o banco    |
+| pgAdmin    | xxxxx | Interface web para o banco    |
 
 ### Acessar o pgAdmin
 
-1. Abra no navegador: `http://localhost:15432`
+1. Abra no navegador: `http://localhost:yyyyyy`
 2. Faca login com o email e senha que voce colocou no `.env`
 3. Adicione o servidor com os dados:
    - Host: `postgress` (nome do container)
@@ -121,7 +121,7 @@ docker-compose down -v
 
 1. Suba o banco: `docker-compose up -d`
 2. Abra o projeto na IDE
-3. Rode a classe `ServeFlowApplication.java`
+3. Rode a classe `Application.java`
 4. Acesse: `http://localhost:8080`
 
 ### Pelo terminal
@@ -177,4 +177,4 @@ Os endpoints serao atualizados conforme o projeto cresce.
 
 ## Licenca
 
-Projeto de uso academico e pessoal.
+Projeto de uso academico.
