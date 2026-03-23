@@ -11,7 +11,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "products")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA exige, mas ninguém mais usa
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(of = "id")
 public class Product {
 
