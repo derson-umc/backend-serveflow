@@ -40,6 +40,13 @@ public class ProductService {
     }
 
     @Transactional
+    public List<ProductResponseDTO> createBatch(List<ProductRequestDTO> dtos) {
+        return dtos.stream()
+                .map(this::create)
+                .toList();
+    }
+
+    @Transactional
     public ProductResponseDTO update(UUID id, ProductRequestDTO request) {
         Product product = findProductOrThrow(id);
         product.updateFrom(request);
