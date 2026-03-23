@@ -27,4 +27,6 @@ public record ProductRequestDTO (
 
     @NotBlank(message = "Porção é obrigatória")
     String portion
-){}
+){
+
+}

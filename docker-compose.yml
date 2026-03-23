@@ -8,8 +8,8 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: product
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: serveflow_db
     ports:
       - "5432:5432"
     networks:

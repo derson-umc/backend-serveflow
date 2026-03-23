@@ -10,7 +10,6 @@ import com.serveflow.Service.ProductService;
 
 import java.util.List;
 import java.util.UUID;
-
 @RestController
 @RequestMapping("/products")
 public class ProductController {
@@ -21,6 +20,15 @@ public class ProductController {
         this.service = service;
     }
 
+    @PostMapping
+    public ResponseEntity<ProductResponseDTO> create(
+            @RequestBody @Valid ProductRequestDTO request
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(service.create(request));
+    }
+
     @GetMapping
     public ResponseEntity<List<ProductResponseDTO>> getAll() {
         return ResponseEntity.ok(service.findAllActive());
@@ -29,15 +37,6 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.findById(id));
-    }
-
-    @PostMapping
-    public ResponseEntity<ProductResponseDTO> create(
-            @RequestBody @Valid ProductRequestDTO request
-    ) {
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(service.create(request));
     }
 
     @PutMapping("/{id}")
