@@ -17,7 +17,6 @@ public record ProductResponseDTO(
         String portion,
         LocalDateTime createdAt
 ) {
-    // Factory method a partir da entidade
     public static ProductResponseDTO fromEntity(Product product) {
         return new ProductResponseDTO(
                 product.getId(),
