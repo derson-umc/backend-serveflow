@@ -44,14 +44,12 @@ public class Product {
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
-    // Lifecycle callbacks
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.active = true;
     }
 
-    // Factory method a partir Request
     public static Product fromRequest(ProductRequestDTO request) {
         Product product = new Product();
         product.name = request.name();
@@ -63,7 +61,6 @@ public class Product {
         return product;
     }
 
-    // Métodos de negócio
     public void updateFrom(ProductRequestDTO request) {
         this.name = request.name();
         this.description = request.description();
