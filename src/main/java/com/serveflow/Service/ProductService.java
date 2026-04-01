@@ -59,7 +59,6 @@ public class ProductService {
         product.deactivate();
     }
 
-    // Método privado — evita repetir a busca + exceção
     private Product findProductOrThrow(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
