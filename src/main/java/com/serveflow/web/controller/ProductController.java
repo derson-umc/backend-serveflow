@@ -1,8 +1,8 @@
 package com.serveflow.web.controller;
 
 import com.serveflow.domain.service.ProductService;
-import com.serveflow.web.dto.ProductRequestDTO;
-import com.serveflow.web.dto.ProductResponseDTO;
+import com.serveflow.web.dto.product.ProductRequestDTO;
+import com.serveflow.web.dto.product.ProductResponseDTO;
 import com.serveflow.web.mapper.ProductWebMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
