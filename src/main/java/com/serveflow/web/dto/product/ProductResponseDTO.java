@@ -1,4 +1,4 @@
-package com.serveflow.web.dto;
+package com.serveflow.web.dto.product;
 
 import java.math.BigDecimal;
 import java.util.UUID;

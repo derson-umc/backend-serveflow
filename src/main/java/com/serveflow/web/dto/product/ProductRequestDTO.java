@@ -1,4 +1,4 @@
-package com.serveflow.web.dto;
+package com.serveflow.web.dto.product;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;

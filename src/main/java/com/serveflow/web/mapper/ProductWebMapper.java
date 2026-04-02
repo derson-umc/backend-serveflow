@@ -1,8 +1,8 @@
 package com.serveflow.web.mapper;
 
 import com.serveflow.domain.model.Product;
-import com.serveflow.web.dto.ProductRequestDTO;
-import com.serveflow.web.dto.ProductResponseDTO;
+import com.serveflow.web.dto.product.ProductRequestDTO;
+import com.serveflow.web.dto.product.ProductResponseDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
