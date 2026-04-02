@@ -29,6 +29,7 @@ build/
 
 # File containing access credentials
 .env
+.claude
 
 # NetBeans
 /nbproject/private/
