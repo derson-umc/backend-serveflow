@@ -1,8 +1,10 @@
 package com.serveflow.domain.service;
 
+import com.serveflow.domain.model.address.Address;
 import com.serveflow.domain.model.order.Order;
 import com.serveflow.domain.model.order.OrderItem;
 import com.serveflow.domain.model.order.OrderStatus;
+import com.serveflow.domain.repository.AddressRepository;
 import com.serveflow.domain.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,14 +17,31 @@ import java.util.function.Consumer;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final AddressRepository addressLookupService;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, AddressRepository addressLookupService) {
         this.orderRepository = orderRepository;
+        this.addressLookupService = addressLookupService;
+    }
+
+    public Address resolveAddress(String cep, String number, String complement, Address manualAddress) {
+        if (cep != null && !cep.isBlank()) {
+            return addressLookupService.findByCep(cep)
+                    .map(resolved -> new Address(
+                            resolved.getCep(),
+                            resolved.getStreet(),
+                            resolved.getCity(),
+                            resolved.getState(),
+                            number != null ? number : "",
+                            complement
+                    ))
+                    .orElse(manualAddress);
+        }
+        return manualAddress;
     }
 
     @Transactional
-    public Order create(Order order, List<OrderItem> items) {
-        items.forEach(order::addItem);
+    public Order create(Order order) {
         return orderRepository.save(order);
     }
 

@@ -1,39 +1,60 @@
 package com.serveflow.data.mapper;
 
-import com.serveflow.data.entity.*;
+import com.serveflow.data.entity.address.AddressEntity;
+import com.serveflow.data.entity.order.ItemAdditionalEntity;
+import com.serveflow.data.entity.order.OrderEntity;
+import com.serveflow.data.entity.order.OrderItemEntity;
 import com.serveflow.domain.model.address.Address;
 import com.serveflow.domain.model.order.*;
 import org.springframework.stereotype.Component;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import java.util.List;
 
 @Component
 public class OrderMapper {
 
-    public Order toDomain(OrderEntity entity) {
-        Address address = entity.getAddress() != null
-                ? toAddressDomain(entity.getAddress())
-                : null;
-
-        List<OrderItem> items = entity.getItems().stream()
-                .map(this::toItemDomain)
-                .toList();
-
+    public Order toDomain(OrderEntity e) {
         return new Order(
-                entity.getIdOrder(),
-                entity.getCustomerName(),
-                address,
-                OrderType.valueOf(entity.getType().name()),
-                OrderStatus.valueOf(entity.getStatus().name()),
-                entity.getCreatedAt(),
-                entity.getObservation(),
-                items
+                e.getIdOrder(),
+                e.getCustomerName(),
+                e.getAddress() != null ? toDomain(e.getAddress()) : null,
+                OrderType.valueOf(e.getType().name()),
+                OrderStatus.valueOf(e.getStatus().name()),
+                e.getCreatedAt(),
+                e.getObservation(),
+                e.getItems().stream().map(this::toDomain).toList(),
+                e.getVersion()
         );
     }
 
+    private OrderItem toDomain(OrderItemEntity e) {
+        return new OrderItem(
+                e.getIdOrderItem(),
+                e.getProductName(),
+                e.getQuantity(),
+                e.getUnitPrice(),
+                e.getObservation(),
+                e.getAdditionals().stream().map(this::toDomain).toList()
+        );
+    }
+
+    private ItemAdditional toDomain(ItemAdditionalEntity e) {
+        return new ItemAdditional(e.getIdItemAdditional(), e.getName(), e.getQuantity(), e.getUnitPrice());
+    }
+
+    private Address toDomain(AddressEntity e) {
+        return new Address(e.getIdAddress(), e.getCep(), e.getStreet(), e.getCity(), e.getState(), e.getNumber(), e.getComplement());
+    }
+
     public OrderEntity toEntity(Order order) {
-        var entity = new OrderEntity();
+        return updateEntity(new OrderEntity(), order);
+    }
+
+    public OrderEntity updateEntity(OrderEntity entity, Order order) {
         entity.setIdOrder(order.getId());
+        entity.setVersion(order.getVersion());
         entity.setCustomerName(order.getCustomerName());
         entity.setType(OrderEntity.OrderType.valueOf(order.getType().name()));
         entity.setStatus(OrderEntity.OrderStatus.valueOf(order.getStatus().name()));
@@ -44,88 +65,63 @@ public class OrderMapper {
             entity.setAddress(toAddressEntity(order.getAddress()));
         }
 
-        List<OrderItemEntity> itemEntities = order.getItems().stream()
-                .map(item -> toItemEntity(item, entity))
+        var updatedItems = order.getItems().stream()
+                .map(item -> syncItemEntity(
+                        findOrNew(entity.getItems(), item.getId(), OrderItemEntity::getIdOrderItem, OrderItemEntity::new),
+                        item, entity))
                 .toList();
-        entity.setItems(itemEntities);
+
+        entity.getItems().clear();
+        entity.getItems().addAll(updatedItems);
 
         return entity;
     }
 
-    private Address toAddressDomain(AddressEntity entity) {
-        return new Address(
-                entity.getIdAddress(),
-                entity.getCep(),
-                entity.getStreet(),
-                entity.getCity(),
-                entity.getState(),
-                entity.getNumber(),
-                entity.getComplement()
-        );
-    }
-
-    private AddressEntity toAddressEntity(Address address) {
-        var entity = new AddressEntity();
-        entity.setIdAddress(address.getId());
-        entity.setCep(address.getCep());
-        entity.setStreet(address.getStreet());
-        entity.setCity(address.getCity());
-        entity.setState(address.getState());
-        entity.setNumber(address.getNumber());
-        entity.setComplement(address.getComplement());
-        return entity;
-    }
-
-    private OrderItem toItemDomain(OrderItemEntity entity) {
-        List<ItemAdditional> additionals = entity.getAdditionals().stream()
-                .map(this::toAdditionalDomain)
-                .toList();
-
-        return new OrderItem(
-                entity.getIdOrderItem(),
-                entity.getProductId(),
-                entity.getProductName(),
-                entity.getQuantity(),
-                entity.getUnitPrice(),
-                entity.getObservation(),
-                additionals
-        );
-    }
-
-    private OrderItemEntity toItemEntity(OrderItem item, OrderEntity order) {
-        var entity = new OrderItemEntity();
+    private OrderItemEntity syncItemEntity(OrderItemEntity entity, OrderItem item, OrderEntity order) {
         entity.setIdOrderItem(item.getId());
         entity.setOrder(order);
-        entity.setProductId(item.getProductId());
         entity.setProductName(item.getProductName());
         entity.setQuantity(item.getQuantity());
         entity.setUnitPrice(item.getUnitPrice());
         entity.setObservation(item.getObservation());
 
-        List<ItemAdditionalEntity> additionalEntities = item.getAdditionals().stream()
-                .map(add -> toAdditionalEntity(add, entity))
+        var updatedAdditionals = item.getAdditionals().stream()
+                .map(add -> syncAdditionalEntity(
+                        findOrNew(entity.getAdditionals(), add.getId(), ItemAdditionalEntity::getIdItemAdditional, ItemAdditionalEntity::new),
+                        add, entity))
                 .toList();
-        entity.setAdditionals(additionalEntities);
+
+        entity.getAdditionals().clear();
+        entity.getAdditionals().addAll(updatedAdditionals);
 
         return entity;
     }
 
-    private ItemAdditional toAdditionalDomain(ItemAdditionalEntity entity) {
-        return new ItemAdditional(
-                entity.getIdItemAdditional(),
-                entity.getName(),
-                entity.getQuantity(),
-                entity.getUnitPrice()
-        );
+    private ItemAdditionalEntity syncAdditionalEntity(ItemAdditionalEntity entity, ItemAdditional add, OrderItemEntity item) {
+        entity.setIdItemAdditional(add.getId());
+        entity.setOrderItem(item);
+        entity.setName(add.getName());
+        entity.setQuantity(add.getQuantity());
+        entity.setUnitPrice(add.getUnitPrice());
+        return entity;
     }
 
-    private ItemAdditionalEntity toAdditionalEntity(ItemAdditional additional, OrderItemEntity orderItem) {
-        var entity = new ItemAdditionalEntity();
-        entity.setIdItemAdditional(additional.getId());
-        entity.setOrderItem(orderItem);
-        entity.setName(additional.getName());
-        entity.setQuantity(additional.getQuantity());
-        entity.setUnitPrice(additional.getUnitPrice());
+    private AddressEntity toAddressEntity(Address a) {
+        var entity = new AddressEntity();
+        entity.setIdAddress(a.getId());
+        entity.setCep(a.getCep());
+        entity.setStreet(a.getStreet());
+        entity.setCity(a.getCity());
+        entity.setState(a.getState());
+        entity.setNumber(a.getNumber());
+        entity.setComplement(a.getComplement());
         return entity;
+    }
+
+    private <E, ID> E findOrNew(List<E> list, ID id, Function<E, ID> idGetter, Supplier<E> factory) {
+        return list.stream()
+                .filter(e -> id != null && id.equals(idGetter.apply(e)))
+                .findFirst()
+                .orElseGet(factory);
     }
 }

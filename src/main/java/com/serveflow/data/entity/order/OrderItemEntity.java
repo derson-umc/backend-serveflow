@@ -1,7 +1,8 @@
-package com.serveflow.data.entity;
+package com.serveflow.data.entity.order;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.domain.Persistable;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -14,10 +15,9 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderItemEntity {
+public class OrderItemEntity implements Persistable<UUID> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id_order_item", updatable = false, nullable = false)
     private UUID idOrderItem;
 
@@ -25,7 +25,7 @@ public class OrderItemEntity {
     @JoinColumn(name = "id_order", nullable = false)
     private OrderEntity order;
 
-    @Column(name = "product_id", nullable = false)
+    @Column(name = "product_id")
     private UUID productId;
 
     @Column(name = "product_name", nullable = false, length = 120)
@@ -42,4 +42,23 @@ public class OrderItemEntity {
 
     @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemAdditionalEntity> additionals = new ArrayList<>();
+
+    @Transient
+    private boolean isNew = true;
+
+    @Override
+    public UUID getId() {
+        return idOrderItem;
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostPersist
+    @PostLoad
+    void markNotNew() {
+        this.isNew = false;
+    }
 }

@@ -1,7 +1,9 @@
-package com.serveflow.data.entity;
+package com.serveflow.data.entity.order;
 
+import com.serveflow.data.entity.address.AddressEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.domain.Persistable;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,10 +16,9 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderEntity {
+public class OrderEntity implements Persistable<UUID> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id_order", updatable = false, nullable = false)
     private UUID idOrder;
 
@@ -48,15 +49,36 @@ public class OrderEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> items = new ArrayList<>();
 
+    public enum OrderStatus {
+        CREATED, IN_PREPARATION, READY, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
+    }
+
+    public enum OrderType {DELIVERY, LOCAL}
+
+    @Transient
+    private boolean isNew = true;
+
+    @Override
+    public UUID getId() {
+        return idOrder;
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostPersist
+    @PostLoad
+    void markNotNew() {
+        this.isNew = false;
+    }
+
     @PrePersist
     protected void onCreate() {
         if (this.createdAt == null) this.createdAt = LocalDateTime.now();
         if (this.status == null) this.status = OrderStatus.CREATED;
     }
-
-    public enum OrderStatus {
-        CREATED, IN_PREPARATION, READY, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
-    }
-
-    public enum OrderType { DELIVERY, LOCAL }
 }
+
+

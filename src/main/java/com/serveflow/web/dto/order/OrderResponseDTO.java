@@ -28,7 +28,6 @@ public record OrderResponseDTO(
 
     public record OrderItemResponseDTO(
             UUID id,
-            UUID productId,
             String productName,
             int quantity,
             BigDecimal unitPrice,

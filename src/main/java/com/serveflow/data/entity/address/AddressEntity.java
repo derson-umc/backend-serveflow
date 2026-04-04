@@ -1,4 +1,4 @@
-package com.serveflow.data.entity;
+package com.serveflow.data.entity.address;
 
 import jakarta.persistence.*;
 import lombok.*;

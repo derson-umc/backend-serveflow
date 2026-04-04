@@ -1,4 +1,4 @@
-package com.serveflow.domain.model;
+package com.serveflow.domain.model.product;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

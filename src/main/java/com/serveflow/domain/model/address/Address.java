@@ -21,7 +21,7 @@ public class Address {
             throw new IllegalArgumentException("Cidade e obrigatoria.");
         if (state == null || state.isBlank())
             throw new IllegalArgumentException("Estado e obrigatorio.");
-        if (number == null || number.isBlank())
+        if (number == null)
             throw new IllegalArgumentException("Numero e obrigatorio.");
 
         this.cep = cep != null ? cep.strip() : null;
