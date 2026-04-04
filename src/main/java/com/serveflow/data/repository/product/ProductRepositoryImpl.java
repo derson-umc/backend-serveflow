@@ -1,8 +1,8 @@
-package com.serveflow.data.repository;
+package com.serveflow.data.repository.product;
 
 import com.serveflow.data.mapper.ProductMapper;
 import com.serveflow.domain.exception.ProductNotFoundException;
-import com.serveflow.domain.model.Product;
+import com.serveflow.domain.model.product.Product;
 import com.serveflow.domain.repository.ProductRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;

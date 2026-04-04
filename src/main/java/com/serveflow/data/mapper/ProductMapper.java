@@ -1,7 +1,7 @@
 package com.serveflow.data.mapper;
 
-import com.serveflow.data.entity.ProductEntity;
-import com.serveflow.domain.model.Product;
+import com.serveflow.data.entity.product.ProductEntity;
+import com.serveflow.domain.model.product.Product;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

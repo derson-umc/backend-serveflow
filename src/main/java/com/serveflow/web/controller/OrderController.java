@@ -27,9 +27,16 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderResponseDTO> create(@RequestBody @Valid OrderRequestDTO request) {
-        var order = mapper.toDomain(request);
-        var items = mapper.toItemsDomain(request.items());
-        var created = orderService.create(order, items);
+        var addressDto = request.address();
+        var manualAddress = mapper.toAddressDomain(addressDto);
+        var resolvedAddress = orderService.resolveAddress(
+                addressDto != null ? addressDto.cep() : null,
+                addressDto != null ? addressDto.number() : null,
+                addressDto != null ? addressDto.complement() : null,
+                manualAddress
+        );
+        var order = mapper.toDomain(request, resolvedAddress);
+        var created = orderService.create(order);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(created));
     }
 

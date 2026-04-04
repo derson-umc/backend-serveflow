@@ -22,7 +22,7 @@ public enum OrderStatus {
     static {
         CREATED.allowedTransitions = EnumSet.of(IN_PREPARATION, CANCELLED);
         IN_PREPARATION.allowedTransitions = EnumSet.of(READY, CANCELLED);
-        READY.allowedTransitions = EnumSet.of(OUT_FOR_DELIVERY, CANCELLED);
+        READY.allowedTransitions = EnumSet.of(OUT_FOR_DELIVERY, DELIVERED, CANCELLED);
         OUT_FOR_DELIVERY.allowedTransitions = EnumSet.of(DELIVERED, CANCELLED);
         DELIVERED.allowedTransitions = EnumSet.noneOf(OrderStatus.class);
         CANCELLED.allowedTransitions = EnumSet.noneOf(OrderStatus.class);

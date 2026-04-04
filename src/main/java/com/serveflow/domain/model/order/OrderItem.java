@@ -6,19 +6,16 @@ import java.util.*;
 public class OrderItem {
 
     private UUID id;
-    private final UUID productId;
     private final String productName;
     private final int quantity;
     private final BigDecimal unitPrice;
     private final String observation;
     private final List<com.serveflow.domain.model.order.ItemAdditional> additionals;
 
-    public OrderItem(UUID productId, String productName, int quantity,
+    public OrderItem(String productName, int quantity,
                      BigDecimal unitPrice, String observation,
-                     List<com.serveflow.domain.model.order.ItemAdditional> additionals) {
+                     List<ItemAdditional> additionals) {
 
-        if (productId == null)
-            throw new IllegalArgumentException("Produto e obrigatorio.");
         if (productName == null || productName.isBlank())
             throw new IllegalArgumentException("Nome do produto e obrigatorio.");
         if (quantity <= 0)
@@ -26,7 +23,7 @@ public class OrderItem {
         if (unitPrice == null || unitPrice.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Preco unitario deve ser maior que zero.");
 
-        this.productId = productId;
+        this.id = UUID.randomUUID();
         this.productName = productName.strip();
         this.quantity = quantity;
         this.unitPrice = unitPrice;
@@ -34,10 +31,10 @@ public class OrderItem {
         this.additionals = new ArrayList<>(Optional.ofNullable(additionals).orElse(List.of()));
     }
 
-    public OrderItem(UUID id, UUID productId, String productName, int quantity,
+    public OrderItem(UUID id, String productName, int quantity,
                      BigDecimal unitPrice, String observation,
                      List<ItemAdditional> additionals) {
-        this(productId, productName, quantity, unitPrice, observation, additionals);
+        this(productName, quantity, unitPrice, observation, additionals);
         this.id = id;
     }
 
@@ -55,21 +52,30 @@ public class OrderItem {
         return getItemPrice().add(getAdditionalsPrice());
     }
 
-    public UUID getId() { return id; }
-    public UUID getProductId() { return productId; }
-    public String getProductName() { return productName; }
-    public int getQuantity() { return quantity; }
-    public BigDecimal getUnitPrice() { return unitPrice; }
-    public String getObservation() { return observation; }
-    public List<ItemAdditional> getAdditionals() { return List.copyOf(additionals); }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof OrderItem other)) return false;
-        return Objects.equals(productId, other.productId);
+    public UUID getId() {
+        return id;
     }
 
-    @Override
-    public int hashCode() { return Objects.hash(productId); }
+    // public UUID getProductId() { return productId; }
+    public String getProductName() {
+        return productName;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public String getObservation() {
+        return observation;
+    }
+
+    public List<ItemAdditional> getAdditionals() {
+        return List.copyOf(additionals);
+    }
 }
+
+

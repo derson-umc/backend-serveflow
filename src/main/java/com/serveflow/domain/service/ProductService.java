@@ -1,6 +1,6 @@
 package com.serveflow.domain.service;
 
-import com.serveflow.domain.model.Product;
+import com.serveflow.domain.model.product.Product;
 import com.serveflow.domain.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 

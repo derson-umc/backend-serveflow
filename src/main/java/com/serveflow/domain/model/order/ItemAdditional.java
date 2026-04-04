@@ -19,6 +19,7 @@ public class ItemAdditional {
         if (unitPrice == null || unitPrice.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Preco do adicional deve ser maior que zero.");
 
+        this.id = UUID.randomUUID();
         this.name = name.strip();
         this.quantity = quantity;
         this.unitPrice = unitPrice;

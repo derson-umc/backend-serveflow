@@ -1,6 +1,6 @@
-package com.serveflow.data.repository;
+package com.serveflow.data.repository.product;
 
-import com.serveflow.data.entity.ProductEntity;
+import com.serveflow.data.entity.product.ProductEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

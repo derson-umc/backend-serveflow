@@ -17,6 +17,7 @@ public class Order {
     private final List<OrderItem> items;
 
     private OrderStatus status;
+    private Long version;
 
     public static Order create(String customerName, Address address,
                                OrderType type, String observation) {
@@ -31,13 +32,14 @@ public class Order {
                 OrderStatus.CREATED,
                 LocalDateTime.now(),
                 observation,
-                new ArrayList<>()
+                new ArrayList<>(),
+                null
         );
     }
 
     public Order(UUID id, String customerName, Address address, OrderType type,
                  OrderStatus status, LocalDateTime createdAt, String observation,
-                 List<OrderItem> items) {
+                 List<OrderItem> items, Long version) {
 
         this.id = Objects.requireNonNull(id, "ID do pedido e obrigatorio.");
         this.customerName = Objects.requireNonNull(customerName, "Nome do cliente e obrigatorio.");
@@ -47,9 +49,8 @@ public class Order {
         this.createdAt = Objects.requireNonNull(createdAt, "Data de criacao e obrigatoria.");
         this.observation = observation != null ? observation.strip() : null;
         this.items = new ArrayList<>(Optional.ofNullable(items).orElse(List.of()));
+        this.version = version;
     }
-
-    // --- Item management ---
 
     public void addItem(OrderItem item) {
         ensureModifiable();
@@ -64,8 +65,6 @@ public class Order {
         if (!items.remove(item))
             throw new IllegalArgumentException("Item nao encontrado no pedido.");
     }
-
-    // --- Status transitions ---
 
     public void startPreparation() {
         ensureHasItems();
@@ -83,18 +82,13 @@ public class Order {
     }
 
     public void complete() {
-        if (type == OrderType.DELIVERY) {
-            transitionTo(OrderStatus.DELIVERED);
-        } else {
-            transitionTo(OrderStatus.DELIVERED);
-        }
+        transitionTo(OrderStatus.DELIVERED);
     }
 
     public void cancel() {
         transitionTo(OrderStatus.CANCELLED);
     }
 
-    // --- Queries ---
 
     public BigDecimal getTotal() {
         return items.stream()
@@ -114,7 +108,6 @@ public class Order {
         return items.size();
     }
 
-    // --- Getters ---
 
     public UUID getId() { return id; }
     public String getCustomerName() { return customerName; }
@@ -124,8 +117,7 @@ public class Order {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public String getObservation() { return observation; }
     public List<OrderItem> getItems() { return List.copyOf(items); }
-
-    // --- Equality ---
+    public Long getVersion() { return version; }
 
     @Override
     public boolean equals(Object o) {
@@ -137,12 +129,10 @@ public class Order {
     @Override
     public int hashCode() { return id.hashCode(); }
 
-    // --- Internal ---
-
     private void transitionTo(OrderStatus target) {
         if (!status.canTransitionTo(target))
             throw new IllegalStateException(
-                    "Transicao de status invalida: " + status.getDescription()
+                    "Transição de status invalida: " + status.getDescription()
                             + " -> " + target.getDescription() + ".");
         this.status = target;
     }
