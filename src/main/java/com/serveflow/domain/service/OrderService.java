@@ -1,5 +1,7 @@
 package com.serveflow.domain.service;
 
+import com.serveflow.domain.event.DomainEventPublisher;
+import com.serveflow.domain.event.OrderConfirmedEvent;
 import com.serveflow.domain.model.address.Address;
 import com.serveflow.domain.model.order.Order;
 import com.serveflow.domain.model.order.OrderItem;
@@ -9,6 +11,7 @@ import com.serveflow.domain.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -18,10 +21,14 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final AddressRepository addressLookupService;
+    private final DomainEventPublisher eventPublisher;
 
-    public OrderService(OrderRepository orderRepository, AddressRepository addressLookupService) {
+    public OrderService(OrderRepository orderRepository,
+                        AddressRepository addressLookupService,
+                        DomainEventPublisher eventPublisher) {
         this.orderRepository = orderRepository;
         this.addressLookupService = addressLookupService;
+        this.eventPublisher = eventPublisher;
     }
 
     public Address resolveAddress(String cep, String number, String complement, Address manualAddress) {
@@ -55,6 +62,23 @@ public class OrderService {
 
     public List<Order> findByStatus(OrderStatus status) {
         return orderRepository.findByStatus(status);
+    }
+
+    @Transactional
+    public Order confirm(UUID id) {
+        Order order = orderRepository.findById(id);
+        order.confirm();
+        Order saved = orderRepository.save(order);
+
+        var itemSnapshots = saved.getItems().stream()
+                .map(item -> new OrderConfirmedEvent.OrderItemSnapshot(
+                        item.getProductId(), item.getProductName(), item.getQuantity()))
+                .toList();
+
+        eventPublisher.publish(new OrderConfirmedEvent(
+                saved.getId(), itemSnapshots, LocalDateTime.now()));
+
+        return saved;
     }
 
     @Transactional

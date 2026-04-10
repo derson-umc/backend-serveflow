@@ -96,7 +96,7 @@ public class OrderWebMapper {
                 .map(this::toAdditionalDomain)
                 .toList();
 
-        return new OrderItem(dto.productName(), dto.quantity(), dto.unitPrice(),
+        return new OrderItem(dto.productId(), dto.productName(), dto.quantity(), dto.unitPrice(),
                 dto.observation(), additionals);
     }
 
@@ -120,7 +120,7 @@ public class OrderWebMapper {
                 .toList();
 
         return new OrderResponseDTO.OrderItemResponseDTO(
-                item.getId(), item.getProductName(), item.getQuantity(),
+                item.getId(), item.getProductId(), item.getProductName(), item.getQuantity(),
                 item.getUnitPrice(), item.getObservation(), item.getTotal(), additionals
         );
     }

@@ -32,6 +32,7 @@ public class OrderMapper {
     private OrderItem toDomain(OrderItemEntity e) {
         return new OrderItem(
                 e.getIdOrderItem(),
+                e.getProductId(),
                 e.getProductName(),
                 e.getQuantity(),
                 e.getUnitPrice(),
@@ -80,6 +81,7 @@ public class OrderMapper {
     private OrderItemEntity syncItemEntity(OrderItemEntity entity, OrderItem item, OrderEntity order) {
         entity.setIdOrderItem(item.getId());
         entity.setOrder(order);
+        entity.setProductId(item.getProductId());
         entity.setProductName(item.getProductName());
         entity.setQuantity(item.getQuantity());
         entity.setUnitPrice(item.getUnitPrice());
