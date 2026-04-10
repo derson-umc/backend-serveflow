@@ -50,7 +50,7 @@ public class OrderEntity implements Persistable<UUID> {
     private List<OrderItemEntity> items = new ArrayList<>();
 
     public enum OrderStatus {
-        CREATED, IN_PREPARATION, READY, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
+        CREATED, CONFIRMED, IN_PREPARATION, READY, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
     }
 
     public enum OrderType {DELIVERY, LOCAL}

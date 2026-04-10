@@ -2,20 +2,23 @@ package com.serveflow.domain.model.order;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.Objects;
 
 public class OrderItem {
 
     private UUID id;
+    private final UUID productId;
     private final String productName;
     private final int quantity;
     private final BigDecimal unitPrice;
     private final String observation;
     private final List<com.serveflow.domain.model.order.ItemAdditional> additionals;
 
-    public OrderItem(String productName, int quantity,
+    public OrderItem(UUID productId, String productName, int quantity,
                      BigDecimal unitPrice, String observation,
                      List<ItemAdditional> additionals) {
 
+        this.productId = Objects.requireNonNull(productId, "ID do produto e obrigatorio.");
         if (productName == null || productName.isBlank())
             throw new IllegalArgumentException("Nome do produto e obrigatorio.");
         if (quantity <= 0)
@@ -31,10 +34,10 @@ public class OrderItem {
         this.additionals = new ArrayList<>(Optional.ofNullable(additionals).orElse(List.of()));
     }
 
-    public OrderItem(UUID id, String productName, int quantity,
+    public OrderItem(UUID id, UUID productId, String productName, int quantity,
                      BigDecimal unitPrice, String observation,
                      List<ItemAdditional> additionals) {
-        this(productName, quantity, unitPrice, observation, additionals);
+        this(productId, productName, quantity, unitPrice, observation, additionals);
         this.id = id;
     }
 
@@ -56,7 +59,7 @@ public class OrderItem {
         return id;
     }
 
-    // public UUID getProductId() { return productId; }
+    public UUID getProductId() { return productId; }
     public String getProductName() {
         return productName;
     }

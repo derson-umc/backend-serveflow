@@ -6,6 +6,7 @@ import java.util.Set;
 public enum OrderStatus {
 
     CREATED("Criado"),
+    CONFIRMED("Confirmado"),
     IN_PREPARATION("Em preparacao"),
     READY("Pronto"),
     OUT_FOR_DELIVERY("A caminho"),
@@ -20,7 +21,8 @@ public enum OrderStatus {
     }
 
     static {
-        CREATED.allowedTransitions = EnumSet.of(IN_PREPARATION, CANCELLED);
+        CREATED.allowedTransitions = EnumSet.of(CONFIRMED, CANCELLED);
+        CONFIRMED.allowedTransitions = EnumSet.of(IN_PREPARATION, CANCELLED);
         IN_PREPARATION.allowedTransitions = EnumSet.of(READY, CANCELLED);
         READY.allowedTransitions = EnumSet.of(OUT_FOR_DELIVERY, DELIVERED, CANCELLED);
         OUT_FOR_DELIVERY.allowedTransitions = EnumSet.of(DELIVERED, CANCELLED);

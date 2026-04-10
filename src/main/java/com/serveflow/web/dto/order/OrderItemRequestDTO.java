@@ -8,8 +8,12 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 public record OrderItemRequestDTO(
+
+        @NotNull(message = "ID do produto e obrigatorio")
+        UUID productId,
 
         @NotBlank(message = "Nome do produto e obrigatorio")
         String productName,

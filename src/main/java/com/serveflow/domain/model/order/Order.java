@@ -66,8 +66,12 @@ public class Order {
             throw new IllegalArgumentException("Item nao encontrado no pedido.");
     }
 
-    public void startPreparation() {
+    public void confirm() {
         ensureHasItems();
+        transitionTo(OrderStatus.CONFIRMED);
+    }
+
+    public void startPreparation() {
         transitionTo(OrderStatus.IN_PREPARATION);
     }
 

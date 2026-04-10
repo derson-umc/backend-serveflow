@@ -56,6 +56,11 @@ public class OrderController {
         return ResponseEntity.ok(mapper.toResponseList(orderService.findByStatus(orderStatus)));
     }
 
+    @PatchMapping("/{id}/confirm")
+    public ResponseEntity<OrderResponseDTO> confirm(@PathVariable UUID id) {
+        return ResponseEntity.ok(mapper.toResponse(orderService.confirm(id)));
+    }
+
     @PatchMapping("/{id}/prepare")
     public ResponseEntity<OrderResponseDTO> startPreparation(@PathVariable UUID id) {
         return ResponseEntity.ok(mapper.toResponse(orderService.startPreparation(id)));
