@@ -1,6 +1,6 @@
 package com.serveflow.data.repository.product;
 
-import com.serveflow.data.mapper.ProductMapper;
+import com.serveflow.data.mapper.product.ProductMapper;
 import com.serveflow.domain.exception.ProductNotFoundException;
 import com.serveflow.domain.model.product.Product;
 import com.serveflow.domain.repository.ProductRepository;

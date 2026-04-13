@@ -1,9 +1,9 @@
-package com.serveflow.web.dto.product;
+package com.serveflow.web.dto.product.response;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public record ProductResponseDTO(
+public record ProductOutput(
         UUID id,
         String name,
         String description,
