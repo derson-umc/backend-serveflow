@@ -11,14 +11,14 @@ import java.util.List;
 public class ProductWebMapper {
 
     public Product toDomain(ProductInput request) {
-        return new Product(
-                request.name(),
-                request.description(),
-                request.category(),
-                request.brand(),
-                request.price(),
-                request.portion()
-        );
+        return Product.builder()
+                .name(request.name())
+                .description(request.description())
+                .category(request.category())
+                .brand(request.brand())
+                .price(request.price())
+                .portion(request.portion())
+                .build();
     }
 
     public ProductOutput toResponse(Product product) {
