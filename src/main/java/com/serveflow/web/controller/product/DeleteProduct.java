@@ -1,6 +1,6 @@
 package com.serveflow.web.controller.product;
 
-import com.serveflow.web.facade.ProductWebFacade;
+import com.serveflow.web.facade.product.editor.ProductEditor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
@@ -9,9 +9,9 @@ import java.util.UUID;
 @RequestMapping("/api/v1/products")
 public class DeleteProduct {
 
-    private final ProductWebFacade facade;
+    private final ProductEditor facade;
 
-    public DeleteProduct(ProductWebFacade facade) {
+    public DeleteProduct(ProductEditor facade) {
         this.facade = facade;
     }
 

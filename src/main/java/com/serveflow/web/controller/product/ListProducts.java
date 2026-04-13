@@ -1,7 +1,7 @@
 package com.serveflow.web.controller.product;
 
 import com.serveflow.web.dto.product.response.ProductOutput;
-import com.serveflow.web.facade.ProductWebFacade;
+import com.serveflow.web.facade.product.finder.ProductFinder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,9 +12,9 @@ import java.util.List;
 @RequestMapping("/api/v1/products")
 public class ListProducts {
 
-    private final ProductWebFacade facade;
+    private final ProductFinder facade;
 
-    public ListProducts(ProductWebFacade facade) {
+    public ListProducts(ProductFinder facade) {
         this.facade = facade;
     }
 
