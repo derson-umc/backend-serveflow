@@ -1,10 +1,10 @@
-package com.serveflow.web.dto.address;
+package com.serveflow.web.dto.address.request;
 
 import jakarta.validation.constraints.Size;
 
-public record AddressRequestDTO(
+public record AddressInput(
 
-        @Size(max = 10, message = "CEP deve ter no maximo 10 caracteres")
+        @Size(max = 10, message = "CEP deve ter no máximo 10 caracteres")
         String cep,
 
         @Size(max = 200)

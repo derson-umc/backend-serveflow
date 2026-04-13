@@ -1,11 +1,11 @@
-package com.serveflow.web.dto.menu;
+package com.serveflow.web.dto.menu.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record MenuResponseDTO(
+public record MenuOutPut(
     UUID id,
     String name,
     String status,

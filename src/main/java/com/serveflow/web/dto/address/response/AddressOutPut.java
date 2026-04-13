@@ -1,9 +1,9 @@
-package com.serveflow.web.dto.address;
+package com.serveflow.web.dto.address.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record AddressResponseDTO(
+public record AddressOutPut(
         String cep,
         String logradouro,
         String complemento,

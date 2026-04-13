@@ -5,7 +5,9 @@ import com.serveflow.domain.model.menu.Menu;
 import com.serveflow.domain.model.menu.MenuItem;
 import com.serveflow.domain.model.order.OrderType;
 import com.serveflow.domain.repository.MenuRepository;
-import com.serveflow.web.dto.menu.*;
+import com.serveflow.web.dto.menu.request.MenuInput;
+import com.serveflow.web.dto.menu.response.MenuOutPut;
+import com.serveflow.web.dto.menu.response.MenuItemSelectionOutPut;
 import com.serveflow.web.dto.order.response.OrderOutput;
 import com.serveflow.web.mapper.OrderWebMapper;
 import jakarta.validation.Valid;
@@ -33,7 +35,7 @@ public class MenuController {
     }
 
     @PostMapping
-    public ResponseEntity<MenuResponseDTO> create(@RequestBody @Valid CreateMenuRequestDTO request) {
+    public ResponseEntity<MenuOutPut> create(@RequestBody @Valid MenuInput request) {
         List<MenuItem> items = request.items().stream()
                 .map(dto -> MenuItem.create(dto.productId(), dto.name(), dto.description(), dto.price()))
                 .toList();
@@ -44,22 +46,22 @@ public class MenuController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MenuResponseDTO>> listAll() {
-        List<MenuResponseDTO> menus = menuRepository.findAll().stream()
+    public ResponseEntity<List<MenuOutPut>> listAll() {
+        List<MenuOutPut> menus = menuRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
         return ResponseEntity.ok(menus);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MenuResponseDTO> findById(@PathVariable UUID id) {
+    public ResponseEntity<MenuOutPut> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(toResponse(menuRepository.findById(id)));
     }
 
     @PostMapping("/{menuId}/orders")
     public ResponseEntity<OrderOutput> placeOrder(
             @PathVariable UUID menuId,
-            @RequestBody @Valid PlaceMenuOrderRequestDTO request) {
+            @RequestBody @Valid MenuItemSelectionOutPut request) {
 
         var selections = request.selections().stream()
                 .map(s -> new StartOrder.MenuItemSelection(
@@ -83,21 +85,21 @@ public class MenuController {
     }
 
     @PatchMapping("/{id}/unlock")
-    public ResponseEntity<MenuResponseDTO> unlock(@PathVariable UUID id) {
+    public ResponseEntity<MenuOutPut> unlock(@PathVariable UUID id) {
         Menu menu = menuRepository.findById(id);
         menu.unlock();
         Menu saved = menuRepository.save(menu);
         return ResponseEntity.ok(toResponse(saved));
     }
 
-    private MenuResponseDTO toResponse(Menu menu) {
+    private MenuOutPut toResponse(Menu menu) {
         var items = menu.getItems().stream()
-                .map(item -> new MenuResponseDTO.MenuItemResponseDTO(
+                .map(item -> new MenuOutPut.MenuItemResponseDTO(
                         item.getId(), item.getProductId(), item.getName(),
                         item.getDescription(), item.getPrice(), item.isAvailable()))
                 .toList();
 
-        return new MenuResponseDTO(
+        return new MenuOutPut(
                 menu.getId(), menu.getName(), menu.getStatus().name(),
                 menu.getActiveOrderId(), items, menu.getCreatedAt());
     }
