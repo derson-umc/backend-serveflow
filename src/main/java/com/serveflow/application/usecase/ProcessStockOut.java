@@ -14,15 +14,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 
 @Service
-public class ConfirmOrderStockDeductionUseCase {
+public class ProcessStockOut {
 
     private final ProductRecipeRepository recipeRepository;
     private final StockItemRepository stockItemRepository;
     private final StockMovementRepository movementRepository;
 
-    public ConfirmOrderStockDeductionUseCase(ProductRecipeRepository recipeRepository,
-                                             StockItemRepository stockItemRepository,
-                                             StockMovementRepository movementRepository) {
+    public ProcessStockOut(ProductRecipeRepository recipeRepository,
+                           StockItemRepository stockItemRepository,
+                           StockMovementRepository movementRepository) {
         this.recipeRepository = recipeRepository;
         this.stockItemRepository = stockItemRepository;
         this.movementRepository = movementRepository;
@@ -37,7 +37,6 @@ public class ConfirmOrderStockDeductionUseCase {
             for (var ingredient : recipe.getIngredients()) {
                 BigDecimal required = ingredient.getRequiredQuantity(item.quantity());
 
-                // Pessimistic lock para evitar furos de estoque em concorrência
                 StockItem stockItem = stockItemRepository.findByIdForUpdate(ingredient.getStockItemId());
                 stockItem.deduct(required);
                 stockItemRepository.save(stockItem);
@@ -45,7 +44,7 @@ public class ConfirmOrderStockDeductionUseCase {
                 StockMovement movement = StockMovement.createExit(
                         stockItem.getId(),
                         required,
-                        "Baixa automatica - Pedido " + event.orderId()
+                        "Baixa automática - Pedido." + event.orderId()
                                 + " - Produto: " + item.productName(),
                         event.orderId()
                 );

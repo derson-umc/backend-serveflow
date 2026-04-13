@@ -15,12 +15,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class PlaceMenuOrderUseCase {
+public class StartOrder {
 
     private final MenuRepository menuRepository;
     private final OrderRepository orderRepository;
 
-    public PlaceMenuOrderUseCase(MenuRepository menuRepository, OrderRepository orderRepository) {
+    public StartOrder(MenuRepository menuRepository, OrderRepository orderRepository) {
         this.menuRepository = menuRepository;
         this.orderRepository = orderRepository;
     }
@@ -34,7 +34,7 @@ public class PlaceMenuOrderUseCase {
 
         if (menu.isLocked()) {
             throw new IllegalStateException(
-                    "Menu esta travado. Utilize o endpoint de adicao avulsa ao pedido " + menu.getActiveOrderId() + ".");
+                    "Menu esta travado. Utilize o endpoint de adição avulsa ao pedido. " + menu.getActiveOrderId() + ".");
         }
 
         List<OrderItem> items = selections.stream().map(selection -> {
@@ -42,7 +42,7 @@ public class PlaceMenuOrderUseCase {
 
             if (!menuItem.isAvailable()) {
                 throw new IllegalStateException(
-                        "Item '" + menuItem.getName() + "' nao esta disponivel no momento.");
+                        "Item '" + menuItem.getName() + "' não esta disponível no momento.");
             }
 
             return new OrderItem(
