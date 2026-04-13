@@ -9,14 +9,14 @@ import java.math.BigDecimal;
 
 public record ItemAdditionalInput(
 
-        @NotBlank(message = "Nome do adicional e obrigatorio.")
+        @NotBlank(message = "Nome do adicional é obrigatório.")
         String name,
 
-        @NotNull(message = "Quantidade do adicional e obrigatoria.")
-        @Min(value = 1, message = "Quantidade do adicional deve ser no minimo 1.")
+        @NotNull(message = "Quantidade do adicional é obrigatória.")
+        @Min(value = 1, message = "Quantidade do adicional deve ser no mínimo 1.")
         Integer quantity,
 
-        @NotNull(message = "Preco unitario do adicional e obrigatorio.")
-        @DecimalMin(value = "0.01", message = "Preco unitario do adicional deve ser maior que zero.")
+        @NotNull(message = "Preço unitário do adicional é obrigatório.")
+        @DecimalMin(value = "0.01", message = "Preço unitário do adicional deve ser maior que zero.")
         BigDecimal unitPrice
 ) {}

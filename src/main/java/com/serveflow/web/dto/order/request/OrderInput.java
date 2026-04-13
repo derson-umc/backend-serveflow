@@ -12,13 +12,13 @@ import java.util.List;
 @MustHaveValidAddress
 public record OrderInput(
 
-        @NotBlank(message = "Nome do cliente e obrigatorio.")
+        @NotBlank(message = "Nome do cliente é obrigatório.")
         String customerName,
 
         @Valid
         AddressRequestDTO address,
 
-        @NotNull(message = "Tipo do pedido e obrigatorio. (DELIVERY ou LOCAL)")
+        @NotNull(message = "Tipo do pedido é obrigatório. (DELIVERY ou LOCAL)")
         String type,
 
         String observation,
