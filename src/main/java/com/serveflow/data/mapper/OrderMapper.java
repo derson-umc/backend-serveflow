@@ -20,8 +20,8 @@ public class OrderMapper {
                 e.getIdOrder(),
                 e.getCustomerName(),
                 e.getAddress() != null ? toDomain(e.getAddress()) : null,
-                OrderType.valueOf(e.getType().name()),
-                OrderStatus.valueOf(e.getStatus().name()),
+                e.getType(),
+                e.getStatus(),
                 e.getCreatedAt(),
                 e.getObservation(),
                 e.getItems().stream().map(this::toDomain).toList(),
@@ -57,8 +57,8 @@ public class OrderMapper {
         entity.setIdOrder(order.getId());
         entity.setVersion(order.getVersion());
         entity.setCustomerName(order.getCustomerName());
-        entity.setType(OrderEntity.OrderType.valueOf(order.getType().name()));
-        entity.setStatus(OrderEntity.OrderStatus.valueOf(order.getStatus().name()));
+        entity.setType(order.getType());
+        entity.setStatus(order.getStatus());
         entity.setCreatedAt(order.getCreatedAt());
         entity.setObservation(order.getObservation());
 
