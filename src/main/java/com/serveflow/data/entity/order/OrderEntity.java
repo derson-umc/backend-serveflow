@@ -1,6 +1,8 @@
 package com.serveflow.data.entity.order;
 
 import com.serveflow.data.entity.address.AddressEntity;
+import com.serveflow.domain.model.order.OrderStatus;
+import com.serveflow.domain.model.order.OrderType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.domain.Persistable;
@@ -48,12 +50,6 @@ public class OrderEntity implements Persistable<UUID> {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> items = new ArrayList<>();
-
-    public enum OrderStatus {
-        CREATED, CONFIRMED, IN_PREPARATION, READY, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
-    }
-
-    public enum OrderType {DELIVERY, LOCAL}
 
     @Transient
     private boolean isNew = true;
