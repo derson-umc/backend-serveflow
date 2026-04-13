@@ -1,10 +1,10 @@
-package com.serveflow.web.dto.stock;
+package com.serveflow.web.dto.stock.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record StockMovementResponseDTO(
+public record StockMovementOutPut(
     UUID id,
     UUID stockItemId,
     String type,

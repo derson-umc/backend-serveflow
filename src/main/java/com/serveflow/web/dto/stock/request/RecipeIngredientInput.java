@@ -1,10 +1,10 @@
-package com.serveflow.web.dto.stock;
+package com.serveflow.web.dto.stock.request;
 
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public record CreateRecipeIngredientDTO(
+public record RecipeIngredientInput(
     @NotNull(message = "ID do insumo e obrigatorio.")
     UUID stockItemId,
 

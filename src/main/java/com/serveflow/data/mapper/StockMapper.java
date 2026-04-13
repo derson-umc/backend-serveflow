@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 @Component
 public class StockMapper {
 
-    // === StockItem ===
     public StockItem toDomain(StockItemEntity e) {
         return new StockItem(
                 e.getIdStockItem(), e.getName(), e.getUnit(),
@@ -40,7 +39,6 @@ public class StockMapper {
         return entity;
     }
 
-    // === ProductRecipe ===
     public ProductRecipe toDomain(ProductRecipeEntity e) {
         return new ProductRecipe(
                 e.getIdRecipe(), e.getProductId(), e.getProductName(),
@@ -91,7 +89,6 @@ public class StockMapper {
         return entity;
     }
 
-    // === StockMovement ===
     public StockMovement toDomain(StockMovementEntity e) {
         return new StockMovement(
                 e.getIdMovement(), e.getStockItemId(),

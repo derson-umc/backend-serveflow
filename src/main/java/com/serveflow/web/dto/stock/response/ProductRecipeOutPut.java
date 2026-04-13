@@ -1,10 +1,10 @@
-package com.serveflow.web.dto.stock;
+package com.serveflow.web.dto.stock.response;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-public record ProductRecipeResponseDTO(
+public record ProductRecipeOutPut(
     UUID id,
     UUID productId,
     String productName,

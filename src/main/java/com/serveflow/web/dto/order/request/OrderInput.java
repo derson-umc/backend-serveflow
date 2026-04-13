@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 @MustHaveValidAddress
-public record CreateOrderInput(
+public record OrderInput(
 
         @NotBlank(message = "Nome do cliente e obrigatorio.")
         String customerName,

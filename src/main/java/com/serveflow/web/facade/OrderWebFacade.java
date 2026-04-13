@@ -3,7 +3,7 @@ package com.serveflow.web.facade;
 import com.serveflow.domain.model.order.Order;
 import com.serveflow.domain.model.order.OrderStatus;
 import com.serveflow.domain.service.OrderService;
-import com.serveflow.web.dto.order.request.CreateOrderInput;
+import com.serveflow.web.dto.order.request.OrderInput;
 import com.serveflow.web.dto.order.response.OrderOutput;
 import com.serveflow.web.mapper.OrderWebMapper;
 import org.springframework.stereotype.Component;
@@ -22,7 +22,7 @@ public class OrderWebFacade {
         this.mapper = mapper;
     }
 
-    public OrderOutput create(CreateOrderInput request) {
+    public OrderOutput create(OrderInput request) {
         var addressDto = request.address();
         var manualAddress = mapper.toAddressDomain(addressDto);
         var resolvedAddress = orderService.resolveAddress(
