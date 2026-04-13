@@ -1,13 +1,12 @@
-package com.serveflow.web.controller;
+package com.serveflow.web.controller.menu;
 
-import com.serveflow.application.usecase.PlaceMenuOrderUseCase;
+import com.serveflow.application.usecase.StartOrder;
 import com.serveflow.domain.model.menu.Menu;
 import com.serveflow.domain.model.menu.MenuItem;
 import com.serveflow.domain.model.order.OrderType;
 import com.serveflow.domain.repository.MenuRepository;
-import com.serveflow.domain.service.OrderService;
 import com.serveflow.web.dto.menu.*;
-import com.serveflow.web.dto.order.OrderResponseDTO;
+import com.serveflow.web.dto.order.response.OrderOutput;
 import com.serveflow.web.mapper.OrderWebMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -22,14 +21,14 @@ import java.util.UUID;
 public class MenuController {
 
     private final MenuRepository menuRepository;
-    private final PlaceMenuOrderUseCase placeMenuOrderUseCase;
+    private final StartOrder startOrder;
     private final OrderWebMapper orderWebMapper;
 
     public MenuController(MenuRepository menuRepository,
-                          PlaceMenuOrderUseCase placeMenuOrderUseCase,
+                          StartOrder startOrder,
                           OrderWebMapper orderWebMapper) {
         this.menuRepository = menuRepository;
-        this.placeMenuOrderUseCase = placeMenuOrderUseCase;
+        this.startOrder = startOrder;
         this.orderWebMapper = orderWebMapper;
     }
 
@@ -58,12 +57,12 @@ public class MenuController {
     }
 
     @PostMapping("/{menuId}/orders")
-    public ResponseEntity<OrderResponseDTO> placeOrder(
+    public ResponseEntity<OrderOutput> placeOrder(
             @PathVariable UUID menuId,
             @RequestBody @Valid PlaceMenuOrderRequestDTO request) {
 
         var selections = request.selections().stream()
-                .map(s -> new PlaceMenuOrderUseCase.MenuItemSelection(
+                .map(s -> new StartOrder.MenuItemSelection(
                         s.menuItemId(), s.quantity(), s.observation()))
                 .toList();
 
@@ -71,7 +70,7 @@ public class MenuController {
                 ? orderWebMapper.toAddressDomain(request.address())
                 : null;
 
-        var order = placeMenuOrderUseCase.execute(
+        var order = startOrder.execute(
                 menuId,
                 request.customerName(),
                 OrderType.valueOf(request.type().toUpperCase()),

@@ -1,4 +1,4 @@
-package com.serveflow.web.controller;
+package com.serveflow.web.controller.stock;
 
 import com.serveflow.domain.model.stock.*;
 import com.serveflow.domain.repository.*;

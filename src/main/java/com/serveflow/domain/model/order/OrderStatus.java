@@ -5,13 +5,13 @@ import java.util.Set;
 
 public enum OrderStatus {
 
-    CREATED("Criado"),
-    CONFIRMED("Confirmado"),
-    IN_PREPARATION("Em preparacao"),
-    READY("Pronto"),
-    OUT_FOR_DELIVERY("A caminho"),
-    DELIVERED("Entregue"),
-    CANCELLED("Cancelado");
+    CREATED("Criado."),
+    CONFIRMED("Confirmado."),
+    IN_PREPARATION("Em preparação."),
+    READY("Pronto."),
+    OUT_FOR_DELIVERY("A caminho."),
+    DELIVERED("Entregue."),
+    CANCELLED("Cancelado.");
 
     private final String description;
     private Set<OrderStatus> allowedTransitions;

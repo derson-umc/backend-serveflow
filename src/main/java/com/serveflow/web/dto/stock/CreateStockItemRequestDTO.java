@@ -19,4 +19,7 @@ public record CreateStockItemRequestDTO(
     @NotNull(message = "Quantidade minima e obrigatoria.")
     @DecimalMin(value = "0.0", message = "Quantidade minima nao pode ser negativa.")
     BigDecimal minimumQuantity
-) {}
+) {
+
+}
+
