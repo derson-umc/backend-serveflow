@@ -1,22 +1,22 @@
-package com.serveflow.web.dto.order;
+package com.serveflow.web.dto.order.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record OrderResponseDTO(
+public record OrderOutput(
         UUID id,
         String customerName,
-        AddressResponseDTO address,
+        AddressOutput address,
         String type,
         String status,
         LocalDateTime createdAt,
         String observation,
         BigDecimal totalValue,
-        List<OrderItemResponseDTO> items
+        List<OrderItemOutput> items
 ) {
-    public record AddressResponseDTO(
+    public record AddressOutput(
             UUID id,
             String cep,
             String street,
@@ -26,7 +26,7 @@ public record OrderResponseDTO(
             String complement
     ) {}
 
-    public record OrderItemResponseDTO(
+    public record OrderItemOutput(
             UUID id,
             UUID productId,
             String productName,
@@ -34,10 +34,10 @@ public record OrderResponseDTO(
             BigDecimal unitPrice,
             String observation,
             BigDecimal total,
-            List<ItemAdditionalResponseDTO> additionals
+            List<ItemAdditionalOutput> additionals
     ) {}
 
-    public record ItemAdditionalResponseDTO(
+    public record ItemAdditionalOutput(
             UUID id,
             String name,
             int quantity,

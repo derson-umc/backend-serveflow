@@ -1,18 +1,18 @@
-package com.serveflow.web.validation;
+package com.serveflow.web.validation.address;
 
-import com.serveflow.web.dto.order.OrderRequestDTO;
+import com.serveflow.web.dto.order.request.CreateOrderInput;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class DeliveryAddressValidator implements ConstraintValidator<ValidDeliveryAddress, OrderRequestDTO> {
+public class EnsureValidDelivery implements ConstraintValidator<MustHaveValidAddress, CreateOrderInput> {
 
     @Override
-    public boolean isValid(OrderRequestDTO dto, ConstraintValidatorContext context) {
+    public boolean isValid(CreateOrderInput dto, ConstraintValidatorContext context) {
         if (dto == null || dto.type() == null) return true;
 
         if ("DELIVERY".equalsIgnoreCase(dto.type()) && dto.address() == null) {
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate("Endereco e obrigatorio para pedidos delivery")
+            context.buildConstraintViolationWithTemplate("Endereço e obrigatório para pedidos de delivery.")
                     .addPropertyNode("address")
                     .addConstraintViolation();
             return false;

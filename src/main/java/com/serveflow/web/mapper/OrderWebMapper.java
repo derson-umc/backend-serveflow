@@ -3,23 +3,20 @@ package com.serveflow.web.mapper;
 import com.serveflow.domain.model.address.Address;
 import com.serveflow.domain.model.order.*;
 import com.serveflow.web.dto.address.AddressRequestDTO;
-import com.serveflow.web.dto.order.*;
+import com.serveflow.web.dto.order.request.CreateOrderInput;
+import com.serveflow.web.dto.order.request.ItemAdditionalInput;
+import com.serveflow.web.dto.order.request.OrderItemInput;
+import com.serveflow.web.dto.order.response.OrderOutput;
 import org.springframework.stereotype.Component;
-import com.serveflow.web.dto.order.ItemAdditionalRequestDTO;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Component
 public class OrderWebMapper {
 
-    public Order toDomain(OrderRequestDTO request) {
-        return toDomain(request, mapAddress(request.address()));
-    }
-
-    public Order toDomain(OrderRequestDTO request, Address resolvedAddress) {
-        OrderType orderType = parseOrderType(request.type());
+    public Order toDomain(CreateOrderInput request, Address resolvedAddress) {
+        OrderType orderType = OrderType.valueOf(request.type().toUpperCase());
 
         Order order = Order.create(request.customerName(), resolvedAddress, orderType,
                 request.observation());
@@ -27,40 +24,6 @@ public class OrderWebMapper {
         toItemsDomain(request.items()).forEach(order::addItem);
 
         return order;
-    }
-
-    public List<OrderItem> toItemsDomain(List<OrderItemRequestDTO> items) {
-        return items.stream()
-                .map(this::toItemDomain)
-                .toList();
-    }
-
-    public OrderResponseDTO toResponse(Order order) {
-        return new OrderResponseDTO(
-                order.getId(),
-                order.getCustomerName(),
-                mapAddressResponse(order.getAddress()),
-                order.getType().name(),
-                order.getStatus().name(),
-                order.getCreatedAt(),
-                order.getObservation(),
-                order.getTotal(),
-                mapItemsResponse(order.getItems())
-        );
-    }
-
-    public List<OrderResponseDTO> toResponseList(List<Order> orders) {
-        return orders.stream()
-                .map(this::toResponse)
-                .toList();
-    }
-
-    private String generateOrderId() {
-        return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-    }
-
-    private OrderType parseOrderType(String type) {
-        return OrderType.valueOf(type.toUpperCase());
     }
 
     public Address toAddressDomain(AddressRequestDTO dto) {
@@ -76,20 +39,33 @@ public class OrderWebMapper {
         );
     }
 
-    private Address mapAddress(AddressRequestDTO dto) {
-        return toAddressDomain(dto);
+    public OrderOutput toResponse(Order order) {
+        return new OrderOutput(
+                order.getId(),
+                order.getCustomerName(),
+                toAddressOutput(order.getAddress()),
+                order.getType().name(),
+                order.getStatus().name(),
+                order.getCreatedAt(),
+                order.getObservation(),
+                order.getTotal(),
+                toItemsOutput(order.getItems())
+        );
     }
 
-    private OrderResponseDTO.AddressResponseDTO mapAddressResponse(Address address) {
-        return address != null
-                ? new OrderResponseDTO.AddressResponseDTO(
-                address.getId(), address.getCep(), address.getStreet(),
-                address.getCity(), address.getState(), address.getNumber(),
-                address.getComplement())
-                : null;
+    public List<OrderOutput> toResponseList(List<Order> orders) {
+        return orders.stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    private OrderItem toItemDomain(OrderItemRequestDTO dto) {
+    private List<OrderItem> toItemsDomain(List<OrderItemInput> items) {
+        return items.stream()
+                .map(this::toItemDomain)
+                .toList();
+    }
+
+    private OrderItem toItemDomain(OrderItemInput dto) {
         List<ItemAdditional> additionals = Optional.ofNullable(dto.additionals())
                 .orElse(List.of())
                 .stream()
@@ -100,35 +76,38 @@ public class OrderWebMapper {
                 dto.observation(), additionals);
     }
 
-    private ItemAdditional toAdditionalDomain(ItemAdditionalRequestDTO additional) {
-        return new ItemAdditional(
-                additional.name(),
-                additional.quantity(),
-                additional.unitPrice()
-        );
+    private ItemAdditional toAdditionalDomain(ItemAdditionalInput dto) {
+        return new ItemAdditional(dto.name(), dto.quantity(), dto.unitPrice());
     }
 
-    private List<OrderResponseDTO.OrderItemResponseDTO> mapItemsResponse(List<OrderItem> items) {
+    private OrderOutput.AddressOutput toAddressOutput(Address address) {
+        return address != null
+                ? new OrderOutput.AddressOutput(
+                address.getId(), address.getCep(), address.getStreet(),
+                address.getCity(), address.getState(), address.getNumber(),
+                address.getComplement())
+                : null;
+    }
+
+    private List<OrderOutput.OrderItemOutput> toItemsOutput(List<OrderItem> items) {
         return items.stream()
-                .map(this::toItemResponse)
+                .map(this::toItemOutput)
                 .toList();
     }
 
-    private OrderResponseDTO.OrderItemResponseDTO toItemResponse(OrderItem item) {
-        List<OrderResponseDTO.ItemAdditionalResponseDTO> additionals = item.getAdditionals().stream()
-                .map(this::toAdditionalResponse)
+    private OrderOutput.OrderItemOutput toItemOutput(OrderItem item) {
+        List<OrderOutput.ItemAdditionalOutput> additionals = item.getAdditionals().stream()
+                .map(this::toAdditionalOutput)
                 .toList();
 
-        return new OrderResponseDTO.OrderItemResponseDTO(
+        return new OrderOutput.OrderItemOutput(
                 item.getId(), item.getProductId(), item.getProductName(), item.getQuantity(),
-                item.getUnitPrice(), item.getObservation(), item.getTotal(), additionals
-        );
+                item.getUnitPrice(), item.getObservation(), item.getTotal(), additionals);
     }
 
-    private OrderResponseDTO.ItemAdditionalResponseDTO toAdditionalResponse(ItemAdditional additional) {
-        return new OrderResponseDTO.ItemAdditionalResponseDTO(
+    private OrderOutput.ItemAdditionalOutput toAdditionalOutput(ItemAdditional additional) {
+        return new OrderOutput.ItemAdditionalOutput(
                 additional.getId(), additional.getName(), additional.getQuantity(),
-                additional.getUnitPrice(), additional.getTotal()
-        );
+                additional.getUnitPrice(), additional.getTotal());
     }
 }

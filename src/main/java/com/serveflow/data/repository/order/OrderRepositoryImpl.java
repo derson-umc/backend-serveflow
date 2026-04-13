@@ -57,8 +57,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     @Override
     public List<Order> findByStatus(OrderStatus status) {
-        var entityStatus = OrderEntity.OrderStatus.valueOf(status.name());
-        return springRepository.findByStatus(entityStatus).stream()
+        return springRepository.findByStatus(status).stream()
                 .map(mapper::toDomain)
                 .toList();
     }
