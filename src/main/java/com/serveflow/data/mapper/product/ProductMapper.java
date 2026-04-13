@@ -1,4 +1,4 @@
-package com.serveflow.data.mapper;
+package com.serveflow.data.mapper.product;
 
 import com.serveflow.data.entity.product.ProductEntity;
 import com.serveflow.domain.model.product.Product;
