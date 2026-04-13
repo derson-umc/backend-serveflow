@@ -3,7 +3,7 @@ package com.serveflow.web.mapper;
 import com.serveflow.domain.model.address.Address;
 import com.serveflow.domain.model.order.*;
 import com.serveflow.web.dto.address.AddressRequestDTO;
-import com.serveflow.web.dto.order.request.CreateOrderInput;
+import com.serveflow.web.dto.order.request.OrderInput;
 import com.serveflow.web.dto.order.request.ItemAdditionalInput;
 import com.serveflow.web.dto.order.request.OrderItemInput;
 import com.serveflow.web.dto.order.response.OrderOutput;
@@ -15,7 +15,7 @@ import java.util.Optional;
 @Component
 public class OrderWebMapper {
 
-    public Order toDomain(CreateOrderInput request, Address resolvedAddress) {
+    public Order toDomain(OrderInput request, Address resolvedAddress) {
         OrderType orderType = OrderType.valueOf(request.type().toUpperCase());
 
         Order order = Order.create(request.customerName(), resolvedAddress, orderType,

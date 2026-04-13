@@ -2,7 +2,11 @@ package com.serveflow.web.controller.stock;
 
 import com.serveflow.domain.model.stock.*;
 import com.serveflow.domain.repository.*;
-import com.serveflow.web.dto.stock.*;
+import com.serveflow.web.dto.stock.request.ProductRecipeInput;
+import com.serveflow.web.dto.stock.request.StockItemInput;
+import com.serveflow.web.dto.stock.response.ProductRecipeOutPut;
+import com.serveflow.web.dto.stock.response.StockItemOutPut;
+import com.serveflow.web.dto.stock.response.StockMovementOutPut;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,8 +34,8 @@ public class StockController {
     // === Stock Items ===
 
     @PostMapping("/items")
-    public ResponseEntity<StockItemResponseDTO> createItem(
-            @RequestBody @Valid CreateStockItemRequestDTO request) {
+    public ResponseEntity<StockItemOutPut> createItem(
+            @RequestBody @Valid StockItemInput request) {
         StockItem item = StockItem.create(
                 request.name(), request.unit(),
                 request.currentQuantity(), request.minimumQuantity());
@@ -40,20 +44,20 @@ public class StockController {
     }
 
     @GetMapping("/items")
-    public ResponseEntity<List<StockItemResponseDTO>> listItems() {
-        List<StockItemResponseDTO> items = stockItemRepository.findAll().stream()
+    public ResponseEntity<List<StockItemOutPut>> listItems() {
+        List<StockItemOutPut> items = stockItemRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
         return ResponseEntity.ok(items);
     }
 
     @GetMapping("/items/{id}")
-    public ResponseEntity<StockItemResponseDTO> findItem(@PathVariable UUID id) {
+    public ResponseEntity<StockItemOutPut> findItem(@PathVariable UUID id) {
         return ResponseEntity.ok(toResponse(stockItemRepository.findById(id)));
     }
 
     @PostMapping("/items/{id}/entry")
-    public ResponseEntity<StockItemResponseDTO> addStock(
+    public ResponseEntity<StockItemOutPut> addStock(
             @PathVariable UUID id,
             @RequestParam java.math.BigDecimal quantity,
             @RequestParam(required = false) String reason) {
@@ -70,36 +74,36 @@ public class StockController {
     // === Recipes (Fichas Tecnicas) ===
 
     @PostMapping("/recipes")
-    public ResponseEntity<ProductRecipeResponseDTO> createRecipe(
-            @RequestBody @Valid CreateProductRecipeRequestDTO request) {
+    public ResponseEntity<ProductRecipeOutPut> createRecipe(
+            @RequestBody @Valid ProductRecipeInput request) {
         List<RecipeIngredient> ingredients = request.ingredients().stream()
                 .map(dto -> RecipeIngredient.create(
                         dto.stockItemId(), dto.stockItemName(),
                         dto.quantityPerUnit(), dto.unit()))
                 .toList();
 
-        ProductRecipe recipe = ProductRecipe.create(
+        com.serveflow.domain.model.stock.ProductRecipe recipe = com.serveflow.domain.model.stock.ProductRecipe.create(
                 request.productId(), request.productName(), ingredients);
-        ProductRecipe saved = recipeRepository.save(recipe);
+        com.serveflow.domain.model.stock.ProductRecipe saved = recipeRepository.save(recipe);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(saved));
     }
 
     @GetMapping("/recipes")
-    public ResponseEntity<List<ProductRecipeResponseDTO>> listRecipes() {
-        List<ProductRecipeResponseDTO> recipes = recipeRepository.findAll().stream()
+    public ResponseEntity<List<ProductRecipeOutPut>> listRecipes() {
+        List<ProductRecipeOutPut> recipes = recipeRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
         return ResponseEntity.ok(recipes);
     }
 
     @GetMapping("/recipes/{id}")
-    public ResponseEntity<ProductRecipeResponseDTO> findRecipe(@PathVariable UUID id) {
+    public ResponseEntity<ProductRecipeOutPut> findRecipe(@PathVariable UUID id) {
         return ResponseEntity.ok(toResponse(recipeRepository.findById(id)));
     }
 
     @GetMapping("/recipes/product/{productId}")
-    public ResponseEntity<ProductRecipeResponseDTO> findRecipeByProduct(@PathVariable UUID productId) {
-        ProductRecipe recipe = recipeRepository.findByProductId(productId)
+    public ResponseEntity<ProductRecipeOutPut> findRecipeByProduct(@PathVariable UUID productId) {
+        com.serveflow.domain.model.stock.ProductRecipe recipe = recipeRepository.findByProductId(productId)
                 .orElseThrow(() -> new com.serveflow.domain.exception.RecipeNotFoundException(productId));
         return ResponseEntity.ok(toResponse(recipe));
     }
@@ -107,16 +111,16 @@ public class StockController {
     // === Movements ===
 
     @GetMapping("/movements/item/{stockItemId}")
-    public ResponseEntity<List<StockMovementResponseDTO>> findMovementsByItem(@PathVariable UUID stockItemId) {
-        List<StockMovementResponseDTO> movements = movementRepository.findByStockItemId(stockItemId).stream()
+    public ResponseEntity<List<StockMovementOutPut>> findMovementsByItem(@PathVariable UUID stockItemId) {
+        List<StockMovementOutPut> movements = movementRepository.findByStockItemId(stockItemId).stream()
                 .map(this::toMovementResponse)
                 .toList();
         return ResponseEntity.ok(movements);
     }
 
     @GetMapping("/movements/order/{orderId}")
-    public ResponseEntity<List<StockMovementResponseDTO>> findMovementsByOrder(@PathVariable UUID orderId) {
-        List<StockMovementResponseDTO> movements = movementRepository.findByReferenceId(orderId).stream()
+    public ResponseEntity<List<StockMovementOutPut>> findMovementsByOrder(@PathVariable UUID orderId) {
+        List<StockMovementOutPut> movements = movementRepository.findByReferenceId(orderId).stream()
                 .map(this::toMovementResponse)
                 .toList();
         return ResponseEntity.ok(movements);
@@ -124,26 +128,26 @@ public class StockController {
 
     // === Mappers (inline, seguindo padrao do projeto) ===
 
-    private StockItemResponseDTO toResponse(StockItem item) {
-        return new StockItemResponseDTO(
+    private StockItemOutPut toResponse(StockItem item) {
+        return new StockItemOutPut(
                 item.getId(), item.getName(), item.getUnit(),
                 item.getCurrentQuantity(), item.getMinimumQuantity(),
                 item.isBelowMinimum(), item.getCreatedAt());
     }
 
-    private ProductRecipeResponseDTO toResponse(ProductRecipe recipe) {
+    private ProductRecipeOutPut toResponse(com.serveflow.domain.model.stock.ProductRecipe recipe) {
         var ingredients = recipe.getIngredients().stream()
-                .map(i -> new ProductRecipeResponseDTO.RecipeIngredientResponseDTO(
+                .map(i -> new ProductRecipeOutPut.RecipeIngredientResponseDTO(
                         i.getId(), i.getStockItemId(), i.getStockItemName(),
                         i.getQuantityPerUnit(), i.getUnit()))
                 .toList();
-        return new ProductRecipeResponseDTO(
+        return new ProductRecipeOutPut(
                 recipe.getId(), recipe.getProductId(),
                 recipe.getProductName(), ingredients);
     }
 
-    private StockMovementResponseDTO toMovementResponse(StockMovement m) {
-        return new StockMovementResponseDTO(
+    private StockMovementOutPut toMovementResponse(StockMovement m) {
+        return new StockMovementOutPut(
                 m.getId(), m.getStockItemId(), m.getType().name(),
                 m.getQuantity(), m.getReason(),
                 m.getReferenceId(), m.getCreatedAt());

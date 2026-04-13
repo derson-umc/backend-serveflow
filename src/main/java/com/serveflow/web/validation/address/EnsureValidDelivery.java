@@ -1,13 +1,13 @@
 package com.serveflow.web.validation.address;
 
-import com.serveflow.web.dto.order.request.CreateOrderInput;
+import com.serveflow.web.dto.order.request.OrderInput;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class EnsureValidDelivery implements ConstraintValidator<MustHaveValidAddress, CreateOrderInput> {
+public class EnsureValidDelivery implements ConstraintValidator<MustHaveValidAddress, OrderInput> {
 
     @Override
-    public boolean isValid(CreateOrderInput dto, ConstraintValidatorContext context) {
+    public boolean isValid(OrderInput dto, ConstraintValidatorContext context) {
         if (dto == null || dto.type() == null) return true;
 
         if ("DELIVERY".equalsIgnoreCase(dto.type()) && dto.address() == null) {

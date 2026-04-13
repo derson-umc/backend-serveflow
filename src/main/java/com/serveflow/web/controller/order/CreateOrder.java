@@ -1,6 +1,6 @@
 package com.serveflow.web.controller.order;
 
-import com.serveflow.web.dto.order.request.CreateOrderInput;
+import com.serveflow.web.dto.order.request.OrderInput;
 import com.serveflow.web.dto.order.response.OrderOutput;
 import com.serveflow.web.facade.OrderWebFacade;
 import jakarta.validation.Valid;
@@ -22,7 +22,7 @@ public class CreateOrder {
     }
 
     @PostMapping
-    public ResponseEntity<OrderOutput> handle(@RequestBody @Valid CreateOrderInput request) {
+    public ResponseEntity<OrderOutput> handle(@RequestBody @Valid OrderInput request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(facade.create(request));
     }
 }
