@@ -2,7 +2,7 @@ package com.serveflow.web.controller.product;
 
 import com.serveflow.web.dto.product.request.ProductInput;
 import com.serveflow.web.dto.product.response.ProductOutput;
-import com.serveflow.web.facade.ProductWebFacade;
+import com.serveflow.web.facade.product.editor.ProductEditor;
 import com.serveflow.web.validation.product.OnUpdate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -13,9 +13,9 @@ import java.util.UUID;
 @RequestMapping("/api/v1/products")
 public class UpdateProduct {
 
-    private ProductWebFacade facade;
+    private ProductEditor facade;
 
-    public UpdateProduct(ProductWebFacade pf) {
+    public UpdateProduct(ProductEditor pf) {
         this.facade = pf;
     }
 

@@ -1,7 +1,7 @@
 package com.serveflow.web.controller.product;
 
 import com.serveflow.web.dto.product.response.ProductOutput;
-import com.serveflow.web.facade.ProductWebFacade;
+import com.serveflow.web.facade.product.finder.ProductFinder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,9 +13,9 @@ import java.util.UUID;
 @RequestMapping("/api/v1/products")
 public class FindProductById {
 
-    private ProductWebFacade facade;
+    private ProductFinder facade;
 
-    public FindProductById(ProductWebFacade facade) {
+    public FindProductById(ProductFinder facade) {
         this.facade = facade;
     }
 
