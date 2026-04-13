@@ -29,6 +29,8 @@ public class Product {
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    private Long version;
+
     public void deactivate() {
         this.active = false;
     }
