@@ -1,5 +1,6 @@
 package com.serveflow.data.repository.product;
 
+import com.serveflow.data.entity.product.ProductEntity;
 import com.serveflow.data.mapper.product.ProductMapper;
 import com.serveflow.domain.exception.ProductNotFoundException;
 import com.serveflow.domain.model.product.Product;
@@ -26,7 +27,17 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     @Transactional
     public Product save(Product product) {
-        var entity = mapper.toEntity(product);
+        boolean isNew = product.getVersion() == null;
+        ProductEntity entity;
+
+        if (isNew) {
+            entity = mapper.toEntity(product);
+        } else {
+            entity = springRepository.findById(product.getId())
+                    .orElseThrow(() -> new ProductNotFoundException(product.getId()));
+            mapper.updateEntity(entity, product);
+        }
+
         var saved = springRepository.save(entity);
         return mapper.toDomain(saved);
     }

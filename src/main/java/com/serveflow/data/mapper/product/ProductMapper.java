@@ -10,17 +10,18 @@ import java.util.List;
 public class ProductMapper {
 
     public Product toDomain(ProductEntity entity) {
-        return new Product(
-                entity.getIdProduct(),
-                entity.getName(),
-                entity.getDescription(),
-                entity.getCategory(),
-                entity.getBrand(),
-                entity.getPrice(),
-                entity.getPortion(),
-                entity.isActive(),
-                entity.getCreatedAt()
-        );
+        return Product.builder()
+                .id(entity.getIdProduct())
+                .name(entity.getName())
+                .description(entity.getDescription())
+                .category(entity.getCategory())
+                .brand(entity.getBrand())
+                .price(entity.getPrice())
+                .portion(entity.getPortion())
+                .active(entity.isActive())
+                .createdAt(entity.getCreatedAt())
+                .version(entity.getVersion())
+                .build();
     }
 
     public ProductEntity toEntity(Product product) {
@@ -34,6 +35,17 @@ public class ProductMapper {
         entity.setPortion(product.getPortion());
         entity.setActive(product.isActive());
         entity.setCreatedAt(product.getCreatedAt());
+        return entity;
+    }
+
+    public ProductEntity updateEntity(ProductEntity entity, Product product) {
+        entity.setName(product.getName());
+        entity.setDescription(product.getDescription());
+        entity.setCategory(product.getCategory());
+        entity.setBrand(product.getBrand());
+        entity.setPrice(product.getPrice());
+        entity.setPortion(product.getPortion());
+        entity.setActive(product.isActive());
         return entity;
     }
 
