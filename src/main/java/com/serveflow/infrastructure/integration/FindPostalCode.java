@@ -2,7 +2,7 @@ package com.serveflow.infrastructure.integration;
 
 import com.serveflow.domain.model.address.Address;
 import com.serveflow.domain.repository.AddressRepository;
-import com.serveflow.web.dto.address.AddressResponseDTO;
+import com.serveflow.web.dto.address.response.AddressOutPut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -40,10 +40,10 @@ public class FindPostalCode implements AddressRepository {
 
     private Optional<Address> executeLookup(String cep) {
         try {
-            AddressResponseDTO response = restClient.get()
+            AddressOutPut response = restClient.get()
                     .uri(VIACEP_URL, cep)
                     .retrieve()
-                    .body(AddressResponseDTO.class);
+                    .body(AddressOutPut.class);
 
             if (response == null || response.erro()) {
                 return Optional.empty();

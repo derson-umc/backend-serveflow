@@ -1,6 +1,6 @@
 package com.serveflow.web.dto.order.request;
 
-import com.serveflow.web.dto.address.AddressRequestDTO;
+import com.serveflow.web.dto.address.request.AddressInput;
 import com.serveflow.web.validation.address.MustHaveValidAddress;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -16,7 +16,7 @@ public record OrderInput(
         String customerName,
 
         @Valid
-        AddressRequestDTO address,
+        AddressInput address,
 
         @NotNull(message = "Tipo do pedido é obrigatório. (DELIVERY ou LOCAL)")
         String type,
