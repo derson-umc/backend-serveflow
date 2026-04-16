@@ -17,12 +17,12 @@ public class StockItem {
 
     public StockItem(UUID id, String name, String unit, BigDecimal currentQuantity,
                      BigDecimal minimumQuantity, LocalDateTime createdAt, Long version) {
-        this.id = Objects.requireNonNull(id, "ID do insumo e obrigatorio.");
+        this.id = Objects.requireNonNull(id, "ID do insumo e obrigatório.");
         setName(name);
         setUnit(unit);
-        this.currentQuantity = Objects.requireNonNull(currentQuantity, "Quantidade atual e obrigatoria.");
-        this.minimumQuantity = Objects.requireNonNull(minimumQuantity, "Quantidade minima e obrigatoria.");
-        this.createdAt = Objects.requireNonNull(createdAt, "Data de criacao e obrigatoria.");
+        this.currentQuantity = Objects.requireNonNull(currentQuantity, "Quantidade atual e obrigatória.");
+        this.minimumQuantity = Objects.requireNonNull(minimumQuantity, "Quantidade minima e obrigatória.");
+        this.createdAt = Objects.requireNonNull(createdAt, "Data de criacao e obrigatória.");
         this.version = version;
     }
 
@@ -36,21 +36,21 @@ public class StockItem {
     }
 
     public void deduct(BigDecimal quantity) {
-        Objects.requireNonNull(quantity, "Quantidade a deduzir e obrigatoria.");
+        Objects.requireNonNull(quantity, "Quantidade a deduzir e obrigatória.");
         if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Quantidade a deduzir deve ser maior que zero.");
         }
         if (currentQuantity.compareTo(quantity) < 0) {
             throw new IllegalStateException(
                     "Estoque insuficiente para '" + name + "'. "
-                            + "Disponivel: " + currentQuantity + " " + unit
+                            + "Disponível: " + currentQuantity + " " + unit
                             + ", Requerido: " + quantity + " " + unit + ".");
         }
         this.currentQuantity = this.currentQuantity.subtract(quantity);
     }
 
     public void add(BigDecimal quantity) {
-        Objects.requireNonNull(quantity, "Quantidade a adicionar e obrigatoria.");
+        Objects.requireNonNull(quantity, "Quantidade a adicionar e obrigatória.");
         if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Quantidade a adicionar deve ser maior que zero.");
         }
@@ -71,13 +71,33 @@ public class StockItem {
         this.minimumQuantity = Objects.requireNonNull(minimumQuantity);
     }
 
-    public UUID getId() { return id; }
-    public String getName() { return name; }
-    public String getUnit() { return unit; }
-    public BigDecimal getCurrentQuantity() { return currentQuantity; }
-    public BigDecimal getMinimumQuantity() { return minimumQuantity; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public Long getVersion() { return version; }
+    public UUID getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public BigDecimal getCurrentQuantity() {
+        return currentQuantity;
+    }
+
+    public BigDecimal getMinimumQuantity() {
+        return minimumQuantity;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -87,17 +107,19 @@ public class StockItem {
     }
 
     @Override
-    public int hashCode() { return id.hashCode(); }
+    public int hashCode() {
+        return id.hashCode();
+    }
 
     private void setName(String name) {
         if (name == null || name.isBlank())
-            throw new IllegalArgumentException("Nome do insumo e obrigatorio.");
+            throw new IllegalArgumentException("Nome do insumo e obrigatória.");
         this.name = name.strip();
     }
 
     private void setUnit(String unit) {
         if (unit == null || unit.isBlank())
-            throw new IllegalArgumentException("Unidade de medida e obrigatoria.");
+            throw new IllegalArgumentException("Unidade de medida e obrigatória.");
         this.unit = unit.strip();
     }
 }

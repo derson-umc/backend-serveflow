@@ -1,5 +1,6 @@
 package com.serveflow.web.controller.stock;
 
+import com.serveflow.domain.exception.RecipeNotFound;
 import com.serveflow.domain.model.stock.*;
 import com.serveflow.domain.repository.*;
 import com.serveflow.web.dto.stock.request.ProductRecipeInput;
@@ -101,7 +102,7 @@ public class StockController {
     @GetMapping("/recipes/product/{productId}")
     public ResponseEntity<ProductRecipeOutPut> findRecipeByProduct(@PathVariable UUID productId) {
         com.serveflow.domain.model.stock.ProductRecipe recipe = recipeRepository.findByProductId(productId)
-                .orElseThrow(() -> new com.serveflow.domain.exception.RecipeNotFoundException(productId));
+                .orElseThrow(() -> new RecipeNotFound(productId));
         return ResponseEntity.ok(toResponse(recipe));
     }
 

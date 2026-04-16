@@ -14,8 +14,8 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleProductNotFound(ProductNotFoundException ex) {
+    @ExceptionHandler(ProductNotFound.class)
+    public ResponseEntity<Map<String, Object>> handleProductNotFound(ProductNotFound ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
@@ -34,28 +34,28 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(body);
     }
 
-    @ExceptionHandler(OrderNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleOrderNotFound(OrderNotFoundException ex) {
+    @ExceptionHandler(OrderNotFound.class)
+    public ResponseEntity<Map<String, Object>> handleOrderNotFound(OrderNotFound ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(MenuNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleMenuNotFound(MenuNotFoundException ex) {
+    @ExceptionHandler(MenuNotFound.class)
+    public ResponseEntity<Map<String, Object>> handleMenuNotFound(MenuNotFound ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(StockItemNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleStockItemNotFound(StockItemNotFoundException ex) {
+    @ExceptionHandler(StockItemNotFound.class)
+    public ResponseEntity<Map<String, Object>> handleStockItemNotFound(StockItemNotFound ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(RecipeNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleRecipeNotFound(RecipeNotFoundException ex) {
+    @ExceptionHandler(RecipeNotFound.class)
+    public ResponseEntity<Map<String, Object>> handleRecipeNotFound(RecipeNotFound ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(InsufficientStockException.class)
-    public ResponseEntity<Map<String, Object>> handleInsufficientStock(InsufficientStockException ex) {
+    @ExceptionHandler(InsufficientStock.class)
+    public ResponseEntity<Map<String, Object>> handleInsufficientStock(InsufficientStock ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 

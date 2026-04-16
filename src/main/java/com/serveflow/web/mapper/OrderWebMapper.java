@@ -1,6 +1,12 @@
 package com.serveflow.web.mapper;
 
 import com.serveflow.domain.model.address.Address;
+import com.serveflow.domain.model.address.Cep;
+import com.serveflow.domain.model.address.City;
+import com.serveflow.domain.model.address.Complement;
+import com.serveflow.domain.model.address.Number;
+import com.serveflow.domain.model.address.State;
+import com.serveflow.domain.model.address.Street;
 import com.serveflow.domain.model.order.*;
 import com.serveflow.web.dto.address.request.AddressInput;
 import com.serveflow.web.dto.order.request.OrderInput;
@@ -33,9 +39,13 @@ public class OrderWebMapper {
                 && dto.state() != null && !dto.state().isBlank()
                 && dto.number() != null && !dto.number().isBlank();
         if (!hasManualFields) return null;
-        return new Address(
-                dto.cep(), dto.street(), dto.city(),
-                dto.state(), dto.number(), dto.complement()
+        return Address.create(
+                dto.cep() != null && !dto.cep().isBlank() ? new Cep(dto.cep()) : null,
+                new Street(dto.street()),
+                new City(dto.city()),
+                new State(dto.state()),
+                new Number(dto.number()),
+                dto.complement() != null && !dto.complement().isBlank() ? new Complement(dto.complement()) : null
         );
     }
 
@@ -81,12 +91,16 @@ public class OrderWebMapper {
     }
 
     private OrderOutput.AddressOutput toAddressOutput(Address address) {
-        return address != null
-                ? new OrderOutput.AddressOutput(
-                address.getId(), address.getCep(), address.getStreet(),
-                address.getCity(), address.getState(), address.getNumber(),
-                address.getComplement())
-                : null;
+        if (address == null) return null;
+        return new OrderOutput.AddressOutput(
+                address.getId(),
+                address.getCep() != null ? address.getCep().getValue() : null,
+                address.getStreet() != null ? address.getStreet().getValue() : null,
+                address.getCity() != null ? address.getCity().getValue() : null,
+                address.getState() != null ? address.getState().getValue().name() : null,
+                address.getNumber() != null ? address.getNumber().getValue() : null,
+                address.getComplement() != null ? address.getComplement().getValue() : null
+        );
     }
 
     private List<OrderOutput.OrderItemOutput> toItemsOutput(List<OrderItem> items) {

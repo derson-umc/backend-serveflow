@@ -15,8 +15,8 @@ public class MenuItem {
 
     public MenuItem(UUID id, UUID productId, String name, String description,
                     BigDecimal price, boolean available) {
-        this.id = Objects.requireNonNull(id, "ID do item do menu e obrigatorio.");
-        this.productId = Objects.requireNonNull(productId, "ID do produto e obrigatorio.");
+        this.id = Objects.requireNonNull(id, "ID do item do menu e obrigatório.");
+        this.productId = Objects.requireNonNull(productId, "ID do produto e obrigatório.");
         setName(name);
         this.description = description;
         setPrice(price);
@@ -41,11 +41,25 @@ public class MenuItem {
         return available;
     }
 
-    public UUID getId() { return id; }
-    public UUID getProductId() { return productId; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public BigDecimal getPrice() { return price; }
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getProductId() {
+        return productId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -55,17 +69,19 @@ public class MenuItem {
     }
 
     @Override
-    public int hashCode() { return id.hashCode(); }
+    public int hashCode() {
+        return id.hashCode();
+    }
 
     private void setName(String name) {
         if (name == null || name.isBlank())
-            throw new IllegalArgumentException("Nome do item do menu e obrigatorio.");
+            throw new IllegalArgumentException("Nome do item do menu e obrigatório.");
         this.name = name.strip();
     }
 
     private void setPrice(BigDecimal price) {
         if (price == null || price.compareTo(BigDecimal.ZERO) <= 0)
-            throw new IllegalArgumentException("Preco deve ser maior que zero.");
+            throw new IllegalArgumentException("Preço deve ser maior que zero.");
         this.price = price;
     }
 }

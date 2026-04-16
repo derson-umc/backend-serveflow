@@ -15,12 +15,12 @@ public class Menu {
 
     public Menu(UUID id, String name, MenuStatus status, UUID activeOrderId,
                 List<MenuItem> items, LocalDateTime createdAt, Long version) {
-        this.id = Objects.requireNonNull(id, "ID do menu e obrigatorio.");
+        this.id = Objects.requireNonNull(id, "ID do menu e obrigatório.");
         setName(name);
-        this.status = Objects.requireNonNull(status, "Status do menu e obrigatorio.");
+        this.status = Objects.requireNonNull(status, "Status do menu e obrigatório.");
         this.activeOrderId = activeOrderId;
         this.items = new ArrayList<>(Optional.ofNullable(items).orElse(List.of()));
-        this.createdAt = Objects.requireNonNull(createdAt, "Data de criacao e obrigatoria.");
+        this.createdAt = Objects.requireNonNull(createdAt, "Data de criação e obrigatória.");
         this.version = version;
     }
 
@@ -37,10 +37,10 @@ public class Menu {
     }
 
     public void lock(UUID orderId) {
-        Objects.requireNonNull(orderId, "ID do pedido e obrigatorio para travar o menu.");
+        Objects.requireNonNull(orderId, "ID do pedido e obrigatório para travar o menu.");
         if (status == MenuStatus.LOCKED) {
             throw new IllegalStateException(
-                    "Menu ja esta travado pelo pedido " + activeOrderId + ".");
+                    "Menu já esta travado pelo pedido " + activeOrderId + ".");
         }
         this.status = MenuStatus.LOCKED;
         this.activeOrderId = orderId;
@@ -64,11 +64,11 @@ public class Menu {
                 .filter(item -> item.getId().equals(menuItemId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Item " + menuItemId + " nao encontrado no menu."));
+                        "Item " + menuItemId + " não encontrado no menu."));
     }
 
     public void addItem(MenuItem item) {
-        Objects.requireNonNull(item, "Item nao pode ser nulo.");
+        Objects.requireNonNull(item, "Item não pode ser nulo.");
         items.add(item);
     }
 
@@ -81,13 +81,33 @@ public class Menu {
         return items.stream().filter(MenuItem::isAvailable).toList();
     }
 
-    public UUID getId() { return id; }
-    public String getName() { return name; }
-    public MenuStatus getStatus() { return status; }
-    public UUID getActiveOrderId() { return activeOrderId; }
-    public List<MenuItem> getItems() { return List.copyOf(items); }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public Long getVersion() { return version; }
+    public UUID getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public MenuStatus getStatus() {
+        return status;
+    }
+
+    public UUID getActiveOrderId() {
+        return activeOrderId;
+    }
+
+    public List<MenuItem> getItems() {
+        return List.copyOf(items);
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -97,11 +117,13 @@ public class Menu {
     }
 
     @Override
-    public int hashCode() { return id.hashCode(); }
+    public int hashCode() {
+        return id.hashCode();
+    }
 
     private void setName(String name) {
         if (name == null || name.isBlank())
-            throw new IllegalArgumentException("Nome do menu e obrigatorio.");
+            throw new IllegalArgumentException("Nome do menu e obrigatório.");
         this.name = name.strip();
     }
 }

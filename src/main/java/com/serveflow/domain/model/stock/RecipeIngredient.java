@@ -14,13 +14,13 @@ public class RecipeIngredient {
 
     public RecipeIngredient(UUID id, UUID stockItemId, String stockItemName,
                             BigDecimal quantityPerUnit, String unit) {
-        this.id = Objects.requireNonNull(id, "ID do ingrediente e obrigatorio.");
-        this.stockItemId = Objects.requireNonNull(stockItemId, "ID do insumo e obrigatorio.");
-        this.stockItemName = Objects.requireNonNull(stockItemName, "Nome do insumo e obrigatorio.");
+        this.id = Objects.requireNonNull(id, "ID do ingrediente e obrigatório.");
+        this.stockItemId = Objects.requireNonNull(stockItemId, "ID do insumo e obrigatório.");
+        this.stockItemName = Objects.requireNonNull(stockItemName, "Nome do insumo e obrigatório.");
         if (quantityPerUnit == null || quantityPerUnit.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Quantidade por unidade deve ser maior que zero.");
         this.quantityPerUnit = quantityPerUnit;
-        this.unit = Objects.requireNonNull(unit, "Unidade de medida e obrigatoria.");
+        this.unit = Objects.requireNonNull(unit, "Unidade de medida e obrigatória.");
     }
 
     public static RecipeIngredient create(UUID stockItemId, String stockItemName,
@@ -32,11 +32,25 @@ public class RecipeIngredient {
         return quantityPerUnit.multiply(BigDecimal.valueOf(productQuantity));
     }
 
-    public UUID getId() { return id; }
-    public UUID getStockItemId() { return stockItemId; }
-    public String getStockItemName() { return stockItemName; }
-    public BigDecimal getQuantityPerUnit() { return quantityPerUnit; }
-    public String getUnit() { return unit; }
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getStockItemId() {
+        return stockItemId;
+    }
+
+    public String getStockItemName() {
+        return stockItemName;
+    }
+
+    public BigDecimal getQuantityPerUnit() {
+        return quantityPerUnit;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -46,5 +60,7 @@ public class RecipeIngredient {
     }
 
     @Override
-    public int hashCode() { return id.hashCode(); }
+    public int hashCode() {
+        return id.hashCode();
+    }
 }

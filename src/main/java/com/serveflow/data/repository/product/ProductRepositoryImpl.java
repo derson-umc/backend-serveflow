@@ -2,7 +2,7 @@ package com.serveflow.data.repository.product;
 
 import com.serveflow.data.entity.product.ProductEntity;
 import com.serveflow.data.mapper.product.ProductMapper;
-import com.serveflow.domain.exception.ProductNotFoundException;
+import com.serveflow.domain.exception.ProductNotFound;
 import com.serveflow.domain.model.product.Product;
 import com.serveflow.domain.repository.ProductRepository;
 import org.springframework.stereotype.Repository;
@@ -34,7 +34,7 @@ public class ProductRepositoryImpl implements ProductRepository {
             entity = mapper.toEntity(product);
         } else {
             entity = springRepository.findById(product.getId())
-                    .orElseThrow(() -> new ProductNotFoundException(product.getId()));
+                    .orElseThrow(() -> new ProductNotFound(product.getId()));
             mapper.updateEntity(entity, product);
         }
 
@@ -57,7 +57,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     public Product findById(UUID id) {
         return springRepository.findById(id)
                 .map(mapper::toDomain)
-                .orElseThrow(() -> new ProductNotFoundException(id));
+                .orElseThrow(() -> new ProductNotFound(id));
     }
 
     @Override
@@ -69,7 +69,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Transactional
     public void deactivate(UUID id) {
         var entity = springRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException(id));
+                .orElseThrow(() -> new ProductNotFound(id));
         entity.setActive(false);
         springRepository.save(entity);
     }

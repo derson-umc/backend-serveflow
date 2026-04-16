@@ -18,15 +18,15 @@ public class StockMovement {
     public StockMovement(UUID id, UUID stockItemId, MovementType type,
                          BigDecimal quantity, String reason,
                          UUID referenceId, LocalDateTime createdAt) {
-        this.id = Objects.requireNonNull(id, "ID da movimentacao e obrigatorio.");
-        this.stockItemId = Objects.requireNonNull(stockItemId, "ID do insumo e obrigatorio.");
-        this.type = Objects.requireNonNull(type, "Tipo de movimentacao e obrigatorio.");
+        this.id = Objects.requireNonNull(id, "ID da movimentação e obrigatória.");
+        this.stockItemId = Objects.requireNonNull(stockItemId, "ID do insumo e obrigatório.");
+        this.type = Objects.requireNonNull(type, "Tipo de movimentação e obrigatório.");
         if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Quantidade deve ser maior que zero.");
         this.quantity = quantity;
         this.reason = reason;
         this.referenceId = referenceId;
-        this.createdAt = Objects.requireNonNull(createdAt, "Data de criacao e obrigatoria.");
+        this.createdAt = Objects.requireNonNull(createdAt, "Data de criação e obrigatório.");
     }
 
     public static StockMovement createEntry(UUID stockItemId, BigDecimal quantity,
@@ -45,16 +45,41 @@ public class StockMovement {
         );
     }
 
-    public boolean isEntry() { return type == MovementType.ENTRY; }
-    public boolean isExit() { return type == MovementType.EXIT; }
+    public boolean isEntry() {
+        return type == MovementType.ENTRY;
+    }
 
-    public UUID getId() { return id; }
-    public UUID getStockItemId() { return stockItemId; }
-    public MovementType getType() { return type; }
-    public BigDecimal getQuantity() { return quantity; }
-    public String getReason() { return reason; }
-    public UUID getReferenceId() { return referenceId; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public boolean isExit() {
+        return type == MovementType.EXIT;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getStockItemId() {
+        return stockItemId;
+    }
+
+    public MovementType getType() {
+        return type;
+    }
+
+    public BigDecimal getQuantity() {
+        return quantity;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public UUID getReferenceId() {
+        return referenceId;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -64,5 +89,7 @@ public class StockMovement {
     }
 
     @Override
-    public int hashCode() { return id.hashCode(); }
+    public int hashCode() {
+        return id.hashCode();
+    }
 }
