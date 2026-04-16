@@ -5,6 +5,12 @@ import com.serveflow.data.entity.order.ItemAdditionalEntity;
 import com.serveflow.data.entity.order.OrderEntity;
 import com.serveflow.data.entity.order.OrderItemEntity;
 import com.serveflow.domain.model.address.Address;
+import com.serveflow.domain.model.address.Cep;
+import com.serveflow.domain.model.address.City;
+import com.serveflow.domain.model.address.Complement;
+import com.serveflow.domain.model.address.Number;
+import com.serveflow.domain.model.address.State;
+import com.serveflow.domain.model.address.Street;
 import com.serveflow.domain.model.order.*;
 import org.springframework.stereotype.Component;
 import java.util.function.Function;
@@ -46,7 +52,15 @@ public class OrderMapper {
     }
 
     private Address toDomain(AddressEntity e) {
-        return new Address(e.getIdAddress(), e.getCep(), e.getStreet(), e.getCity(), e.getState(), e.getNumber(), e.getComplement());
+        return Address.withId(
+                e.getIdAddress(),
+                e.getCep() != null ? new Cep(e.getCep()) : null,
+                new Street(e.getStreet()),
+                new City(e.getCity()),
+                new State(e.getState()),
+                new Number(e.getNumber()),
+                e.getComplement() != null ? new Complement(e.getComplement()) : null
+        );
     }
 
     public OrderEntity toEntity(Order order) {
@@ -111,12 +125,12 @@ public class OrderMapper {
     private AddressEntity toAddressEntity(Address a) {
         var entity = new AddressEntity();
         entity.setIdAddress(a.getId());
-        entity.setCep(a.getCep());
-        entity.setStreet(a.getStreet());
-        entity.setCity(a.getCity());
-        entity.setState(a.getState());
-        entity.setNumber(a.getNumber());
-        entity.setComplement(a.getComplement());
+        entity.setCep(a.getCep() != null ? a.getCep().getValue() : null);
+        entity.setStreet(a.getStreet() != null ? a.getStreet().getValue() : null);
+        entity.setCity(a.getCity() != null ? a.getCity().getValue() : null);
+        entity.setState(a.getState() != null ? a.getState().getValue().name() : null);
+        entity.setNumber(a.getNumber() != null ? a.getNumber().getValue() : null);
+        entity.setComplement(a.getComplement() != null ? a.getComplement().getValue() : null);
         return entity;
     }
 

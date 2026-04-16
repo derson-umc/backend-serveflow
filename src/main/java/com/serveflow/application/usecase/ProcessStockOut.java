@@ -1,7 +1,7 @@
 package com.serveflow.application.usecase;
 
 import com.serveflow.domain.event.OrderConfirmedEvent;
-import com.serveflow.domain.exception.RecipeNotFoundException;
+import com.serveflow.domain.exception.RecipeNotFound;
 import com.serveflow.domain.model.stock.ProductRecipe;
 import com.serveflow.domain.model.stock.StockItem;
 import com.serveflow.domain.model.stock.StockMovement;
@@ -32,7 +32,7 @@ public class ProcessStockOut {
     public void execute(OrderConfirmedEvent event) {
         for (var item : event.items()) {
             ProductRecipe recipe = recipeRepository.findByProductId(item.productId())
-                    .orElseThrow(() -> new RecipeNotFoundException(item.productId()));
+                    .orElseThrow(() -> new RecipeNotFound(item.productId()));
 
             for (var ingredient : recipe.getIngredients()) {
                 BigDecimal required = ingredient.getRequiredQuantity(item.quantity());

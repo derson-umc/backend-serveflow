@@ -2,7 +2,7 @@ package com.serveflow.data.repository.order;
 
 import com.serveflow.data.entity.order.OrderEntity;
 import com.serveflow.data.mapper.OrderMapper;
-import com.serveflow.domain.exception.OrderNotFoundException;
+import com.serveflow.domain.exception.OrderNotFound;
 import com.serveflow.domain.model.order.Order;
 import com.serveflow.domain.model.order.OrderStatus;
 import com.serveflow.domain.repository.OrderRepository;
@@ -34,7 +34,7 @@ public class OrderRepositoryImpl implements OrderRepository {
             entity = mapper.toEntity(order);
         } else {
             entity = springRepository.findById(order.getId())
-                    .orElseThrow(() -> new OrderNotFoundException(order.getId()));
+                    .orElseThrow(() -> new OrderNotFound(order.getId()));
             mapper.updateEntity(entity, order);
         }
 
@@ -45,7 +45,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     public Order findById(UUID id) {
         return springRepository.findById(id)
                 .map(mapper::toDomain)
-                .orElseThrow(() -> new OrderNotFoundException(id));
+                .orElseThrow(() -> new OrderNotFound(id));
     }
 
     @Override

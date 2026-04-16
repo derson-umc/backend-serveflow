@@ -13,11 +13,11 @@ public class ItemAdditional {
 
     public ItemAdditional(String name, int quantity, BigDecimal unitPrice) {
         if (name == null || name.isBlank())
-            throw new IllegalArgumentException("Nome do adicional e obrigatorio.");
+            throw new IllegalArgumentException("Nome do adicional e obrigatório.");
         if (quantity <= 0)
             throw new IllegalArgumentException("Quantidade do adicional deve ser maior que zero.");
         if (unitPrice == null || unitPrice.compareTo(BigDecimal.ZERO) <= 0)
-            throw new IllegalArgumentException("Preco do adicional deve ser maior que zero.");
+            throw new IllegalArgumentException("Preço do adicional deve ser maior que zero.");
 
         this.id = UUID.randomUUID();
         this.name = name.strip();

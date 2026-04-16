@@ -3,6 +3,8 @@ package com.serveflow.domain.service;
 import com.serveflow.domain.event.DomainEventPublisher;
 import com.serveflow.domain.event.OrderConfirmedEvent;
 import com.serveflow.domain.model.address.Address;
+import com.serveflow.domain.model.address.Complement;
+import com.serveflow.domain.model.address.Number;
 import com.serveflow.domain.model.order.Order;
 import com.serveflow.domain.model.order.OrderItem;
 import com.serveflow.domain.model.order.OrderStatus;
@@ -34,13 +36,13 @@ public class OrderService {
     public Address resolveAddress(String cep, String number, String complement, Address manualAddress) {
         if (cep != null && !cep.isBlank()) {
             return addressLookupService.findByCep(cep)
-                    .map(resolved -> new Address(
+                    .map(resolved -> Address.create(
                             resolved.getCep(),
                             resolved.getStreet(),
                             resolved.getCity(),
                             resolved.getState(),
-                            number != null ? number : "",
-                            complement
+                            new Number(number != null && !number.isBlank() ? number : "S/N"),
+                            complement != null && !complement.isBlank() ? new Complement(complement) : null
                     ))
                     .orElse(manualAddress);
         }

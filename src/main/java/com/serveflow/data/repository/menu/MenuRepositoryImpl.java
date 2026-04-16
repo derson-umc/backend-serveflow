@@ -1,7 +1,7 @@
 package com.serveflow.data.repository.menu;
 
 import com.serveflow.data.mapper.MenuMapper;
-import com.serveflow.domain.exception.MenuNotFoundException;
+import com.serveflow.domain.exception.MenuNotFound;
 import com.serveflow.domain.model.menu.Menu;
 import com.serveflow.domain.repository.MenuRepository;
 import org.springframework.stereotype.Repository;
@@ -30,7 +30,7 @@ public class MenuRepositoryImpl implements MenuRepository {
                 ? mapper.toEntity(menu)
                 : mapper.updateEntity(
                     springRepository.findById(menu.getId())
-                        .orElseThrow(() -> new MenuNotFoundException(menu.getId())),
+                        .orElseThrow(() -> new MenuNotFound(menu.getId())),
                     menu);
 
         var saved = springRepository.save(entity);
@@ -41,7 +41,7 @@ public class MenuRepositoryImpl implements MenuRepository {
     public Menu findById(UUID id) {
         return springRepository.findById(id)
                 .map(mapper::toDomain)
-                .orElseThrow(() -> new MenuNotFoundException(id));
+                .orElseThrow(() -> new MenuNotFound(id));
     }
 
     @Override

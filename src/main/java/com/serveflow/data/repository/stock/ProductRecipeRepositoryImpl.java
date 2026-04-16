@@ -1,7 +1,7 @@
 package com.serveflow.data.repository.stock;
 
 import com.serveflow.data.mapper.StockMapper;
-import com.serveflow.domain.exception.RecipeNotFoundException;
+import com.serveflow.domain.exception.RecipeNotFound;
 import com.serveflow.domain.model.stock.ProductRecipe;
 import com.serveflow.domain.repository.ProductRecipeRepository;
 import org.springframework.stereotype.Repository;
@@ -43,7 +43,7 @@ public class ProductRecipeRepositoryImpl implements ProductRecipeRepository {
     public ProductRecipe findById(UUID id) {
         return springRepository.findById(id)
                 .map(mapper::toDomain)
-                .orElseThrow(() -> new RecipeNotFoundException(id));
+                .orElseThrow(() -> new RecipeNotFound(id));
     }
 
     @Override

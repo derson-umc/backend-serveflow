@@ -1,7 +1,7 @@
 package com.serveflow.data.repository.stock;
 
 import com.serveflow.data.mapper.StockMapper;
-import com.serveflow.domain.exception.StockItemNotFoundException;
+import com.serveflow.domain.exception.StockItemNotFound;
 import com.serveflow.domain.model.stock.StockItem;
 import com.serveflow.domain.repository.StockItemRepository;
 import org.springframework.stereotype.Repository;
@@ -36,7 +36,7 @@ public class StockItemRepositoryImpl implements StockItemRepository {
     public StockItem findById(UUID id) {
         return springRepository.findById(id)
                 .map(mapper::toDomain)
-                .orElseThrow(() -> new StockItemNotFoundException(id));
+                .orElseThrow(() -> new StockItemNotFound(id));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class StockItemRepositoryImpl implements StockItemRepository {
     public StockItem findByIdForUpdate(UUID id) {
         return springRepository.findByIdForUpdate(id)
                 .map(mapper::toDomain)
-                .orElseThrow(() -> new StockItemNotFoundException(id));
+                .orElseThrow(() -> new StockItemNotFound(id));
     }
 
     @Override

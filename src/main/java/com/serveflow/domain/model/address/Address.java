@@ -1,58 +1,48 @@
 package com.serveflow.domain.model.address;
 
-import java.util.Objects;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
 import java.util.UUID;
 
+@Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Address {
 
-    private UUID id;
-    private final String cep;
-    private final String street;
-    private final String city;
-    private final String state;
-    private final String number;
-    private final String complement;
+    @EqualsAndHashCode.Include
+    private final UUID id;
 
-    public Address(String cep, String street, String city, String state,
-                   String number, String complement) {
-        if (street == null || street.isBlank())
-            throw new IllegalArgumentException("Rua e obrigatoria.");
-        if (city == null || city.isBlank())
-            throw new IllegalArgumentException("Cidade e obrigatoria.");
-        if (state == null || state.isBlank())
-            throw new IllegalArgumentException("Estado e obrigatorio.");
-        if (number == null)
-            throw new IllegalArgumentException("Numero e obrigatorio.");
+    private final Cep cep;
+    private final Street street;
+    private final City city;
+    private final State state;
+    private final Number number;
+    private final Complement complement;
 
-        this.cep = cep != null ? cep.strip() : null;
-        this.street = street.strip();
-        this.city = city.strip();
-        this.state = state.strip();
-        this.number = number.strip();
-        this.complement = complement != null ? complement.strip() : null;
-    }
+    private Address(UUID id, Cep cep, Street street, City city,
+                    State state, Number number, Complement complement) {
 
-    public Address(UUID id, String cep, String street, String city, String state,
-                   String number, String complement) {
-        this(cep, street, city, state, number, complement);
+        if (street == null) throw new IllegalArgumentException("Rua é obrigatória.");
+        if (city == null) throw new IllegalArgumentException("Cidade é obrigatória.");
+        if (state == null) throw new IllegalArgumentException("Estado é obrigatório.");
+        if (number == null) throw new IllegalArgumentException("Número é obrigatório.");
+
         this.id = id;
+        this.cep = cep;
+        this.street = street;
+        this.city = city;
+        this.state = state;
+        this.number = number;
+        this.complement = complement;
     }
 
-    public UUID getId() { return id; }
-    public String getCep() { return cep; }
-    public String getStreet() { return street; }
-    public String getCity() { return city; }
-    public String getState() { return state; }
-    public String getNumber() { return number; }
-    public String getComplement() { return complement; }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Address other)) return false;
-        return id != null && id.equals(other.id);
+    public static Address create(Cep cep, Street street, City city,
+                                 State state, Number number, Complement complement) {
+        return new Address(null, cep, street, city, state, number, complement);
     }
 
-    @Override
-    public int hashCode() { return Objects.hash(id); }
+    public static Address withId(UUID id, Cep cep, Street street, City city,
+                                 State state, Number number, Complement complement) {
+        return new Address(id, cep, street, city, state, number, complement);
+    }
 }
