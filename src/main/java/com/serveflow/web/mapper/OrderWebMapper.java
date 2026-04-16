@@ -2,7 +2,7 @@ package com.serveflow.web.mapper;
 
 import com.serveflow.domain.model.address.Address;
 import com.serveflow.domain.model.order.*;
-import com.serveflow.web.dto.address.AddressRequestDTO;
+import com.serveflow.web.dto.address.request.AddressInput;
 import com.serveflow.web.dto.order.request.OrderInput;
 import com.serveflow.web.dto.order.request.ItemAdditionalInput;
 import com.serveflow.web.dto.order.request.OrderItemInput;
@@ -26,7 +26,7 @@ public class OrderWebMapper {
         return order;
     }
 
-    public Address toAddressDomain(AddressRequestDTO dto) {
+    public Address toAddressDomain(AddressInput dto) {
         if (dto == null) return null;
         boolean hasManualFields = dto.street() != null && !dto.street().isBlank()
                 && dto.city() != null && !dto.city().isBlank()

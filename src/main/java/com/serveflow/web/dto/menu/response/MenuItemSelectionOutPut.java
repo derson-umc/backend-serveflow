@@ -1,6 +1,6 @@
 package com.serveflow.web.dto.menu.response;
 
-import com.serveflow.web.dto.address.AddressRequestDTO;
+import com.serveflow.web.dto.address.request.AddressInput;
 import com.serveflow.web.dto.menu.request.MenuItemSelectionInput;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -19,7 +19,7 @@ public record MenuItemSelectionOutPut(
     String type,
 
     @Valid
-    AddressRequestDTO address,
+    AddressInput address,
 
     @Size(max = 500, message = "Observação deve ter no máximo 500 caracteres.")
     String observation,

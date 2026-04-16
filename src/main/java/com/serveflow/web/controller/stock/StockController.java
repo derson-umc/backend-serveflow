@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Valid
 @RestController
 @RequestMapping("/api/v1/stock")
 public class StockController {
@@ -30,8 +31,6 @@ public class StockController {
         this.recipeRepository = recipeRepository;
         this.movementRepository = movementRepository;
     }
-
-    // === Stock Items ===
 
     @PostMapping("/items")
     public ResponseEntity<StockItemOutPut> createItem(
@@ -71,8 +70,6 @@ public class StockController {
         return ResponseEntity.ok(toResponse(saved));
     }
 
-    // === Recipes (Fichas Tecnicas) ===
-
     @PostMapping("/recipes")
     public ResponseEntity<ProductRecipeOutPut> createRecipe(
             @RequestBody @Valid ProductRecipeInput request) {
@@ -108,8 +105,6 @@ public class StockController {
         return ResponseEntity.ok(toResponse(recipe));
     }
 
-    // === Movements ===
-
     @GetMapping("/movements/item/{stockItemId}")
     public ResponseEntity<List<StockMovementOutPut>> findMovementsByItem(@PathVariable UUID stockItemId) {
         List<StockMovementOutPut> movements = movementRepository.findByStockItemId(stockItemId).stream()
@@ -125,8 +120,6 @@ public class StockController {
                 .toList();
         return ResponseEntity.ok(movements);
     }
-
-    // === Mappers (inline, seguindo padrao do projeto) ===
 
     private StockItemOutPut toResponse(StockItem item) {
         return new StockItemOutPut(

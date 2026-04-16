@@ -15,5 +15,5 @@ public record ProductRecipeInput(
 
         @NotEmpty(message = "Ficha técnica deve conter ao menos um ingrediente.")
         @Valid
-        List<ProductRecipeInput> ingredients
+        List<RecipeIngredientInput> ingredients
 ) {}
