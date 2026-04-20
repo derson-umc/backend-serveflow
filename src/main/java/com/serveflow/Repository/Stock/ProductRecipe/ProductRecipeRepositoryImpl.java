@@ -1,8 +1,10 @@
-package com.serveflow.Repository.Stock;
+package com.serveflow.Repository.Stock.ProductRecipe;
 
 import com.serveflow.Exception.Stock.RecipeNotFound;
 import com.serveflow.Model.Stock.ProductRecipe;
 import com.serveflow.Model.Stock.RecipeIngredient;
+import com.serveflow.Repository.Stock.RecipeIngredient.RecipeIngredientEntity;
+import com.serveflow.Repository.Stock.RecipeIngredient.SpringProductRecipeRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

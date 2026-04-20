@@ -1,4 +1,4 @@
-package com.serveflow.Repository.Stock;
+package com.serveflow.Repository.Stock.StockItem;
 
 import com.serveflow.Exception.Stock.StockItemNotFound;
 import com.serveflow.Model.Stock.StockItem;
