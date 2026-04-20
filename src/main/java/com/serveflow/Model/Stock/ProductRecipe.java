@@ -1,0 +1,70 @@
+package com.serveflow.Model.Stock;
+
+import java.math.BigDecimal;
+import java.util.*;
+
+public class ProductRecipe {
+
+    private final UUID id;
+    private final UUID productId;
+    private final String productName;
+    private final List<RecipeIngredient> ingredients;
+    private Long version;
+
+    public ProductRecipe(UUID id, UUID productId, String productName,
+                         List<RecipeIngredient> ingredients, Long version) {
+        this.id = Objects.requireNonNull(id, "ID da ficha técnica é obrigatório.");
+        this.productId = Objects.requireNonNull(productId, "ID do produto é obrigatório.");
+        if (productName == null || productName.isBlank())
+            throw new IllegalArgumentException("Nome do produto é obrigatório.");
+        this.productName = productName.strip();
+        this.ingredients = new ArrayList<>(Optional.ofNullable(ingredients).orElse(List.of()));
+        this.version = version;
+    }
+
+    public static ProductRecipe create(UUID productId, String productName,
+                                       List<RecipeIngredient> ingredients) {
+        if (ingredients == null || ingredients.isEmpty())
+            throw new IllegalArgumentException("Ficha técnica deve conter ao menos um ingrediente.");
+        return new ProductRecipe(UUID.randomUUID(), productId, productName, ingredients, null);
+    }
+
+    public void addIngredient(RecipeIngredient ingredient) {
+        Objects.requireNonNull(ingredient, "Ingrediente não pode ser nulo.");
+        boolean alreadyExists = ingredients.stream()
+                .anyMatch(i -> i.getStockItemId().equals(ingredient.getStockItemId()));
+        if (alreadyExists)
+            throw new IllegalStateException("Insumo já existe nesta ficha técnica.");
+        ingredients.add(ingredient);
+    }
+
+    public void removeIngredient(UUID ingredientId) {
+        if (ingredients.size() <= 1)
+            throw new IllegalStateException("Ficha técnica deve conter ao menos um ingrediente.");
+        if (!ingredients.removeIf(i -> i.getId().equals(ingredientId)))
+            throw new IllegalArgumentException("Ingrediente não encontrado na ficha técnica.");
+    }
+
+    public boolean canPrepare(int quantity, Map<UUID, BigDecimal> stockLevels) {
+        return ingredients.stream().allMatch(ingredient -> {
+            var available = stockLevels.getOrDefault(ingredient.getStockItemId(), BigDecimal.ZERO);
+            return available.compareTo(ingredient.getRequiredQuantity(quantity)) >= 0;
+        });
+    }
+
+    public UUID getId()          { return id; }
+    public UUID getProductId()   { return productId; }
+    public String getProductName() { return productName; }
+    public List<RecipeIngredient> getIngredients() { return List.copyOf(ingredients); }
+    public Long getVersion()     { return version; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ProductRecipe other)) return false;
+        return id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() { return id.hashCode(); }
+}
