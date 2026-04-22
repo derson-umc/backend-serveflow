@@ -27,8 +27,12 @@ build/
 *.iml
 *.ipr
 
-# File containing access credentials
+# Credenciais e ambiente — NUNCA commitar
 .env
+*.env
+*.password
+.env.*
+!.env.example
 .claude
 
 # NetBeans
