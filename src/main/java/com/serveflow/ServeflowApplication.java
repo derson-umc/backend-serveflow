@@ -26,9 +26,14 @@ public class ServeflowApplication {
             @Value("${ROOT_USERNAME:root}") String rootUsername,
             @Value("${ROOT_PASSWORD}") String rootPassword) {
         return args -> {
-            if (repo.findByUsername(rootUsername).isEmpty()) {
+            var existing = repo.findByUsername(rootUsername);
+            if (existing.isEmpty()) {
                 repo.save(User.create(rootUsername, encoder.encode(rootPassword), UserRole.ROOT));
                 log.info("Usuário ROOT criado com sucesso");
+            } else if (!encoder.matches(rootPassword, existing.get().getPassword())) {
+                User updated = new User(existing.get().getId(), rootUsername, encoder.encode(rootPassword), UserRole.ROOT);
+                repo.save(updated);
+                log.info("Senha do usuário ROOT atualizada");
             }
         };
     }
