@@ -40,7 +40,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(allowedOriginsRaw.split(",")));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -57,12 +57,28 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // Público
                         .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/auth/forgot-password").permitAll()
+                        .requestMatchers("/auth/reset-password").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/users/**").hasRole("ADMIN")
+
+                        // Cadastro de usuários: apenas ADMIN/ROOT
+                        .requestMatchers(HttpMethod.POST, "/auth/register").hasAnyRole("ADMIN", "ROOT")
+                        .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("ADMIN", "ROOT")
+                        .requestMatchers(HttpMethod.PUT, "/users/**").hasAnyRole("ADMIN", "ROOT")
                         .requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("ROOT")
                         .requestMatchers(HttpMethod.GET, "/users/**").hasAnyRole("ADMIN", "ROOT")
+
+                        // Troca da própria senha: qualquer autenticado
+                        .requestMatchers("/auth/change-password").authenticated()
+
+                        // Módulos por perfil (RBAC)
+                        .requestMatchers("/menu/**").hasAnyRole("GARCON", "ADMIN", "ROOT", "COZINHEIRO")
+                        .requestMatchers("/kds/**").hasAnyRole("COZINHEIRO", "ADMIN", "ROOT")
+                        .requestMatchers("/cashier/**").hasAnyRole("CAIXA", "ADMIN", "ROOT")
+                        .requestMatchers("/dashboard/**").hasAnyRole("ADMIN", "ROOT")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
