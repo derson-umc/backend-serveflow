@@ -1,19 +1,15 @@
-# === Maven ===
 target/
 !.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+*.class
+*.jar
+*.war
 
-# === IntelliJ ===
 .idea/
 *.iml
-*.iws
 *.ipr
+*.iws
 out/
-!**/src/main/**/out/
-!**/src/test/**/out/
 
-# === Eclipse / VSCode ===
 .apt_generated
 .classpath
 .factorypath
@@ -23,25 +19,19 @@ out/
 .sts4-cache
 .vscode/
 
-# === NetBeans ===
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
 build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-# === Logs e temporários ===
 *.log
 logs/
 
-# === Variáveis de ambiente ===
 .env
 .env.*
 !.env.example
 
-# === SO ===
 .DS_Store
 Thumbs.db

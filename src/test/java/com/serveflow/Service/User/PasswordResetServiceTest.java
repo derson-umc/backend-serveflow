@@ -66,7 +66,7 @@ class PasswordResetServiceTest {
 
         PasswordResetToken issued = captor.getValue();
         assertThat(issued.getUserId()).isEqualTo(7L);
-        assertThat(issued.getTokenHash()).hasSize(64); // SHA-256 hex
+        assertThat(issued.getTokenHash()).hasSize(64);
         assertThat(issued.getExpiresAt()).isAfter(Instant.now().plus(14, ChronoUnit.MINUTES));
         assertThat(issued.isUsed()).isFalse();
 
@@ -80,7 +80,6 @@ class PasswordResetServiceTest {
         doThrow(new RuntimeException("smtp down"))
                 .when(emailService).sendPasswordResetEmail(any(), any(), any());
 
-        // Não deve lançar — cliente sempre vê 204.
         service.requestReset("joao");
     }
 
