@@ -1,22 +1,19 @@
-# Maven / Build
+# === Maven ===
 target/
 !.mvn/wrapper/maven-wrapper.jar
-*.class
-*.jar
-*.war
+!**/src/main/**/target/
+!**/src/test/**/target/
 
-# Credenciais e ambiente — NUNCA commitar
-.env
-*.env
-*.password
-
-# IntelliJ IDEA
+# === IntelliJ ===
 .idea/
 *.iml
-*.ipr
 *.iws
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
 
-# Eclipse / STS
+# === Eclipse / VSCode ===
 .apt_generated
 .classpath
 .factorypath
@@ -24,17 +21,27 @@ target/
 .settings
 .springBeans
 .sts4-cache
+.vscode/
 
-# NetBeans
+# === NetBeans ===
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-# VS Code
-.vscode/
+# === Logs e temporários ===
+*.log
+logs/
 
-# Sistema Operacional
+# === Variáveis de ambiente ===
+.env
+.env.*
+!.env.example
+
+# === SO ===
 .DS_Store
 Thumbs.db
