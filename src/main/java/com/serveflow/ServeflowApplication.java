@@ -19,6 +19,8 @@ public class ServeflowApplication {
         SpringApplication.run(ServeflowApplication.class, args);
     }
 
+    private static final String ROOT_JOB_POSITION = "ROOT";
+
     @Bean
     CommandLineRunner init(
             UserRepository repo,
@@ -28,10 +30,22 @@ public class ServeflowApplication {
         return args -> {
             var existing = repo.findByUsername(rootUsername);
             if (existing.isEmpty()) {
-                repo.save(User.create(rootUsername, encoder.encode(rootPassword), UserRole.ROOT));
+                repo.save(User.create(
+                        rootUsername,
+                        encoder.encode(rootPassword),
+                        UserRole.ROOT,
+                        ROOT_JOB_POSITION
+                ));
                 log.info("Usuário ROOT criado com sucesso");
             } else if (!encoder.matches(rootPassword, existing.get().getPassword())) {
-                User updated = new User(existing.get().getId(), rootUsername, encoder.encode(rootPassword), UserRole.ROOT);
+                User current = existing.get();
+                User updated = new User(
+                        current.getId(),
+                        rootUsername,
+                        encoder.encode(rootPassword),
+                        UserRole.ROOT,
+                        current.getJobposition() != null ? current.getJobposition() : ROOT_JOB_POSITION
+                );
                 repo.save(updated);
                 log.info("Senha do usuário ROOT atualizada");
             }
