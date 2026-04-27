@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.serveflow.Dto.User.Request.ChangeJobPositionInput;
+import com.serveflow.Dto.User.Request.ChangePasswordInput;
 import com.serveflow.Dto.User.Request.UserInput;
 import com.serveflow.Dto.User.Response.UserOutput;
 import com.serveflow.Exception.User.BusinessRuleException;
@@ -28,7 +30,12 @@ public class UserService {
         if (repo.existsByUsername(request.username())) {
             throw new ConflictException("Username '" + request.username() + "' já está em uso");
         }
-        User user = User.create(request.username(), encoder.encode(request.password()), request.role());
+        User user = User.create(
+                request.username(),
+                encoder.encode(request.password()),
+                request.role(),
+                request.jobposition()
+        );
         return UserOutput.from(repo.save(user));
     }
 
@@ -63,7 +70,58 @@ public class UserService {
                 ? encoder.encode(request.password())
                 : existing.getPassword();
 
-        User updated = new User(existing.getId(), request.username(), password, request.role());
+        User updated = new User(
+                existing.getId(),
+                request.username(),
+                password,
+                request.role(),
+                request.jobposition()
+        );
+        return UserOutput.from(repo.save(updated));
+    }
+
+    /**
+     * Troca de senha pelo próprio usuário, exigindo senha atual.
+     * Não toca em role/cargo — operação focada e auditável.
+     */
+    @Transactional
+    public void changePassword(Long id, ChangePasswordInput request) {
+        User existing = repo.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+
+        if (!encoder.matches(request.currentPassword(), existing.getPassword())) {
+            throw new BusinessRuleException("Senha atual incorreta");
+        }
+        if (encoder.matches(request.newPassword(), existing.getPassword())) {
+            throw new BusinessRuleException("A nova senha deve ser diferente da atual");
+        }
+
+        User updated = new User(
+                existing.getId(),
+                existing.getUsername(),
+                encoder.encode(request.newPassword()),
+                existing.getRole(),
+                existing.getJobposition()
+        );
+        repo.save(updated);
+    }
+
+    /**
+     * Alteração de cargo (operação administrativa). Não altera senha
+     * nem role — quem deve mexer em role usa o PUT /users/{id}.
+     */
+    @Transactional
+    public UserOutput changeJobPosition(Long id, ChangeJobPositionInput request) {
+        User existing = repo.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+
+        User updated = new User(
+                existing.getId(),
+                existing.getUsername(),
+                existing.getPassword(),
+                existing.getRole(),
+                request.jobposition()
+        );
         return UserOutput.from(repo.save(updated));
     }
 
