@@ -8,11 +8,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-/**
- * Implementação SMTP. Só é registrada se a app estiver configurada
- * com {@code app.mail.enabled=true} (evita falha de bootstrap quando
- * SMTP não está provisionado em ambientes locais/CI).
- */
 @Slf4j
 @Service
 @ConditionalOnProperty(name = "app.mail.enabled", havingValue = "true")

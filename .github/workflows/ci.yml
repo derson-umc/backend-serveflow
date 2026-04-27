@@ -27,7 +27,6 @@ jobs:
 
       - name: Run tests
         env:
-          # Variáveis exigidas pelo bootstrap; valores neutros para CI.
           APPLICATION_NAME: serveflow-ci
           ROOT_PASSWORD: ci-root-password-123
           JWT_SECRET: ci-secret-32-bytes-min-1234567890ab

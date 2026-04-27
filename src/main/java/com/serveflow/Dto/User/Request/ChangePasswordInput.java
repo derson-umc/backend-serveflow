@@ -3,10 +3,6 @@ package com.serveflow.Dto.User.Request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/**
- * Payload para alteração de senha por um usuário autenticado.
- * Exige a senha atual para evitar elevação indevida em sessão sequestrada.
- */
 public record ChangePasswordInput(
 
         @NotBlank(message = "Senha atual é obrigatória")

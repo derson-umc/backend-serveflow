@@ -45,20 +45,12 @@ public class AuthController {
         ));
     }
 
-    /**
-     * Sempre retorna 204 — não revela se o usuário existe.
-     * O e-mail (quando configurado) leva o token de reset válido por 15 minutos.
-     */
     @PostMapping("/forgot-password")
     public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordInput req) {
         passwordResetService.requestReset(req.username());
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Aplica a nova senha se o token for válido. Em qualquer falha
-     * (token inválido, expirado, já usado), retorna 422 com mensagem genérica.
-     */
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordInput req) {
         passwordResetService.resetPassword(req.token(), req.newPassword());

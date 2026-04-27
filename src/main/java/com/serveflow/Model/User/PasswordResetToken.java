@@ -5,10 +5,6 @@ import lombok.Getter;
 import java.time.Instant;
 import java.util.Objects;
 
-/**
- * Modelo de domínio puro do token de redefinição de senha.
- * Persiste apenas o hash do token (nunca o valor original).
- */
 @Getter
 public class PasswordResetToken {
 
