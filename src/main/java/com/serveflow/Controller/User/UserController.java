@@ -41,10 +41,6 @@ public class UserController {
         return ResponseEntity.ok(service.update(id, request));
     }
 
-    /**
-     * Endpoint focado em troca de senha. Não exige role ADMIN no Service —
-     * o controle de quem pode chamar fica na SecurityConfig.
-     */
     @PatchMapping("/{id}/password")
     public ResponseEntity<Void> changePassword(@PathVariable Long id,
                                                @Valid @RequestBody ChangePasswordInput request) {
@@ -52,9 +48,6 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Endpoint focado em troca de cargo (jobposition).
-     */
     @PatchMapping("/{id}/job-position")
     public ResponseEntity<UserOutput> changeJobPosition(@PathVariable Long id,
                                                         @Valid @RequestBody ChangeJobPositionInput request) {

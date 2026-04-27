@@ -4,10 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-/**
- * Fallback usado em dev/CI quando SMTP não está habilitado.
- * Apenas registra o token no log — NUNCA usar em produção.
- */
 @Slf4j
 @Service
 @ConditionalOnProperty(name = "app.mail.enabled", havingValue = "false", matchIfMissing = true)

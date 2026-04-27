@@ -80,10 +80,6 @@ public class UserService {
         return UserOutput.from(repo.save(updated));
     }
 
-    /**
-     * Troca de senha pelo próprio usuário, exigindo senha atual.
-     * Não toca em role/cargo — operação focada e auditável.
-     */
     @Transactional
     public void changePassword(Long id, ChangePasswordInput request) {
         User existing = repo.findById(id)
@@ -106,10 +102,6 @@ public class UserService {
         repo.save(updated);
     }
 
-    /**
-     * Alteração de cargo (operação administrativa). Não altera senha
-     * nem role — quem deve mexer em role usa o PUT /users/{id}.
-     */
     @Transactional
     public UserOutput changeJobPosition(Long id, ChangeJobPositionInput request) {
         User existing = repo.findById(id)
