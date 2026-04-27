@@ -1,4 +1,4 @@
-package com.serveflow.Repository.PasswordReset;
+package com.serveflow.Repository.User;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,7 +11,7 @@ import java.time.Instant;
 @Table(
         name = "password_reset_tokens",
         indexes = {
-                @Index(name = "idx_prt_token", columnList = "token", unique = true),
+                @Index(name = "idx_prt_token_hash", columnList = "tokenHash", unique = true),
                 @Index(name = "idx_prt_user_id", columnList = "userId")
         }
 )
@@ -27,12 +27,11 @@ public class PasswordResetTokenEntity {
     @Column(nullable = false)
     private Long userId;
 
-    @Column(nullable = false, unique = true, length = 64)
-    private String token;
+    @Column(nullable = false, length = 64, unique = true)
+    private String tokenHash;
 
     @Column(nullable = false)
     private Instant expiresAt;
 
-    @Column(nullable = false)
-    private boolean used;
+    private Instant usedAt;
 }
