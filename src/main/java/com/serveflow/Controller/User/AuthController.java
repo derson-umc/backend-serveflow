@@ -1,18 +1,14 @@
 package com.serveflow.Controller.User;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import com.serveflow.Config.Jwt.JwtService;
-import com.serveflow.Dto.User.Request.ForgotPasswordInput;
-import com.serveflow.Dto.User.Request.ResetPasswordInput;
 import com.serveflow.Exception.User.BusinessRuleException;
 import com.serveflow.Exception.User.UserNotFoundException;
 import com.serveflow.Model.User.User;
 import com.serveflow.Repository.User.UserRepository;
-import com.serveflow.Service.User.PasswordResetService;
 
 import java.util.Map;
 
@@ -24,7 +20,6 @@ public class AuthController {
     private final UserRepository repo;
     private final JwtService jwtService;
     private final PasswordEncoder encoder;
-    private final PasswordResetService passwordResetService;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest req) {
@@ -43,18 +38,6 @@ public class AuthController {
                 "username", user.getUsername(),
                 "id", String.valueOf(user.getId())
         ));
-    }
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordInput req) {
-        passwordResetService.requestReset(req.username());
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordInput req) {
-        passwordResetService.resetPassword(req.token(), req.newPassword());
-        return ResponseEntity.noContent().build();
     }
 
     public record LoginRequest(String username, String password) {}
