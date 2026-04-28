@@ -24,13 +24,19 @@ public class JwtService {
     }
 
     public String generateToken(String username, UserRole role) {
-        return Jwts.builder()
+        return generateToken(null, username, role);
+    }
+
+    public String generateToken(Long userId, String username, UserRole role) {
+        var builder = Jwts.builder()
                 .setSubject(username)
                 .claim("role", role.name())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(key)
-                .compact();
+                .setExpiration(new Date(System.currentTimeMillis() + expiration));
+        if (userId != null) {
+            builder.claim("id", userId);
+        }
+        return builder.signWith(key).compact();
     }
 
     public String extractUsername(String token) {

@@ -1,14 +1,15 @@
-package com.serveflow.Dto.PasswordReset.Request;
+package com.serveflow.Dto.User.Request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record ChangePasswordRequest(
+public record ChangePasswordInput(
 
         @NotBlank(message = "Senha atual é obrigatória")
         String currentPassword,
 
         @NotBlank(message = "Nova senha é obrigatória")
-        @Size(min = 6, message = "Nova senha deve ter no mínimo 6 caracteres")
+        @Size(min = 8, message = "Nova senha deve ter no mínimo 8 caracteres")
         String newPassword
+
 ) {}

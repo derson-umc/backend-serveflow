@@ -12,9 +12,14 @@ public record UserInput(
         String username,
 
         @NotBlank(message = "Senha é obrigatória")
-        @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres")
+        @Size(min = 8, message = "Senha deve ter no mínimo 8 caracteres")
         String password,
 
         @NotNull(message = "Perfil é obrigatório")
-        UserRole role
+        UserRole role,
+
+        @NotBlank(message = "Cargo é obrigatório")
+        @Size(min = 2, max = 60, message = "Cargo deve ter entre 2 e 60 caracteres")
+        String jobposition
+
 ) {}
