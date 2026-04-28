@@ -27,6 +27,7 @@ public class UserRepository {
             entity.setUsername(user.getUsername());
             entity.setPassword(user.getPassword());
             entity.setRole(user.getRole());
+            entity.setJobposition(user.getJobposition());
         }
         return toDomain(springRepository.save(entity));
     }
@@ -55,7 +56,7 @@ public class UserRepository {
     }
 
     private User toDomain(UserEntity entity) {
-        return new User(entity.getId(), entity.getUsername(), entity.getPassword(), entity.getRole());
+        return new User(entity.getId(), entity.getUsername(), entity.getPassword(), entity.getRole(), entity.getJobposition());
     }
 
     private UserEntity toEntity(User user) {
@@ -63,6 +64,7 @@ public class UserRepository {
         entity.setUsername(user.getUsername());
         entity.setPassword(user.getPassword());
         entity.setRole(user.getRole());
+        entity.setJobposition(user.getJobposition());
         return entity;
     }
 }
