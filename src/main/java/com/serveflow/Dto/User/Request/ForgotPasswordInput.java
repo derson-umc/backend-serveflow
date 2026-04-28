@@ -1,9 +1,10 @@
-package com.serveflow.Dto.PasswordReset.Request;
+package com.serveflow.Dto.User.Request;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record ForgotPasswordRequest(
+public record ForgotPasswordInput(
 
         @NotBlank(message = "Username é obrigatório")
         String username
+
 ) {}
