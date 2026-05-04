@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.serveflow.Dto.User.Request.ChangeJobPositionInput;
 import com.serveflow.Dto.User.Request.ChangePasswordInput;
+import com.serveflow.Dto.User.Request.ResetPasswordInput;
 import com.serveflow.Dto.User.Request.UserInput;
 import com.serveflow.Dto.User.Response.UserOutput;
 import com.serveflow.Service.User.UserService;
@@ -45,6 +46,13 @@ public class UserController {
     public ResponseEntity<Void> changePassword(@PathVariable Long id,
                                                @Valid @RequestBody ChangePasswordInput request) {
         service.changePassword(id, request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/reset-password")
+    public ResponseEntity<Void> resetPassword(@PathVariable Long id,
+                                              @Valid @RequestBody ResetPasswordInput request) {
+        service.resetPassword(id, request.newPassword());
         return ResponseEntity.noContent().build();
     }
 
