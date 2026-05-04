@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import com.serveflow.Config.Jwt.JwtService;
+import com.serveflow.Config.JwtService;
 import com.serveflow.Exception.User.BusinessRuleException;
 import com.serveflow.Exception.User.UserNotFoundException;
 import com.serveflow.Model.User.User;
