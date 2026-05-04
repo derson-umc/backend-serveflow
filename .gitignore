@@ -40,6 +40,8 @@ logs/
 
 # Credentials
 .env
+*.env
+*.password
 .env.*
 !.env.example
 .claude

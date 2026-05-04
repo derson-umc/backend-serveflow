@@ -1,4 +1,4 @@
-package com.serveflow.Repository.Stock;
+package com.serveflow.Repository.Stock.StockMovement;
 
 import com.serveflow.Model.Stock.StockMovement;
 
