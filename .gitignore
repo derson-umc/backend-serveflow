@@ -12,7 +12,13 @@ build/
 *.jar
 *.war
 
-# STS (Spring Tool Suite)
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.vscode/
 .apt_generated
 .classpath
 .factorypath
@@ -21,16 +27,6 @@ build/
 .springBeans
 .sts4-cache
 
-# IntelliJ IDEA
-.idea/
-*.iws
-*.iml
-*.ipr
-
-# File containing access credentials
-.env
-.claude
-
 # NetBeans
 /nbproject/private/
 /nbbuild/
@@ -38,9 +34,16 @@ build/
 /nbdist/
 /.nb-gradle/
 
-# VS Code
-.vscode/
+# Logs
+*.log
+logs/
 
-# SISTEMA OPERACIONAL
+# Credentials
+.env
+.env.*
+!.env.example
+.claude
+
+# OS
 .DS_Store
 Thumbs.db
