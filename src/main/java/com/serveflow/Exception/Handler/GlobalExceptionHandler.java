@@ -1,13 +1,9 @@
 package com.serveflow.Exception.Handler;
 
-import com.serveflow.Exception.Menu.MenuNotFound;
-import com.serveflow.Exception.Order.OrderNotFound;
-import com.serveflow.Exception.Product.ProductNotFound;
-import com.serveflow.Exception.Stock.InsufficientStock;
-import com.serveflow.Exception.Stock.RecipeNotFound;
-import com.serveflow.Exception.Stock.StockItemNotFound;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.serveflow.Exception.User.BusinessRuleException;
+import com.serveflow.Exception.User.ConflictException;
+import com.serveflow.Exception.User.UserNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -20,38 +16,22 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-
-    @ExceptionHandler(ProductNotFound.class)
-    public ResponseEntity<Map<String, Object>> handleProductNotFound(ProductNotFound ex) {
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(OrderNotFound.class)
-    public ResponseEntity<Map<String, Object>> handleOrderNotFound(OrderNotFound ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    @ExceptionHandler(BusinessRuleException.class)
+    public ResponseEntity<Map<String, Object>> handleBusinessRule(BusinessRuleException ex) {
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
     }
 
-    @ExceptionHandler(MenuNotFound.class)
-    public ResponseEntity<Map<String, Object>> handleMenuNotFound(MenuNotFound ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
-    }
-
-    @ExceptionHandler(StockItemNotFound.class)
-    public ResponseEntity<Map<String, Object>> handleStockItemNotFound(StockItemNotFound ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
-    }
-
-    @ExceptionHandler(RecipeNotFound.class)
-    public ResponseEntity<Map<String, Object>> handleRecipeNotFound(RecipeNotFound ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
-    }
-
-    @ExceptionHandler(InsufficientStock.class)
-    public ResponseEntity<Map<String, Object>> handleInsufficientStock(InsufficientStock ex) {
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleConflict(ConflictException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
@@ -95,7 +75,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", status.value());
-        body.put("message", message);
+        body.put("error", message);
         return ResponseEntity.status(status).body(body);
     }
 }
