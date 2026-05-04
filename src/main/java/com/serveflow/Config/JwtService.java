@@ -1,4 +1,4 @@
-package com.serveflow.Config.Jwt;
+package com.serveflow.Config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

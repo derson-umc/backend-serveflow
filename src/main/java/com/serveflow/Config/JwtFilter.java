@@ -1,4 +1,4 @@
-package com.serveflow.Config.Jwt;
+package com.serveflow.Config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
