@@ -1,4 +1,4 @@
-package com.serveflow.Repository.Stock;
+package com.serveflow.Repository.Stock.ProductRecipe;
 
 import com.serveflow.Model.Stock.ProductRecipe;
 

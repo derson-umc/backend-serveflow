@@ -1,5 +1,6 @@
-package com.serveflow.Repository.Stock;
+package com.serveflow.Repository.Stock.RecipeIngredient;
 
+import com.serveflow.Repository.Stock.ProductRecipe.ProductRecipeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
