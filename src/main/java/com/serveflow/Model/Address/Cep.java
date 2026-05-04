@@ -1,4 +1,4 @@
-package com.serveflow.Model.Order;
+package com.serveflow.Model.Address;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

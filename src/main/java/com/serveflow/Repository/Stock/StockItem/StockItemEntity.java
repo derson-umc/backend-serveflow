@@ -1,4 +1,4 @@
-package com.serveflow.Repository.Stock;
+package com.serveflow.Repository.Stock.StockItem;
 
 import jakarta.persistence.*;
 import lombok.*;
