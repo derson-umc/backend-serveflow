@@ -1,8 +1,8 @@
 package com.serveflow.Integration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.serveflow.Model.Order.*;
-import com.serveflow.Model.Order.Number;
+import com.serveflow.Model.Address.*;
+import com.serveflow.Model.Address.Number;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
