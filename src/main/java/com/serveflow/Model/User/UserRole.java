@@ -1,6 +1,6 @@
 package com.serveflow.Model.User;
 
-import com.serveflow.Model.Permission;
+import com.serveflow.Model.User.Permission;
 
 import java.util.Set;
 
