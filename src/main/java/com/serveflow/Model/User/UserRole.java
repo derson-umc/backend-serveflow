@@ -1,43 +1,53 @@
 package com.serveflow.Model.User;
 
+import com.serveflow.Model.Permission;
+
 import java.util.Set;
 
 public enum UserRole {
 
-    ROOT(Set.of("ADMIN", "FINANCEIRO", "PEDIDOS", "COZINHA")),
-    ADMIN(Set.of("ADMIN", "FINANCEIRO", "PEDIDOS", "COZINHA")),
-    CAIXA(Set.of("VENDAS", "PEDIDOS")),
-    GARCON(Set.of("PEDIDOS")),
-    COZINHEIRO(Set.of("COZINHA", "PEDIDOS")),
+    ADMIN(Set.of(Permission.ADMIN, Permission.FINANCEIRO, Permission.PEDIDOS, Permission.COZINHA)),
+    GERENTE(Set.of(Permission.FINANCEIRO, Permission.PEDIDOS, Permission.COZINHA)),
+    CAIXA(Set.of(Permission.VENDAS, Permission.PEDIDOS)),
+    GARCON(Set.of(Permission.PEDIDOS)),
+    COZINHEIRO(Set.of(Permission.COZINHA, Permission.PEDIDOS)),
     USER(Set.of());
 
-    private final Set<String> permissions;
+    private final Set<Permission> permissions;
 
-    UserRole(Set<String> permissions) {
+    UserRole(Set<Permission> permissions) {
         this.permissions = permissions;
     }
 
     public boolean isAdmin() {
-        return this == ROOT || this == ADMIN;
+        return this == ADMIN;
+    }
+
+    public boolean isGerente() {
+        return this == GERENTE;
     }
 
     public boolean canAccessFinanceiro() {
-        return permissions.contains("FINANCEIRO");
+        return permissions.contains(Permission.FINANCEIRO);
     }
 
     public boolean canAccessPedidos() {
-        return permissions.contains("PEDIDOS");
+        return permissions.contains(Permission.PEDIDOS);
     }
 
     public boolean canAlterarPedidos() {
-        return this == ROOT || this == ADMIN || this == GARCON || this == COZINHEIRO;
+        return this == ADMIN || this == GERENTE || this == GARCON || this == COZINHEIRO;
     }
 
     public boolean canCozinha() {
-        return permissions.contains("COZINHA");
+        return permissions.contains(Permission.COZINHA);
     }
 
-    public Set<String> getPermissions() {
+    public boolean canVendas() {
+        return permissions.contains(Permission.VENDAS);
+    }
+
+    public Set<Permission> getPermissions() {
         return permissions;
     }
 }
