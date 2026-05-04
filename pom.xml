@@ -98,6 +98,16 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -120,8 +130,63 @@
             </plugin>
 
             <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${postgresql.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>migrate-dev</id>
+                        <configuration>
+                            <url>jdbc:postgresql://localhost:5432/serveflow_dev</url>
+                            <user>postgres</user>
+                            <password>${env.POSTGRES_PASSWORD}</password>
+                            <locations>
+                                <location>filesystem:src/main/resources/db/migration</location>
+                            </locations>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>migrate-staging</id>
+                        <configuration>
+                            <url>jdbc:postgresql://localhost:5432/serveflow_homolog</url>
+                            <user>postgres</user>
+                            <password>${env.POSTGRES_PASSWORD}</password>
+                            <locations>
+                                <location>filesystem:src/main/resources/db/migration</location>
+                            </locations>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>migrate-prod</id>
+                        <configuration>
+                            <url>jdbc:postgresql://localhost:5432/serveflow_db</url>
+                            <user>postgres</user>
+                            <password>${env.POSTGRES_PASSWORD}</password>
+                            <locations>
+                                <location>filesystem:src/main/resources/db/migration</location>
+                            </locations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
             </plugin>
 
         </plugins>
