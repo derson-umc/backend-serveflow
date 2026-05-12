@@ -1,5 +1,6 @@
 package com.serveflow.Exception.Handler;
 
+import com.serveflow.Exception.Product.ProductNotFound;
 import com.serveflow.Exception.User.BusinessRuleException;
 import com.serveflow.Exception.User.ConflictException;
 import com.serveflow.Exception.User.UserNotFoundException;
@@ -22,6 +23,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(ProductNotFound.class)
+    public ResponseEntity<Map<String, Object>> handleProductNotFound(ProductNotFound ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
