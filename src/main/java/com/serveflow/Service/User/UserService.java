@@ -18,6 +18,7 @@ import com.serveflow.Repository.User.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 @Service
@@ -28,13 +29,17 @@ public class UserService {
     private final UserRepository repo;
     private final PasswordEncoder encoder;
 
-    private static final Set<UserRole> PRIVILEGED_ROLES = Set.of(UserRole.ADMIN, UserRole.GERENTE);
+    private static final Set<UserRole> ADMIN_ONLY_ROLES = Set.of(UserRole.ADMIN);
+
+    private static String normalizeUsername(String value) {
+        return value == null ? null : value.trim().toLowerCase(Locale.ROOT);
+    }
 
     private void validateRolePermission(UserRole targetRole) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof User currentUser) {
-            if (currentUser.getRole() == UserRole.GERENTE && PRIVILEGED_ROLES.contains(targetRole)) {
-                throw new BusinessRuleException("Gerente não pode atribuir o perfil " + targetRole.name());
+            if (currentUser.getRole() == UserRole.GERENTE && ADMIN_ONLY_ROLES.contains(targetRole)) {
+                throw new BusinessRuleException("Gerente não pode atribuir o perfil ADMIN");
             }
         }
     }
@@ -42,11 +47,12 @@ public class UserService {
     @Transactional
     public UserOutput create(UserInput request) {
         validateRolePermission(request.role());
-        if (repo.existsByUsername(request.username())) {
-            throw new ConflictException("Username '" + request.username() + "' já está em uso");
+        String username = normalizeUsername(request.username());
+        if (repo.existsByUsername(username)) {
+            throw new ConflictException("Username '" + username + "' já está em uso");
         }
         User user = User.create(
-                request.username(),
+                username,
                 encoder.encode(request.password()),
                 request.role(),
                 request.jobposition()
@@ -61,8 +67,9 @@ public class UserService {
     }
 
     public User findByUsername(String username) {
-        return repo.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(username));
+        String normalized = normalizeUsername(username);
+        return repo.findByUsername(normalized)
+                .orElseThrow(() -> new UserNotFoundException(normalized));
     }
 
     public List<UserOutput> findAll() {
@@ -77,16 +84,17 @@ public class UserService {
         User existing = repo.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        if (existing.getRole() == UserRole.ADMIN || existing.getRole() == UserRole.GERENTE) {
+        if (existing.getRole() == UserRole.ADMIN) {
             Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             if (principal instanceof User currentUser && currentUser.getRole() == UserRole.GERENTE) {
-                throw new BusinessRuleException("Gerente não pode editar usuários com perfil " + existing.getRole().name());
+                throw new BusinessRuleException("Gerente não pode editar usuários com perfil ADMIN");
             }
         }
 
-        if (!existing.getUsername().equals(request.username())
-                && repo.existsByUsername(request.username())) {
-            throw new ConflictException("Username '" + request.username() + "' já está em uso");
+        String username = normalizeUsername(request.username());
+        if (!existing.getUsername().equals(username)
+                && repo.existsByUsername(username)) {
+            throw new ConflictException("Username '" + username + "' já está em uso");
         }
 
         String password = (request.password() != null && !request.password().isBlank())
@@ -95,7 +103,7 @@ public class UserService {
 
         User updated = new User(
                 existing.getId(),
-                request.username(),
+                username,
                 password,
                 request.role(),
                 request.jobposition()
@@ -109,10 +117,10 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(id));
 
         if (!encoder.matches(request.currentPassword(), existing.getPassword())) {
-            throw new BusinessRuleException("Senha atual incorreta");
+            throw new BusinessRuleException("Senha atual incorreta.");
         }
         if (encoder.matches(request.newPassword(), existing.getPassword())) {
-            throw new BusinessRuleException("A nova senha deve ser diferente da atual");
+            throw new BusinessRuleException("A nova senha deve ser diferente da atual.");
         }
 
         User updated = new User(
@@ -130,10 +138,10 @@ public class UserService {
         User existing = repo.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        if (existing.getRole() == UserRole.ADMIN || existing.getRole() == UserRole.GERENTE) {
+        if (existing.getRole() == UserRole.ADMIN) {
             Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             if (principal instanceof User currentUser && currentUser.getRole() == UserRole.GERENTE) {
-                throw new BusinessRuleException("Gerente não pode redefinir senha de " + existing.getRole().name());
+                throw new BusinessRuleException("Gerente não pode redefinir senha de usuário ADMIN");
             }
         }
 
@@ -167,8 +175,8 @@ public class UserService {
         User user = repo.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        if (user.getRole() == UserRole.ADMIN) {
-            throw new BusinessRuleException("Usuário com perfil Admin não pode ser excluído");
+        if (user.getRole() == UserRole.ADMIN || user.getRole() == UserRole.GERENTE) {
+            throw new BusinessRuleException("Usuário com perfil " + user.getRole().name() + " não pode ser excluído.");
         }
 
         repo.deleteById(id);

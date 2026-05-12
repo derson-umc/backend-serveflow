@@ -1,6 +1,7 @@
 package com.serveflow.Dto.Product.Response;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record ProductOutput(
@@ -10,5 +11,7 @@ public record ProductOutput(
         String category,
         String brand,
         BigDecimal price,
-        String portion
+        String portion,
+        boolean active,
+        LocalDateTime createdAt
 ) {}

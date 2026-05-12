@@ -3,7 +3,7 @@ target/
 *.iml
 .vscode/
 .git/
-.gitignore
+com/.gitignore
 HELP.md
 docker-compose.yml
 .env

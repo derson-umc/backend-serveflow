@@ -24,7 +24,7 @@ public class ProductEntity implements Persistable<UUID> {
     @Version
     private Long version;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 120)
     private String name;
 
     @Column(length = 500)

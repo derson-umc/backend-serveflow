@@ -58,12 +58,18 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // Products
+                        .requestMatchers(HttpMethod.GET, "/products", "/products/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/products", "/products/batch").hasAnyRole("ADMIN", "GERENTE")
+                        .requestMatchers(HttpMethod.PUT, "/products/**").hasAnyRole("ADMIN", "GERENTE")
+                        .requestMatchers(HttpMethod.DELETE, "/products/**").hasAnyRole("ADMIN", "GERENTE")
+                        // Users
                         .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("ADMIN", "GERENTE")
                         .requestMatchers(HttpMethod.PUT, "/users/**").hasAnyRole("ADMIN", "GERENTE")
                         .requestMatchers(HttpMethod.PATCH, "/users/*/password").authenticated()
                         .requestMatchers(HttpMethod.PATCH, "/users/*/reset-password").hasAnyRole("ADMIN", "GERENTE")
                         .requestMatchers(HttpMethod.PATCH, "/users/*/job-position").hasAnyRole("ADMIN", "GERENTE")
-                        .requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/users/**").hasAnyRole("ADMIN", "GERENTE")
                         .requestMatchers(HttpMethod.GET, "/users/**").hasAnyRole("ADMIN", "GERENTE")
                         .anyRequest().authenticated()
                 )

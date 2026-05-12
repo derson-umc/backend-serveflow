@@ -1,7 +1,5 @@
 package com.serveflow.Model.User;
 
-import com.serveflow.Model.User.Permission;
-
 import java.util.Set;
 
 public enum UserRole {
