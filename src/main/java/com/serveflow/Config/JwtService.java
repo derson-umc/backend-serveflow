@@ -7,13 +7,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.serveflow.Model.User.UserRole;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Service
 public class JwtService {
 
-    private final Key key;
+    private final SecretKey key;
     private final long expiration;
 
     public JwtService(
@@ -29,10 +29,10 @@ public class JwtService {
 
     public String generateToken(Long userId, String username, UserRole role) {
         var builder = Jwts.builder()
-                .setSubject(username)
+                .subject(username)
                 .claim("role", role.name())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration));
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration));
         if (userId != null) {
             builder.claim("id", userId);
         }
@@ -53,10 +53,10 @@ public class JwtService {
     }
 
     private Claims parseClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
+        return Jwts.parser()
+                .verifyWith(key)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }

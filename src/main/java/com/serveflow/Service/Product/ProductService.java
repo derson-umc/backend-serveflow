@@ -64,7 +64,8 @@ public class ProductService {
     private ProductOutput toOutput(Product p) {
         return new ProductOutput(
                 p.getId(), p.getName(), p.getDescription(),
-                p.getCategory(), p.getBrand(), p.getPrice(), p.getPortion()
+                p.getCategory(), p.getBrand(), p.getPrice(), p.getPortion(),
+                p.isActive(), p.getCreatedAt()
         );
     }
 }

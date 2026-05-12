@@ -19,33 +19,36 @@ public class ServeFlowApplication {
         SpringApplication.run(ServeFlowApplication.class, args);
     }
 
+    private static final String ROOT_JOB_POSITION = "ADMIN";
+
     @Bean
     CommandLineRunner init(
             UserRepository repo,
             PasswordEncoder encoder,
-            @Value("${ROOT_USERNAME:admin}") String adminUsername,
-            @Value("${ROOT_PASSWORD:admin123}") String adminPassword) {
+            @Value("${ROOT_USERNAME}") String rootUsername,
+            @Value("${ROOT_PASSWORD}") String rootPassword) {
         return args -> {
-            var existing = repo.findByUsername(adminUsername);
+            String normalizedRoot = rootUsername.trim().toLowerCase(java.util.Locale.ROOT);
+            var existing = repo.findByUsername(normalizedRoot);
             if (existing.isEmpty()) {
                 repo.save(User.create(
-                        adminUsername,
-                        encoder.encode(adminPassword),
+                        normalizedRoot,
+                        encoder.encode(rootPassword),
                         UserRole.ADMIN,
-                        "ADMIN"
+                        ROOT_JOB_POSITION
                 ));
                 log.info("Usuário ADMIN criado com sucesso");
-            } else if (!encoder.matches(adminPassword, existing.get().getPassword())) {
+            } else if (!encoder.matches(rootPassword, existing.get().getPassword())) {
                 User current = existing.get();
                 User updated = new User(
                         current.getId(),
-                        adminUsername,
-                        encoder.encode(adminPassword),
+                        normalizedRoot,
+                        encoder.encode(rootPassword),
                         UserRole.ADMIN,
-                        current.getJobposition() != null ? current.getJobposition() : "ADMIN"
+                        current.getJobposition() != null ? current.getJobposition() : ROOT_JOB_POSITION
                 );
                 repo.save(updated);
-                log.info("Senha do usuário ADMIN atualizada");
+                log.info("Senha do usuário ADMIN atualizada.");
             }
         };
     }

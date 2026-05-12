@@ -6,6 +6,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Objects;
 
 @Getter
@@ -26,7 +27,8 @@ public class User implements UserDetails {
     }
 
     public static User create(String username, String encodedPassword, UserRole role, String jobposition) {
-        return new User(null, username, encodedPassword, role, jobposition);
+        String normalized = username == null ? null : username.trim().toLowerCase(Locale.ROOT);
+        return new User(null, normalized, encodedPassword, role, jobposition);
     }
 
     @Override
