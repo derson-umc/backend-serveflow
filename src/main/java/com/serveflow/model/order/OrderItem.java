@@ -5,7 +5,7 @@ import java.util.*;
 
 public class OrderItem {
 
-    private UUID id;
+    private final UUID id;
     private final UUID productId;
     private final String productName;
     private final int quantity;
@@ -13,10 +13,11 @@ public class OrderItem {
     private final String observation;
     private final List<ItemAdditional> additionals;
 
-    public OrderItem(UUID productId, String productName, int quantity,
+    public OrderItem(UUID id, UUID productId, String productName, int quantity,
                      BigDecimal unitPrice, String observation,
                      List<ItemAdditional> additionals) {
 
+        this.id = Objects.requireNonNull(id, "ID do item é obrigatório.");
         this.productId = Objects.requireNonNull(productId, "ID do produto é obrigatório.");
         if (productName == null || productName.isBlank())
             throw new IllegalArgumentException("Nome do produto é obrigatório.");
@@ -25,7 +26,6 @@ public class OrderItem {
         if (unitPrice == null || unitPrice.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Preço unitário deve ser maior que zero.");
 
-        this.id = UUID.randomUUID();
         this.productName = productName.strip();
         this.quantity = quantity;
         this.unitPrice = unitPrice;
@@ -33,11 +33,10 @@ public class OrderItem {
         this.additionals = new ArrayList<>(Optional.ofNullable(additionals).orElse(List.of()));
     }
 
-    public OrderItem(UUID id, UUID productId, String productName, int quantity,
+    public OrderItem(UUID productId, String productName, int quantity,
                      BigDecimal unitPrice, String observation,
                      List<ItemAdditional> additionals) {
-        this(productId, productName, quantity, unitPrice, observation, additionals);
-        this.id = id;
+        this(UUID.randomUUID(), productId, productName, quantity, unitPrice, observation, additionals);
     }
 
     public BigDecimal getItemPrice() {

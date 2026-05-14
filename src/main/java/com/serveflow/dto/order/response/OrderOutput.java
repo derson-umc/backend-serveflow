@@ -1,5 +1,7 @@
 package com.serveflow.dto.order.response;
 
+import com.serveflow.model.address.Address;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,7 +26,20 @@ public record OrderOutput(
             String state,
             String number,
             String complement
-    ) {}
+    ) {
+        public static AddressOutput from(Address a) {
+            if (a == null) return null;
+            return new AddressOutput(
+                    a.getId(),
+                    a.getCep() != null ? a.getCep().getValue() : null,
+                    a.getStreet() != null ? a.getStreet().getValue() : null,
+                    a.getCity() != null ? a.getCity().getValue() : null,
+                    a.getState() != null ? a.getState().getValue().name() : null,
+                    a.getNumber() != null ? a.getNumber().getValue() : null,
+                    a.getComplement() != null ? a.getComplement().getValue() : null
+            );
+        }
+    }
 
     public record OrderItemOutput(
             UUID id,

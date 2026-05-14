@@ -2,9 +2,8 @@ package com.serveflow.service.order;
 
 import com.serveflow.dto.order.request.*;
 import com.serveflow.dto.order.response.OrderOutput;
-import com.serveflow.integration.FindPostalCode;
-import com.serveflow.model.address.*;
-import com.serveflow.model.address.Number;
+import com.serveflow.integration.AddressResolver;
+import com.serveflow.model.address.Address;
 import com.serveflow.model.order.*;
 import com.serveflow.repository.menu.MenuRepository;
 import com.serveflow.repository.order.OrderRepository;
@@ -21,23 +20,23 @@ import java.util.function.Consumer;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final FindPostalCode findPostalCode;
+    private final AddressResolver addressResolver;
     private final StockService stockService;
     private final MenuRepository menuRepository;
 
     public OrderService(OrderRepository orderRepository,
-                        FindPostalCode findPostalCode,
+                        AddressResolver addressResolver,
                         StockService stockService,
                         MenuRepository menuRepository) {
         this.orderRepository = orderRepository;
-        this.findPostalCode = findPostalCode;
+        this.addressResolver = addressResolver;
         this.stockService = stockService;
         this.menuRepository = menuRepository;
     }
 
     @Transactional
     public OrderOutput create(OrderInput request) {
-        Address resolvedAddress = resolveAddress(request.address());
+        Address resolvedAddress = addressResolver.resolve(request.address());
         OrderType orderType = OrderType.valueOf(request.type().toUpperCase());
 
         Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation());
@@ -111,38 +110,6 @@ public class OrderService {
         });
     }
 
-    private Address resolveAddress(AddressInput dto) {
-        if (dto == null) return null;
-
-        if (dto.cep() != null && !dto.cep().isBlank()) {
-            Optional<Address> resolved = findPostalCode.findByCep(dto.cep());
-            if (resolved.isPresent()) {
-                Address base = resolved.get();
-                String num = dto.number() != null && !dto.number().isBlank() ? dto.number() : "S/N";
-                Complement comp = dto.complement() != null && !dto.complement().isBlank()
-                        ? new Complement(dto.complement()) : null;
-                return Address.create(base.getCep(), base.getStreet(), base.getCity(),
-                        base.getState(), new Number(num), comp);
-            }
-        }
-
-        boolean hasManualFields = dto.street() != null && !dto.street().isBlank()
-                && dto.city() != null && !dto.city().isBlank()
-                && dto.state() != null && !dto.state().isBlank()
-                && dto.number() != null && !dto.number().isBlank();
-
-        if (!hasManualFields) return null;
-
-        return Address.create(
-                dto.cep() != null && !dto.cep().isBlank() ? new Cep(dto.cep()) : null,
-                new Street(dto.street()),
-                new City(dto.city()),
-                new State(dto.state()),
-                new Number(dto.number()),
-                dto.complement() != null && !dto.complement().isBlank() ? new Complement(dto.complement()) : null
-        );
-    }
-
     private List<OrderItem> toItems(List<OrderItemInput> inputs) {
         return inputs.stream().map(this::toItem).toList();
     }
@@ -160,26 +127,13 @@ public class OrderService {
         return new OrderOutput(
                 order.getId(),
                 order.getCustomerName(),
-                toAddressOutput(order.getAddress()),
+                OrderOutput.AddressOutput.from(order.getAddress()),
                 order.getType().name(),
                 order.getStatus().name(),
                 order.getCreatedAt(),
                 order.getObservation(),
                 order.getTotal(),
                 order.getItems().stream().map(this::toItemOutput).toList()
-        );
-    }
-
-    private OrderOutput.AddressOutput toAddressOutput(Address a) {
-        if (a == null) return null;
-        return new OrderOutput.AddressOutput(
-                a.getId(),
-                a.getCep() != null ? a.getCep().getValue() : null,
-                a.getStreet() != null ? a.getStreet().getValue() : null,
-                a.getCity() != null ? a.getCity().getValue() : null,
-                a.getState() != null ? a.getState().getValue().name() : null,
-                a.getNumber() != null ? a.getNumber().getValue() : null,
-                a.getComplement() != null ? a.getComplement().getValue() : null
         );
     }
 

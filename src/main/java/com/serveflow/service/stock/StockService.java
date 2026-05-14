@@ -96,6 +96,7 @@ public class StockService {
                 .map(this::toMovementOutput).toList();
     }
 
+    @Transactional(readOnly = true)
     public void validateStockForOrder(List<OrderItem> items) {
         for (OrderItem item : items) {
             ProductRecipe recipe = recipeRepository.findByProductId(item.getProductId())
