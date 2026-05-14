@@ -26,7 +26,7 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class UserService {
 
-    private final UserRepository repo;
+    private final UserRepository repository;
     private final PasswordEncoder encoder;
 
     private static final Set<UserRole> ADMIN_ONLY_ROLES = Set.of(UserRole.ADMIN);
@@ -44,11 +44,19 @@ public class UserService {
         }
     }
 
+    private void validateNotAdminTarget(User target) {
+        if (target.getRole() != UserRole.ADMIN) return;
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User currentUser && currentUser.getRole() == UserRole.GERENTE) {
+            throw new BusinessRuleException("Gerente não pode editar usuários com perfil ADMIN");
+        }
+    }
+
     @Transactional
     public UserOutput create(UserInput request) {
         validateRolePermission(request.role());
         String username = normalizeUsername(request.username());
-        if (repo.existsByUsername(username)) {
+        if (repository.existsByUsername(username)) {
             throw new ConflictException("Username '" + username + "' já está em uso");
         }
         User user = User.create(
@@ -57,23 +65,23 @@ public class UserService {
                 request.role(),
                 request.jobposition()
         );
-        return UserOutput.from(repo.save(user));
+        return UserOutput.from(repository.save(user));
     }
 
     public UserOutput findById(Long id) {
         return UserOutput.from(
-                repo.findById(id).orElseThrow(() -> new UserNotFoundException(id))
+                repository.findById(id).orElseThrow(() -> new UserNotFoundException(id))
         );
     }
 
     public User findByUsername(String username) {
         String normalized = normalizeUsername(username);
-        return repo.findByUsername(normalized)
+        return repository.findByUsername(normalized)
                 .orElseThrow(() -> new UserNotFoundException(normalized));
     }
 
     public List<UserOutput> findAll() {
-        return repo.findAll().stream()
+        return repository.findAll().stream()
                 .map(UserOutput::from)
                 .toList();
     }
@@ -81,19 +89,13 @@ public class UserService {
     @Transactional
     public UserOutput update(Long id, UserInput request) {
         validateRolePermission(request.role());
-        User existing = repo.findById(id)
+        User existing = repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        if (existing.getRole() == UserRole.ADMIN) {
-            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            if (principal instanceof User currentUser && currentUser.getRole() == UserRole.GERENTE) {
-                throw new BusinessRuleException("Gerente não pode editar usuários com perfil ADMIN");
-            }
-        }
+        validateNotAdminTarget(existing);
 
         String username = normalizeUsername(request.username());
-        if (!existing.getUsername().equals(username)
-                && repo.existsByUsername(username)) {
+        if (!existing.getUsername().equals(username) && repository.existsByUsername(username)) {
             throw new ConflictException("Username '" + username + "' já está em uso");
         }
 
@@ -101,19 +103,12 @@ public class UserService {
                 ? encoder.encode(request.password())
                 : existing.getPassword();
 
-        User updated = new User(
-                existing.getId(),
-                username,
-                password,
-                request.role(),
-                request.jobposition()
-        );
-        return UserOutput.from(repo.save(updated));
+        return UserOutput.from(repository.save(existing.update(username, password, request.role(), request.jobposition())));
     }
 
     @Transactional
     public void changePassword(Long id, ChangePasswordInput request) {
-        User existing = repo.findById(id)
+        User existing = repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
         if (!encoder.matches(request.currentPassword(), existing.getPassword())) {
@@ -123,62 +118,36 @@ public class UserService {
             throw new BusinessRuleException("A nova senha deve ser diferente da atual.");
         }
 
-        User updated = new User(
-                existing.getId(),
-                existing.getUsername(),
-                encoder.encode(request.newPassword()),
-                existing.getRole(),
-                existing.getJobposition()
-        );
-        repo.save(updated);
+        repository.save(existing.withPassword(encoder.encode(request.newPassword())));
     }
 
     @Transactional
     public void resetPassword(Long id, String newPassword) {
-        User existing = repo.findById(id)
+        User existing = repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        if (existing.getRole() == UserRole.ADMIN) {
-            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            if (principal instanceof User currentUser && currentUser.getRole() == UserRole.GERENTE) {
-                throw new BusinessRuleException("Gerente não pode redefinir senha de usuário ADMIN");
-            }
-        }
+        validateNotAdminTarget(existing);
 
-        User updated = new User(
-                existing.getId(),
-                existing.getUsername(),
-                encoder.encode(newPassword),
-                existing.getRole(),
-                existing.getJobposition()
-        );
-        repo.save(updated);
+        repository.save(existing.withPassword(encoder.encode(newPassword)));
     }
 
     @Transactional
     public UserOutput changeJobPosition(Long id, ChangeJobPositionInput request) {
-        User existing = repo.findById(id)
+        User existing = repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        User updated = new User(
-                existing.getId(),
-                existing.getUsername(),
-                existing.getPassword(),
-                existing.getRole(),
-                request.jobposition()
-        );
-        return UserOutput.from(repo.save(updated));
+        return UserOutput.from(repository.save(existing.withJobPosition(request.jobposition())));
     }
 
     @Transactional
     public void delete(Long id) {
-        User user = repo.findById(id)
+        User user = repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
         if (user.getRole() == UserRole.ADMIN || user.getRole() == UserRole.GERENTE) {
             throw new BusinessRuleException("Usuário com perfil " + user.getRole().name() + " não pode ser excluído.");
         }
 
-        repo.deleteById(id);
+        repository.deleteById(id);
     }
 }

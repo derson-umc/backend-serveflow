@@ -24,10 +24,7 @@ public class UserRepository {
         } else {
             entity = springRepository.findById(user.getId())
                     .orElseThrow(() -> new UserNotFoundException(user.getId()));
-            entity.setUsername(user.getUsername());
-            entity.setPassword(user.getPassword());
-            entity.setRole(user.getRole());
-            entity.setJobposition(user.getJobposition());
+            updateEntity(entity, user);
         }
         return toDomain(springRepository.save(entity));
     }
@@ -61,10 +58,14 @@ public class UserRepository {
 
     private UserEntity toEntity(User user) {
         UserEntity entity = new UserEntity();
+        updateEntity(entity, user);
+        return entity;
+    }
+
+    private void updateEntity(UserEntity entity, User user) {
         entity.setUsername(user.getUsername());
         entity.setPassword(user.getPassword());
         entity.setRole(user.getRole());
         entity.setJobposition(user.getJobposition());
-        return entity;
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -31,10 +32,21 @@ public class User implements UserDetails {
         return new User(null, normalized, encodedPassword, role, jobposition);
     }
 
+    public User withPassword(String encodedPassword) {
+        return new User(id, username, encodedPassword, role, jobposition);
+    }
+
+    public User withJobPosition(String newJobPosition) {
+        return new User(id, username, password, role, newJobPosition);
+    }
+
+    public User update(String newUsername, String encodedPassword, UserRole newRole, String newJobPosition) {
+        return new User(id, newUsername, encodedPassword, newRole, newJobPosition);
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-
-        return java.util.List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
