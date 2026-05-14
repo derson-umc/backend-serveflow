@@ -7,9 +7,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import com.serveflow.Model.User.User;
-import com.serveflow.Model.User.UserRole;
-import com.serveflow.Repository.User.UserRepository;
+import com.serveflow.model.user.User;
+import com.serveflow.model.user.UserRole;
+import com.serveflow.repository.user.UserRepository;
 
 @Slf4j
 @SpringBootApplication
