@@ -6,12 +6,12 @@ import java.util.UUID;
 
 public class ItemAdditional {
 
-    private UUID id;
+    private final UUID id;
     private final String name;
     private final int quantity;
     private final BigDecimal unitPrice;
 
-    public ItemAdditional(String name, int quantity, BigDecimal unitPrice) {
+    public ItemAdditional(UUID id, String name, int quantity, BigDecimal unitPrice) {
         if (name == null || name.isBlank())
             throw new IllegalArgumentException("Nome do adicional é obrigatório.");
         if (quantity <= 0)
@@ -19,15 +19,14 @@ public class ItemAdditional {
         if (unitPrice == null || unitPrice.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Preço do adicional deve ser maior que zero.");
 
-        this.id = UUID.randomUUID();
+        this.id = Objects.requireNonNull(id, "ID do adicional é obrigatório.");
         this.name = name.strip();
         this.quantity = quantity;
         this.unitPrice = unitPrice;
     }
 
-    public ItemAdditional(UUID id, String name, int quantity, BigDecimal unitPrice) {
-        this(name, quantity, unitPrice);
-        this.id = id;
+    public ItemAdditional(String name, int quantity, BigDecimal unitPrice) {
+        this(UUID.randomUUID(), name, quantity, unitPrice);
     }
 
     public BigDecimal getTotal() {

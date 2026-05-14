@@ -4,11 +4,9 @@ import com.serveflow.dto.menu.request.MenuInput;
 import com.serveflow.dto.menu.request.PlaceOrderInput;
 import com.serveflow.dto.menu.request.RemoveMenuItemInput;
 import com.serveflow.dto.menu.response.MenuOutput;
-import com.serveflow.dto.order.request.AddressInput;
 import com.serveflow.dto.order.response.OrderOutput;
-import com.serveflow.integration.FindPostalCode;
-import com.serveflow.model.address.*;
-import com.serveflow.model.address.Number;
+import com.serveflow.integration.AddressResolver;
+import com.serveflow.model.address.Address;
 import com.serveflow.model.menu.Menu;
 import com.serveflow.model.menu.MenuItem;
 import com.serveflow.model.order.*;
@@ -18,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -26,14 +23,14 @@ public class MenuService {
 
     private final MenuRepository menuRepository;
     private final OrderRepository orderRepository;
-    private final FindPostalCode findPostalCode;
+    private final AddressResolver addressResolver;
 
     public MenuService(MenuRepository menuRepository,
                        OrderRepository orderRepository,
-                       FindPostalCode findPostalCode) {
+                       AddressResolver addressResolver) {
         this.menuRepository = menuRepository;
         this.orderRepository = orderRepository;
-        this.findPostalCode = findPostalCode;
+        this.addressResolver = addressResolver;
     }
 
     @Transactional
@@ -100,7 +97,7 @@ public class MenuService {
         }).toList();
 
         OrderType orderType = OrderType.valueOf(request.type().toUpperCase());
-        Address resolvedAddress = resolveAddress(request.address());
+        Address resolvedAddress = addressResolver.resolve(request.address());
 
         Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation());
         items.forEach(order::addItem);
@@ -111,38 +108,6 @@ public class MenuService {
         menuRepository.save(menu);
 
         return toOrderOutput(saved);
-    }
-
-    private Address resolveAddress(AddressInput dto) {
-        if (dto == null) return null;
-
-        if (dto.cep() != null && !dto.cep().isBlank()) {
-            Optional<Address> resolved = findPostalCode.findByCep(dto.cep());
-            if (resolved.isPresent()) {
-                Address base = resolved.get();
-                String num = dto.number() != null && !dto.number().isBlank() ? dto.number() : "S/N";
-                Complement comp = dto.complement() != null && !dto.complement().isBlank()
-                        ? new Complement(dto.complement()) : null;
-                return Address.create(base.getCep(), base.getStreet(), base.getCity(),
-                        base.getState(), new Number(num), comp);
-            }
-        }
-
-        boolean hasManualFields = dto.street() != null && !dto.street().isBlank()
-                && dto.city() != null && !dto.city().isBlank()
-                && dto.state() != null && !dto.state().isBlank()
-                && dto.number() != null && !dto.number().isBlank();
-
-        if (!hasManualFields) return null;
-
-        return Address.create(
-                dto.cep() != null && !dto.cep().isBlank() ? new Cep(dto.cep()) : null,
-                new Street(dto.street()),
-                new City(dto.city()),
-                new State(dto.state()),
-                new Number(dto.number()),
-                dto.complement() != null && !dto.complement().isBlank() ? new Complement(dto.complement()) : null
-        );
     }
 
     private MenuOutput toOutput(Menu menu) {
@@ -165,7 +130,7 @@ public class MenuService {
         return new OrderOutput(
                 order.getId(),
                 order.getCustomerName(),
-                toAddressOutput(order.getAddress()),
+                OrderOutput.AddressOutput.from(order.getAddress()),
                 order.getType().name(),
                 order.getStatus().name(),
                 order.getCreatedAt(),
@@ -180,16 +145,4 @@ public class MenuService {
         );
     }
 
-    private OrderOutput.AddressOutput toAddressOutput(Address a) {
-        if (a == null) return null;
-        return new OrderOutput.AddressOutput(
-                a.getId(),
-                a.getCep() != null ? a.getCep().getValue() : null,
-                a.getStreet() != null ? a.getStreet().getValue() : null,
-                a.getCity() != null ? a.getCity().getValue() : null,
-                a.getState() != null ? a.getState().getValue().name() : null,
-                a.getNumber() != null ? a.getNumber().getValue() : null,
-                a.getComplement() != null ? a.getComplement().getValue() : null
-        );
-    }
 }
