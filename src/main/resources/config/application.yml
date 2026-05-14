@@ -31,3 +31,7 @@ jwt:
 
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+
+integration:
+  viacep:
+    url: ${VIACEP_URL:https://viacep.com.br/ws/{cep}/json/}
