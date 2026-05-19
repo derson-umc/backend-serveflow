@@ -50,14 +50,22 @@ public class ProductService {
         repository.deactivate(id);
     }
 
+    @Transactional
+    public ProductOutput toggleStatus(UUID id) {
+        return toOutput(repository.toggleActive(id));
+    }
+
     private Product toDomain(ProductInput dto) {
         return Product.builder()
+                .id(UUID.randomUUID())
                 .name(dto.name())
                 .description(dto.description())
                 .category(dto.category())
                 .brand(dto.brand())
                 .price(dto.price())
                 .portion(dto.portion())
+                .imageUrl(dto.imageUrl())
+                .requiresTechnicalSheet(dto.requiresTechnicalSheet() != null && dto.requiresTechnicalSheet())
                 .build();
     }
 
@@ -65,7 +73,7 @@ public class ProductService {
         return new ProductOutput(
                 p.getId(), p.getName(), p.getDescription(),
                 p.getCategory(), p.getBrand(), p.getPrice(), p.getPortion(),
-                p.isActive(), p.getCreatedAt()
+                p.getImageUrl(), p.isActive(), p.isRequiresTechnicalSheet(), p.getCreatedAt()
         );
     }
 }

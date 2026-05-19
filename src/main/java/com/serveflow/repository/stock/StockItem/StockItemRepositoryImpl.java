@@ -2,6 +2,7 @@ package com.serveflow.repository.stock.StockItem;
 
 import com.serveflow.exception.stock.StockItemNotFound;
 import com.serveflow.model.stock.StockItem;
+import com.serveflow.model.stock.StockItemStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +22,15 @@ public class StockItemRepositoryImpl implements StockItemRepository {
     @Override
     @Transactional
     public StockItem save(StockItem item) {
-        StockItemEntity entity = springRepository.findById(item.getId())
-                .map(e -> updateEntity(e, item))
-                .orElseGet(() -> toEntity(item));
+        boolean isExisting = item.getVersion() != null;
+        StockItemEntity entity;
+        if (isExisting) {
+            entity = springRepository.findById(item.getId())
+                    .map(e -> updateEntity(e, item))
+                    .orElseGet(() -> toEntity(item));
+        } else {
+            entity = toEntity(item);
+        }
         return toDomain(springRepository.save(entity));
     }
 
@@ -47,11 +54,20 @@ public class StockItemRepositoryImpl implements StockItemRepository {
         return springRepository.findAll().stream().map(this::toDomain).toList();
     }
 
+    @Override
+    public List<StockItem> findByStatus(StockItemStatus status) {
+        return springRepository.findByStatus(status).stream().map(this::toDomain).toList();
+    }
+
     // ── mapping ───────────────────────────────────────────────────────────────
 
     private StockItem toDomain(StockItemEntity e) {
-        return new StockItem(e.getIdStockItem(), e.getName(), e.getUnit(),
-                e.getCurrentQuantity(), e.getMinimumQuantity(), e.getCreatedAt(), e.getVersion());
+        return new StockItem(
+                e.getIdStockItem(), e.getName(), e.getUnit(),
+                e.getCurrentQuantity(), e.getMinimumQuantity(),
+                e.getCategory(), e.getSupplier(), e.getAverageCost(),
+                e.getStatus() != null ? e.getStatus() : StockItemStatus.ACTIVE,
+                e.getCreatedAt(), e.getVersion());
     }
 
     private StockItemEntity toEntity(StockItem item) {
@@ -62,6 +78,10 @@ public class StockItemRepositoryImpl implements StockItemRepository {
         e.setUnit(item.getUnit());
         e.setCurrentQuantity(item.getCurrentQuantity());
         e.setMinimumQuantity(item.getMinimumQuantity());
+        e.setCategory(item.getCategory());
+        e.setSupplier(item.getSupplier());
+        e.setAverageCost(item.getAverageCost());
+        e.setStatus(item.getStatus());
         e.setCreatedAt(item.getCreatedAt());
         return e;
     }
@@ -71,6 +91,10 @@ public class StockItemRepositoryImpl implements StockItemRepository {
         e.setUnit(item.getUnit());
         e.setCurrentQuantity(item.getCurrentQuantity());
         e.setMinimumQuantity(item.getMinimumQuantity());
+        e.setCategory(item.getCategory());
+        e.setSupplier(item.getSupplier());
+        e.setAverageCost(item.getAverageCost());
+        e.setStatus(item.getStatus());
         return e;
     }
 }

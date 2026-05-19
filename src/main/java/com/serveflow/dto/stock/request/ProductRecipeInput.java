@@ -18,6 +18,10 @@ public record ProductRecipeInput(
         @Size(max = 120, message = "Nome deve ter no máximo 120 caracteres.")
         String productName,
 
+        String preparationMode,
+
+        String productType,
+
         @NotEmpty(message = "Ficha técnica deve conter ao menos um ingrediente.")
         @Valid
         List<RecipeIngredientInput> ingredients

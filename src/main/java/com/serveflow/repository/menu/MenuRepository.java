@@ -3,10 +3,12 @@ package com.serveflow.repository.menu;
 import com.serveflow.exception.menu.MenuNotFound;
 import com.serveflow.model.menu.Menu;
 import com.serveflow.model.menu.MenuItem;
+import com.serveflow.model.menu.MenuShift;
 import com.serveflow.model.menu.MenuStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -53,6 +55,20 @@ public class MenuRepository {
         return springRepository.findByActiveOrderId(orderId).map(this::toDomain);
     }
 
+    public Optional<Menu> findByDayOfWeekAndShift(DayOfWeek dayOfWeek, MenuShift shift) {
+        return springRepository.findByDayOfWeekAndShift(dayOfWeek, shift).map(this::toDomain);
+    }
+
+    @Transactional
+    public void disableItemsByProductId(UUID productId) {
+        springRepository.findAllByItemProductId(productId).forEach(menuEntity -> {
+            menuEntity.getItems().stream()
+                    .filter(i -> productId.equals(i.getProductId()) && !i.isRemoved())
+                    .forEach(i -> i.setAvailable(false));
+            springRepository.save(menuEntity);
+        });
+    }
+
     private Menu toDomain(MenuEntity e) {
         return new Menu(
                 e.getIdMenu(),
@@ -61,7 +77,9 @@ public class MenuRepository {
                 e.getActiveOrderId(),
                 e.getItems().stream().map(this::toItemDomain).toList(),
                 e.getCreatedAt(),
-                e.getVersion()
+                e.getVersion(),
+                e.getDayOfWeek(),
+                e.getShift()
         );
     }
 
@@ -89,6 +107,8 @@ public class MenuRepository {
         entity.setStatus(MenuStatus.valueOf(menu.getStatus().name()));
         entity.setActiveOrderId(menu.getActiveOrderId());
         entity.setCreatedAt(menu.getCreatedAt());
+        entity.setDayOfWeek(menu.getDayOfWeek());
+        entity.setShift(menu.getShift());
 
         List<MenuItemEntity> updatedItems = menu.getItems().stream()
                 .map(item -> syncItemEntity(

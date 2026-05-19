@@ -4,6 +4,7 @@ import com.serveflow.dto.menu.request.MenuInput;
 import com.serveflow.dto.menu.request.PlaceOrderInput;
 import com.serveflow.dto.menu.request.RemoveMenuItemInput;
 import com.serveflow.dto.menu.request.UpdateAvailabilityInput;
+import com.serveflow.dto.menu.response.ActiveMenuOutput;
 import com.serveflow.dto.menu.response.MenuOutput;
 import com.serveflow.dto.order.response.OrderOutput;
 import com.serveflow.service.menu.MenuService;
@@ -33,6 +34,11 @@ public class MenuController {
     @GetMapping
     public ResponseEntity<List<MenuOutput>> findAll() {
         return ResponseEntity.ok(menuService.findAll());
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<ActiveMenuOutput> getActive() {
+        return ResponseEntity.ok(menuService.getActive());
     }
 
     @GetMapping("/{id}")

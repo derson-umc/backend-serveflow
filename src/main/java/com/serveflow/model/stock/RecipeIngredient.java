@@ -1,6 +1,7 @@
 package com.serveflow.model.stock;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -11,9 +12,10 @@ public class RecipeIngredient {
     private final String stockItemName;
     private final BigDecimal quantityPerUnit;
     private final String unit;
+    private final LocalDate validity;
 
     public RecipeIngredient(UUID id, UUID stockItemId, String stockItemName,
-                            BigDecimal quantityPerUnit, String unit) {
+                            BigDecimal quantityPerUnit, String unit, LocalDate validity) {
         this.id = Objects.requireNonNull(id, "ID do ingrediente é obrigatório.");
         this.stockItemId = Objects.requireNonNull(stockItemId, "ID do insumo é obrigatório.");
         this.stockItemName = Objects.requireNonNull(stockItemName, "Nome do insumo é obrigatório.");
@@ -21,11 +23,12 @@ public class RecipeIngredient {
             throw new IllegalArgumentException("Quantidade por unidade deve ser maior que zero.");
         this.quantityPerUnit = quantityPerUnit;
         this.unit = Objects.requireNonNull(unit, "Unidade de medida é obrigatória.");
+        this.validity = validity;
     }
 
     public static RecipeIngredient create(UUID stockItemId, String stockItemName,
-                                          BigDecimal quantityPerUnit, String unit) {
-        return new RecipeIngredient(UUID.randomUUID(), stockItemId, stockItemName, quantityPerUnit, unit);
+                                          BigDecimal quantityPerUnit, String unit, LocalDate validity) {
+        return new RecipeIngredient(UUID.randomUUID(), stockItemId, stockItemName, quantityPerUnit, unit, validity);
     }
 
     public BigDecimal getRequiredQuantity(int productQuantity) {
@@ -37,6 +40,7 @@ public class RecipeIngredient {
     public String getStockItemName()     { return stockItemName; }
     public BigDecimal getQuantityPerUnit() { return quantityPerUnit; }
     public String getUnit()              { return unit; }
+    public LocalDate getValidity()       { return validity; }
 
     @Override
     public boolean equals(Object o) {
