@@ -20,8 +20,29 @@ spring:
   flyway:
     locations: classpath:db/migration
 
+  servlet:
+    multipart:
+      max-file-size: 8MB
+      max-request-size: 10MB
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+    test-connection: false
+
+app:
+  mail:
+    from: ${MAIL_FROM}
+
 server:
   port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
 
 jwt:
   secret: ${JWT_SECRET}
@@ -29,3 +50,8 @@ jwt:
 
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+
+integration:
+  viacep:
+    url: ${VIACEP_URL:https://viacep.com.br/ws/{cep}/json/}
+
