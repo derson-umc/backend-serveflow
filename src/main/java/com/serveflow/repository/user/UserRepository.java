@@ -53,7 +53,7 @@ public class UserRepository {
     }
 
     private User toDomain(UserEntity entity) {
-        return new User(entity.getId(), entity.getUsername(), entity.getPassword(), entity.getRole(), entity.getJobposition());
+        return new User(entity.getId(), entity.getUsername(), entity.getEmail(), entity.getPassword(), entity.getRole(), entity.getJobposition());
     }
 
     private UserEntity toEntity(User user) {
@@ -64,6 +64,7 @@ public class UserRepository {
 
     private void updateEntity(UserEntity entity, User user) {
         entity.setUsername(user.getUsername());
+        entity.setEmail(user.getEmail());
         entity.setPassword(user.getPassword());
         entity.setRole(user.getRole());
         entity.setJobposition(user.getJobposition());
