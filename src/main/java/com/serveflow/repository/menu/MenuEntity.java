@@ -1,10 +1,12 @@
 package com.serveflow.repository.menu;
 
+import com.serveflow.model.menu.MenuShift;
 import com.serveflow.model.menu.MenuStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.domain.Persistable;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +39,14 @@ public class MenuEntity implements Persistable<UUID> {
 
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "day_of_week", length = 15)
+    private DayOfWeek dayOfWeek;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "shift", length = 20)
+    private MenuShift shift;
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MenuItemEntity> items = new ArrayList<>();

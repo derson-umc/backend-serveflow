@@ -9,24 +9,38 @@ public class ProductRecipe {
     private final UUID productId;
     private final String productName;
     private final List<RecipeIngredient> ingredients;
+    private String preparationMode;
+    private ProductType productType;
     private Long version;
 
     public ProductRecipe(UUID id, UUID productId, String productName,
-                         List<RecipeIngredient> ingredients, Long version) {
+                         List<RecipeIngredient> ingredients, String preparationMode,
+                         ProductType productType, Long version) {
         this.id = Objects.requireNonNull(id, "ID da ficha técnica é obrigatório.");
         this.productId = Objects.requireNonNull(productId, "ID do produto é obrigatório.");
         if (productName == null || productName.isBlank())
             throw new IllegalArgumentException("Nome do produto é obrigatório.");
         this.productName = productName.strip();
         this.ingredients = new ArrayList<>(Optional.ofNullable(ingredients).orElse(List.of()));
+        this.preparationMode = preparationMode;
+        this.productType = productType != null ? productType : ProductType.FABRICATED;
         this.version = version;
     }
 
     public static ProductRecipe create(UUID productId, String productName,
-                                       List<RecipeIngredient> ingredients) {
+                                       List<RecipeIngredient> ingredients,
+                                       String preparationMode, ProductType productType) {
         if (ingredients == null || ingredients.isEmpty())
             throw new IllegalArgumentException("Ficha técnica deve conter ao menos um ingrediente.");
-        return new ProductRecipe(UUID.randomUUID(), productId, productName, ingredients, null);
+        return new ProductRecipe(UUID.randomUUID(), productId, productName,
+                ingredients, preparationMode, productType, null);
+    }
+
+    public void replaceIngredients(List<RecipeIngredient> newIngredients) {
+        if (newIngredients == null || newIngredients.isEmpty())
+            throw new IllegalArgumentException("Ficha técnica deve conter ao menos um ingrediente.");
+        this.ingredients.clear();
+        this.ingredients.addAll(newIngredients);
     }
 
     public void addIngredient(RecipeIngredient ingredient) {
@@ -52,11 +66,16 @@ public class ProductRecipe {
         });
     }
 
-    public UUID getId()          { return id; }
-    public UUID getProductId()   { return productId; }
-    public String getProductName() { return productName; }
+    public void updatePreparationMode(String preparationMode) { this.preparationMode = preparationMode; }
+    public void updateProductType(ProductType productType) { this.productType = productType; }
+
+    public UUID getId()              { return id; }
+    public UUID getProductId()       { return productId; }
+    public String getProductName()   { return productName; }
     public List<RecipeIngredient> getIngredients() { return List.copyOf(ingredients); }
-    public Long getVersion()     { return version; }
+    public String getPreparationMode() { return preparationMode; }
+    public ProductType getProductType() { return productType; }
+    public Long getVersion()         { return version; }
 
     @Override
     public boolean equals(Object o) {

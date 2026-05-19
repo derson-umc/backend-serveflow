@@ -3,8 +3,10 @@ package com.serveflow.repository.stock.RecipeIngredient;
 import com.serveflow.repository.stock.ProductRecipe.ProductRecipeEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.domain.Persistable;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -13,11 +15,24 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecipeIngredientEntity {
+public class RecipeIngredientEntity implements Persistable<UUID> {
 
     @Id
     @Column(name = "id_ingredient", updatable = false, nullable = false)
     private UUID idIngredient;
+
+    @Transient
+    private boolean isNew = true;
+
+    @Override
+    public UUID getId() { return idIngredient; }
+
+    @Override
+    public boolean isNew() { return isNew; }
+
+    @PostPersist
+    @PostLoad
+    void markNotNew() { this.isNew = false; }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_recipe", nullable = false)
@@ -34,4 +49,7 @@ public class RecipeIngredientEntity {
 
     @Column(nullable = false, length = 20)
     private String unit;
+
+    @Column(name = "validity")
+    private LocalDate validity;
 }

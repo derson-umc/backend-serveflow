@@ -1,10 +1,19 @@
 package com.serveflow.exception.handler;
 
+import com.serveflow.exception.auth.InvalidResetTokenException;
+import com.serveflow.exception.cashier.CashSessionAlreadyClosedException;
+import org.springframework.dao.OptimisticLockingFailureException;
+import com.serveflow.exception.cashier.CashSessionNotFoundException;
+import com.serveflow.exception.cashier.OpenSessionAlreadyExistsException;
+import com.serveflow.exception.financial.AccountNotFoundException;
+import com.serveflow.exception.financial.DuplicateSettlementException;
+import com.serveflow.exception.financial.InconsistentAmountException;
 import com.serveflow.exception.menu.MenuNotFound;
 import com.serveflow.exception.order.OrderNotFound;
 import com.serveflow.exception.product.ProductNotFound;
 import com.serveflow.exception.stock.InsufficientStock;
 import com.serveflow.exception.stock.RecipeNotFound;
+import com.serveflow.exception.stock.StockAlertNotFound;
 import com.serveflow.exception.stock.StockItemNotFound;
 import com.serveflow.exception.user.BusinessRuleException;
 import com.serveflow.exception.user.ConflictException;
@@ -56,8 +65,43 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+    @ExceptionHandler(StockAlertNotFound.class)
+    public ResponseEntity<Map<String, Object>> handleStockAlertNotFound(StockAlertNotFound ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
     @ExceptionHandler(InsufficientStock.class)
     public ResponseEntity<Map<String, Object>> handleInsufficientStock(InsufficientStock ex) {
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    @ExceptionHandler(CashSessionNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleCashSessionNotFound(CashSessionNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(CashSessionAlreadyClosedException.class)
+    public ResponseEntity<Map<String, Object>> handleCashSessionAlreadyClosed(CashSessionAlreadyClosedException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(OpenSessionAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleOpenSessionAlreadyExists(OpenSessionAlreadyExistsException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleAccountNotFound(AccountNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateSettlementException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateSettlement(DuplicateSettlementException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(InconsistentAmountException.class)
+    public ResponseEntity<Map<String, Object>> handleInconsistentAmount(InconsistentAmountException ex) {
         return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
     }
 
@@ -71,9 +115,20 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<Map<String, Object>> handleOptimisticLock(OptimisticLockingFailureException ex) {
+        log.warn("Conflito de versão (optimistic lock): {}", ex.getMessage());
+        return buildResponse(HttpStatus.CONFLICT, "O recurso foi modificado por outra operação. Tente novamente.");
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidResetTokenException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidResetToken(InvalidResetTokenException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "INVALID_RESET_TOKEN");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

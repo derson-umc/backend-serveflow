@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB_STAGING:serveflow_homolog}
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
