@@ -11,5 +11,9 @@ public record StockItemOutput(
         BigDecimal currentQuantity,
         BigDecimal minimumQuantity,
         boolean belowMinimum,
+        String category,
+        String supplier,
+        BigDecimal averageCost,
+        String status,
         LocalDateTime createdAt
 ) {}

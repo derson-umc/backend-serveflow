@@ -17,6 +17,7 @@ public class Order {
     private final List<OrderItem> items;
 
     private OrderStatus status;
+    private String paymentMethod;
     private Long version;
 
     public static Order create(String customerName, Address address,
@@ -32,6 +33,7 @@ public class Order {
                 OrderStatus.CREATED,
                 LocalDateTime.now(),
                 observation,
+                null,
                 new ArrayList<>(),
                 null
         );
@@ -39,7 +41,7 @@ public class Order {
 
     public Order(UUID id, String customerName, Address address, OrderType type,
                  OrderStatus status, LocalDateTime createdAt, String observation,
-                 List<OrderItem> items, Long version) {
+                 String paymentMethod, List<OrderItem> items, Long version) {
 
         this.id = Objects.requireNonNull(id, "ID do pedido é obrigatório.");
         this.customerName = Objects.requireNonNull(customerName, "Nome do cliente é obrigatório.");
@@ -48,6 +50,7 @@ public class Order {
         this.status = Objects.requireNonNull(status, "Status do pedido é obrigatório.");
         this.createdAt = Objects.requireNonNull(createdAt, "Data de criação é obrigatória.");
         this.observation = observation != null ? observation.strip() : null;
+        this.paymentMethod = paymentMethod;
         this.items = new ArrayList<>(Optional.ofNullable(items).orElse(List.of()));
         this.version = version;
     }
@@ -83,6 +86,12 @@ public class Order {
     public void complete() { transitionTo(OrderStatus.DELIVERED); }
     public void cancel()   { transitionTo(OrderStatus.CANCELLED); }
 
+    public void registerPayment(String method) {
+        if (method == null || method.isBlank())
+            throw new IllegalArgumentException("Método de pagamento é obrigatório.");
+        this.paymentMethod = method.strip().toUpperCase();
+    }
+
     public BigDecimal getTotal() {
         return items.stream()
                 .map(OrderItem::getTotal)
@@ -100,6 +109,7 @@ public class Order {
     public OrderStatus getStatus()   { return status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public String getObservation()   { return observation; }
+    public String getPaymentMethod() { return paymentMethod; }
     public List<OrderItem> getItems() { return List.copyOf(items); }
     public Long getVersion()         { return version; }
 

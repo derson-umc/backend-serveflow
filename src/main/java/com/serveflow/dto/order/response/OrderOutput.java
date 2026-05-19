@@ -15,6 +15,7 @@ public record OrderOutput(
         String status,
         LocalDateTime createdAt,
         String observation,
+        String paymentMethod,
         BigDecimal totalValue,
         List<OrderItemOutput> items
 ) {

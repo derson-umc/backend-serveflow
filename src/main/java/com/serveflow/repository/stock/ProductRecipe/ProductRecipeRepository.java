@@ -11,4 +11,5 @@ public interface ProductRecipeRepository {
     ProductRecipe findById(UUID id);
     List<ProductRecipe> findAll();
     Optional<ProductRecipe> findByProductId(UUID productId);
+    List<ProductRecipe> findAllByStockItemId(UUID stockItemId);
 }

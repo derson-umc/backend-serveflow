@@ -23,5 +23,12 @@ public record StockItemInput(
 
         @NotNull(message = "Quantidade mínima é obrigatória.")
         @DecimalMin(value = "0.0", message = "Quantidade mínima não pode ser negativa.")
-        BigDecimal minimumQuantity
+        BigDecimal minimumQuantity,
+
+        String category,
+
+        String supplier,
+
+        @DecimalMin(value = "0.0", message = "Custo médio não pode ser negativo.")
+        BigDecimal averageCost
 ) {}

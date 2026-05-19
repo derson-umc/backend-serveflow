@@ -1,6 +1,11 @@
 package com.serveflow.repository.product;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.*;
 import org.springframework.data.domain.Persistable;
 
@@ -17,7 +22,6 @@ import java.util.UUID;
 public class ProductEntity implements Persistable<UUID> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id_product", updatable = false, nullable = false)
     private UUID idProduct;
 
@@ -42,8 +46,14 @@ public class ProductEntity implements Persistable<UUID> {
     @Column(nullable = false, length = 50)
     private String portion;
 
+    @Column(name = "image_url", length = 2048)
+    private String imageUrl;
+
     @Column(nullable = false)
     private boolean active;
+
+    @Column(name = "requires_technical_sheet", nullable = false)
+    private boolean requiresTechnicalSheet = false;
 
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
@@ -57,6 +67,6 @@ public class ProductEntity implements Persistable<UUID> {
     @PrePersist
     protected void onCreate() {
         if (this.createdAt == null) this.createdAt = LocalDateTime.now();
-        this.active = true;
+        if (this.version == null)   this.version   = 0L;
     }
 }

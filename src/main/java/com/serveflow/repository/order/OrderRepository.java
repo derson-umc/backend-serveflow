@@ -17,9 +17,12 @@ import java.util.function.Supplier;
 public class OrderRepository {
 
     private final SpringOrderRepository springRepository;
+    private final SpringAddressRepository addressRepository;
 
-    public OrderRepository(SpringOrderRepository springRepository) {
+    public OrderRepository(SpringOrderRepository springRepository,
+                           SpringAddressRepository addressRepository) {
         this.springRepository = springRepository;
+        this.addressRepository = addressRepository;
     }
 
     @Transactional
@@ -61,6 +64,7 @@ public class OrderRepository {
                 e.getStatus(),
                 e.getCreatedAt(),
                 e.getObservation(),
+                e.getPaymentMethod(),
                 e.getItems().stream().map(this::toItemDomain).toList(),
                 e.getVersion()
         );
@@ -106,6 +110,7 @@ public class OrderRepository {
         entity.setStatus(order.getStatus());
         entity.setCreatedAt(order.getCreatedAt());
         entity.setObservation(order.getObservation());
+        entity.setPaymentMethod(order.getPaymentMethod());
 
         if (order.getAddress() != null) {
             entity.setAddress(toAddressEntity(order.getAddress()));
@@ -158,15 +163,28 @@ public class OrderRepository {
     }
 
     private AddressEntity toAddressEntity(Address a) {
-        AddressEntity entity = new AddressEntity();
-        entity.setIdAddress(a.getId());
-        entity.setCep(a.getCep() != null ? a.getCep().getValue() : null);
-        entity.setStreet(a.getStreet() != null ? a.getStreet().getValue() : null);
-        entity.setCity(a.getCity() != null ? a.getCity().getValue() : null);
-        entity.setState(a.getState() != null ? a.getState().getValue().name() : null);
-        entity.setNumber(a.getNumber() != null ? a.getNumber().getValue() : null);
-        entity.setComplement(a.getComplement() != null ? a.getComplement().getValue() : null);
-        return entity;
+        String cep        = normalize(a.getCep()        != null ? a.getCep().getValue()          : null);
+        String street     = normalize(a.getStreet()     != null ? a.getStreet().getValue()       : null);
+        String city       = normalize(a.getCity()       != null ? a.getCity().getValue()         : null);
+        String state      = normalize(a.getState()      != null ? a.getState().getValue().name() : null);
+        String number     = normalize(a.getNumber()     != null ? a.getNumber().getValue()       : null);
+        String complement = normalize(a.getComplement() != null ? a.getComplement().getValue()   : null);
+
+        return addressRepository.findExisting(cep, street, city, state, number, complement)
+                .orElseGet(() -> {
+                    AddressEntity entity = new AddressEntity();
+                    entity.setCep(cep);
+                    entity.setStreet(street);
+                    entity.setCity(city);
+                    entity.setState(state);
+                    entity.setNumber(number);
+                    entity.setComplement(complement);
+                    return addressRepository.save(entity);
+                });
+    }
+
+    private String normalize(String value) {
+        return value != null ? value.trim().toLowerCase() : null;
     }
 
     private <E, ID> E findOrNew(List<E> list, ID id, Function<E, ID> idGetter, Supplier<E> factory) {

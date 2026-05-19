@@ -21,6 +21,8 @@ public record OrderInput(
 
         String observation,
 
+        String paymentMethod,
+
         @NotEmpty(message = "Pedido deve conter ao menos um item.")
         @Valid
         List<OrderItemInput> items

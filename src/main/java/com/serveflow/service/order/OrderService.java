@@ -1,5 +1,7 @@
 package com.serveflow.service.order;
 
+import com.serveflow.controller.kds.KdsController;
+import com.serveflow.controller.kds.KdsEventPublisher;
 import com.serveflow.dto.order.request.*;
 import com.serveflow.dto.order.response.OrderOutput;
 import com.serveflow.integration.AddressResolver;
@@ -8,6 +10,7 @@ import com.serveflow.model.order.*;
 import com.serveflow.repository.menu.MenuRepository;
 import com.serveflow.repository.order.OrderRepository;
 import com.serveflow.service.stock.StockService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,15 +26,18 @@ public class OrderService {
     private final AddressResolver addressResolver;
     private final StockService stockService;
     private final MenuRepository menuRepository;
+    private final KdsEventPublisher kdsEventPublisher;
 
     public OrderService(OrderRepository orderRepository,
                         AddressResolver addressResolver,
                         StockService stockService,
-                        MenuRepository menuRepository) {
+                        MenuRepository menuRepository,
+                        @Lazy KdsEventPublisher kdsEventPublisher) {
         this.orderRepository = orderRepository;
         this.addressResolver = addressResolver;
         this.stockService = stockService;
         this.menuRepository = menuRepository;
+        this.kdsEventPublisher = kdsEventPublisher;
     }
 
     @Transactional
@@ -39,10 +45,19 @@ public class OrderService {
         Address resolvedAddress = addressResolver.resolve(request.address());
         OrderType orderType = OrderType.valueOf(request.type().toUpperCase());
 
-        Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation());
-        toItems(request.items()).forEach(order::addItem);
+        List<OrderItem> items = toItems(request.items());
+        stockService.validateRecipesForOrder(items);
 
-        return toOutput(orderRepository.save(order));
+        Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation());
+        items.forEach(order::addItem);
+
+        if (request.paymentMethod() != null && !request.paymentMethod().isBlank()) {
+            order.registerPayment(request.paymentMethod());
+        }
+
+        OrderOutput output = toOutput(orderRepository.save(order));
+        publishKdsSafely(() -> kdsEventPublisher.publishUpdate(toKdsOutput(output)));
+        return output;
     }
 
     public OrderOutput findById(UUID id) {
@@ -65,29 +80,48 @@ public class OrderService {
         order.confirm();
         Order saved = orderRepository.save(order);
         stockService.deductForOrder(saved.getId(), saved.getItems());
-        return toOutput(saved);
+        OrderOutput output = toOutput(saved);
+        publishKdsSafely(() -> kdsEventPublisher.publishUpdate(toKdsOutput(output)));
+        return output;
     }
 
     @Transactional
     public OrderOutput startPreparation(UUID id) {
-        return toOutput(transition(id, Order::startPreparation));
+        Order order = orderRepository.findById(id);
+        if (order.getStatus() == OrderStatus.CREATED) {
+            stockService.validateRecipesForOrder(order.getItems());
+            stockService.validateStockForOrder(order.getItems());
+            order.confirm();
+            order = orderRepository.save(order);
+            stockService.deductForOrder(order.getId(), order.getItems());
+        }
+        order.startPreparation();
+        OrderOutput output = toOutput(orderRepository.save(order));
+        publishKdsSafely(() -> kdsEventPublisher.publishUpdate(toKdsOutput(output)));
+        return output;
     }
 
     @Transactional
     public OrderOutput markReady(UUID id) {
-        return toOutput(transition(id, Order::markReady));
+        OrderOutput output = toOutput(transition(id, Order::markReady));
+        publishKdsSafely(() -> kdsEventPublisher.publishRemove(output.id()));
+        return output;
     }
 
     @Transactional
     public OrderOutput sendForDelivery(UUID id) {
-        return toOutput(transition(id, Order::sendForDelivery));
+        OrderOutput output = toOutput(transition(id, Order::sendForDelivery));
+        publishKdsSafely(() -> kdsEventPublisher.publishRemove(output.id()));
+        return output;
     }
 
     @Transactional
     public OrderOutput complete(UUID id) {
         Order saved = transition(id, Order::complete);
         unlockMenuByOrder(saved.getId());
-        return toOutput(saved);
+        OrderOutput output = toOutput(saved);
+        publishKdsSafely(() -> kdsEventPublisher.publishRemove(output.id()));
+        return output;
     }
 
     @Transactional
@@ -100,7 +134,27 @@ public class OrderService {
             stockService.restoreForOrder(saved.getId(), saved.getItems());
         }
         unlockMenuByOrder(saved.getId());
+        publishKdsSafely(() -> kdsEventPublisher.publishRemove(saved.getId()));
         return toOutput(saved);
+    }
+
+    private void publishKdsSafely(Runnable action) {
+        try {
+            action.run();
+        } catch (Exception ignored) {
+        }
+    }
+
+    private KdsController.KdsOrderOutput toKdsOutput(OrderOutput o) {
+        List<KdsController.KdsItemOutput> items = o.items().stream()
+                .map(i -> new KdsController.KdsItemOutput(
+                        i.id(), i.productName(), i.quantity(), i.observation(),
+                        i.additionals().stream()
+                                .map(a -> a.name() + (a.quantity() > 1 ? " x" + a.quantity() : ""))
+                                .toList()
+                ))
+                .toList();
+        return new KdsController.KdsOrderOutput(o.id(), o.customerName(), o.type(), o.status(), o.createdAt(), items);
     }
 
     private void unlockMenuByOrder(UUID orderId) {
@@ -132,6 +186,7 @@ public class OrderService {
                 order.getStatus().name(),
                 order.getCreatedAt(),
                 order.getObservation(),
+                order.getPaymentMethod(),
                 order.getTotal(),
                 order.getItems().stream().map(this::toItemOutput).toList()
         );

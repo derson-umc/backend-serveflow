@@ -58,6 +58,14 @@ public class ProductRepository {
         springRepository.save(entity);
     }
 
+    @Transactional
+    public Product toggleActive(UUID id) {
+        ProductEntity entity = springRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFound(id));
+        entity.setActive(!entity.isActive());
+        return toDomain(springRepository.save(entity));
+    }
+
     private Product toDomain(ProductEntity e) {
         return Product.builder()
                 .id(e.getIdProduct())
@@ -67,7 +75,9 @@ public class ProductRepository {
                 .brand(e.getBrand())
                 .price(e.getPrice())
                 .portion(e.getPortion())
+                .imageUrl(e.getImageUrl())
                 .active(e.isActive())
+                .requiresTechnicalSheet(e.isRequiresTechnicalSheet())
                 .createdAt(e.getCreatedAt())
                 .version(e.getVersion())
                 .build();
@@ -82,7 +92,9 @@ public class ProductRepository {
         entity.setBrand(p.getBrand());
         entity.setPrice(p.getPrice());
         entity.setPortion(p.getPortion());
+        entity.setImageUrl(p.getImageUrl());
         entity.setActive(p.isActive());
+        entity.setRequiresTechnicalSheet(p.isRequiresTechnicalSheet());
         entity.setCreatedAt(p.getCreatedAt());
         return entity;
     }
@@ -94,6 +106,8 @@ public class ProductRepository {
         entity.setBrand(p.getBrand());
         entity.setPrice(p.getPrice());
         entity.setPortion(p.getPortion());
+        entity.setImageUrl(p.getImageUrl());
         entity.setActive(p.isActive());
+        entity.setRequiresTechnicalSheet(p.isRequiresTechnicalSheet());
     }
 }
