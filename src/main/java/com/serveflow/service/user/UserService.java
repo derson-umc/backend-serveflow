@@ -35,6 +35,11 @@ public class UserService {
         return value == null ? null : value.trim().toLowerCase(Locale.ROOT);
     }
 
+    private static String normalizeEmail(String value) {
+        if (value == null || value.isBlank()) return null;
+        return value.trim().toLowerCase(Locale.ROOT);
+    }
+
     private void validateRolePermission(UserRole targetRole) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof User currentUser) {
@@ -55,12 +60,16 @@ public class UserService {
     @Transactional
     public UserOutput create(UserInput request) {
         validateRolePermission(request.role());
+        if (request.password() == null || request.password().isBlank()) {
+            throw new BusinessRuleException("Senha é obrigatória");
+        }
         String username = normalizeUsername(request.username());
         if (repository.existsByUsername(username)) {
             throw new ConflictException("Username '" + username + "' já está em uso");
         }
         User user = User.create(
                 username,
+                normalizeEmail(request.email()),
                 encoder.encode(request.password()),
                 request.role(),
                 request.jobposition()
@@ -103,7 +112,9 @@ public class UserService {
                 ? encoder.encode(request.password())
                 : existing.getPassword();
 
-        return UserOutput.from(repository.save(existing.update(username, password, request.role(), request.jobposition())));
+        return UserOutput.from(repository.save(
+                existing.update(username, normalizeEmail(request.email()), password, request.role(), request.jobposition())
+        ));
     }
 
     @Transactional
