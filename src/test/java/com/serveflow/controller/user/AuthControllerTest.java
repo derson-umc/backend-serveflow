@@ -33,7 +33,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("Login com credenciais válidas retorna 200 OK.")
         void login_comCredenciaisValidas_retorna200() {
-            AuthResult authResult = new AuthResult("jwt-xyz", 1L, "admin", "ADMIN");
+            AuthResult authResult = new AuthResult("jwt-xyz", null, 1L, "admin", "ADMIN");
             when(authService.authenticate("admin", "senha"))
                     .thenReturn(authResult);
 
@@ -51,7 +51,7 @@ class AuthControllerTest {
         void login_retornaTokenJWT() {
             String tokenEsperado = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult(tokenEsperado, 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult(tokenEsperado, null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest("admin", "senha"));
@@ -64,7 +64,7 @@ class AuthControllerTest {
         void login_retornaIdUsuarioCorreto() {
             Long idEsperado = 42L;
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult("token", idEsperado, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, idEsperado, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest("admin", "senha"));
@@ -77,7 +77,7 @@ class AuthControllerTest {
         void login_retornaUsernameCorreto() {
             String usernameEsperado = "anderson.ramos";
             when(authService.authenticate("anderson.ramos", "senha123"))
-                    .thenReturn(new AuthResult("token", 1L, usernameEsperado, "USER"));
+                    .thenReturn(new AuthResult("token", null, 1L, usernameEsperado, "USER"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest("anderson.ramos", "senha123"));
@@ -89,7 +89,7 @@ class AuthControllerTest {
         @DisplayName("Login retorna role/permissão correta.")
         void login_retornaRoleCorreta() {
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult("token", 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest("admin", "senha"));
@@ -101,21 +101,21 @@ class AuthControllerTest {
         @DisplayName("Login com diferentes roles retorna role correto.")
         void login_comDiferentesRoles() {
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult("token", 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> responseAdmin =
                     controller.login(new AuthController.LoginRequest("admin", "senha"));
             assertThat(responseAdmin.getBody().role()).isEqualTo("ADMIN");
 
             when(authService.authenticate("user", "senha"))
-                    .thenReturn(new AuthResult("token", 2L, "user", "USER"));
+                    .thenReturn(new AuthResult("token", null, 2L, "user", "USER"));
 
             ResponseEntity<AuthController.LoginResponse> responseUser =
                     controller.login(new AuthController.LoginRequest("user", "senha"));
             assertThat(responseUser.getBody().role()).isEqualTo("USER");
 
             when(authService.authenticate("manager", "senha"))
-                    .thenReturn(new AuthResult("token", 3L, "manager", "MANAGER"));
+                    .thenReturn(new AuthResult("token", null, 3L, "manager", "MANAGER"));
 
             ResponseEntity<AuthController.LoginResponse> responseManager =
                     controller.login(new AuthController.LoginRequest("manager", "senha"));
@@ -126,7 +126,7 @@ class AuthControllerTest {
         @DisplayName("Login delega para AuthService com parâmetros corretos.")
         void login_delegaAuthServiceComParametrosCorretos() {
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult("token", 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             controller.login(new AuthController.LoginRequest("admin", "senha"));
 
@@ -137,7 +137,7 @@ class AuthControllerTest {
         @DisplayName("Login com múltiplas chamadas chama AuthService múltiplas vezes.")
         void login_comMultiplasChamadas() {
             when(authService.authenticate(anyString(), anyString()))
-                    .thenReturn(new AuthResult("token", 1L, "user", "USER"));
+                    .thenReturn(new AuthResult("token", null, 1L, "user", "USER"));
 
             controller.login(new AuthController.LoginRequest("user1", "pass1"));
             controller.login(new AuthController.LoginRequest("user2", "pass2"));
@@ -150,7 +150,7 @@ class AuthControllerTest {
         @DisplayName("Response contém todos os campos obrigatórios.")
         void login_responseContemTodosCamposObrigatorios() {
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult("token", 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest("admin", "senha"));
@@ -257,7 +257,7 @@ class AuthControllerTest {
         void login_comUsuarioMuitoLongo() {
             String usuarioLongo = "a".repeat(1000);
             when(authService.authenticate(usuarioLongo, "senha"))
-                    .thenReturn(new AuthResult("token", 1L, usuarioLongo, "USER"));
+                    .thenReturn(new AuthResult("token", null, 1L, usuarioLongo, "USER"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest(usuarioLongo, "senha"));
@@ -270,7 +270,7 @@ class AuthControllerTest {
         void login_comSenhaMuitoLonga() {
             String senhaLonga = "x".repeat(1000);
             when(authService.authenticate("admin", senhaLonga))
-                    .thenReturn(new AuthResult("token", 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest("admin", senhaLonga));
@@ -283,7 +283,7 @@ class AuthControllerTest {
         void login_comCaracteresEspeciais() {
             String usuarioEspecial = "user@#$%^&*()";
             when(authService.authenticate(usuarioEspecial, "senha!@#$"))
-                    .thenReturn(new AuthResult("token", 1L, usuarioEspecial, "USER"));
+                    .thenReturn(new AuthResult("token", null, 1L, usuarioEspecial, "USER"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest(usuarioEspecial, "senha!@#$"));
@@ -296,7 +296,7 @@ class AuthControllerTest {
         void login_comUnicode() {
             String usuarioUnicode = "usuário_josé";
             when(authService.authenticate(usuarioUnicode, "senhaçãõ"))
-                    .thenReturn(new AuthResult("token", 1L, usuarioUnicode, "USER"));
+                    .thenReturn(new AuthResult("token", null, 1L, usuarioUnicode, "USER"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest(usuarioUnicode, "senhaçãõ"));
@@ -309,7 +309,7 @@ class AuthControllerTest {
         void login_comIdMuitoGrande() {
             Long idGrande = Long.MAX_VALUE;
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult("token", idGrande, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, idGrande, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest("admin", "senha"));
@@ -322,7 +322,7 @@ class AuthControllerTest {
         void login_comTokenMuitoLongo() {
             String tokenLongo = "x".repeat(10000);
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult(tokenLongo, 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult(tokenLongo, null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest("admin", "senha"));
@@ -339,7 +339,7 @@ class AuthControllerTest {
         @DisplayName("AuthService é chamado exatamente uma vez")
         void authService_chamadoExatamenteUmaVez() {
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult("token", 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             controller.login(new AuthController.LoginRequest("admin", "senha"));
 
@@ -350,7 +350,7 @@ class AuthControllerTest {
         @DisplayName("AuthService não é chamado mais de uma vez.")
         void authService_naoEChamadoMaisDeUmaVez() {
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult("token", 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             controller.login(new AuthController.LoginRequest("admin", "senha"));
 
@@ -362,9 +362,9 @@ class AuthControllerTest {
         @DisplayName("Diferentes usuários geram diferentes tokens.")
         void diferentesUsuarios_geramDiferentesTokens() {
             when(authService.authenticate("user1", "senha"))
-                    .thenReturn(new AuthResult("token-user1", 1L, "user1", "USER"));
+                    .thenReturn(new AuthResult("token-user1", null, 1L, "user1", "USER"));
             when(authService.authenticate("user2", "senha"))
-                    .thenReturn(new AuthResult("token-user2", 2L, "user2", "USER"));
+                    .thenReturn(new AuthResult("token-user2", null, 2L, "user2", "USER"));
 
             ResponseEntity<AuthController.LoginResponse> response1 =
                     controller.login(new AuthController.LoginRequest("user1", "senha"));
@@ -378,7 +378,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("Múltiplos logins do mesmo usuário retornam dados consistentes.")
         void multiplosLogins_mesmoUsuario_dadosConsistentes() {
-            AuthResult resultado = new AuthResult("token", 1L, "admin", "ADMIN");
+            AuthResult resultado = new AuthResult("token", null, 1L, "admin", "ADMIN");
             when(authService.authenticate("admin", "senha"))
                     .thenReturn(resultado);
 
@@ -399,7 +399,7 @@ class AuthControllerTest {
         @DisplayName("Login retorna resposta em tempo aceitável.")
         void login_retornaRespostaRapida() {
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult("token", 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             long inicio = System.currentTimeMillis();
             controller.login(new AuthController.LoginRequest("admin", "senha"));
@@ -412,7 +412,7 @@ class AuthControllerTest {
         @DisplayName("Múltiplos logins simultâneos.")
         void multiplosLogins_simultaneos() {
             when(authService.authenticate(anyString(), anyString()))
-                    .thenReturn(new AuthResult("token", 1L, "user", "USER"));
+                    .thenReturn(new AuthResult("token", null, 1L, "user", "USER"));
 
             for (int i = 0; i < 100; i++) {
                 ResponseEntity<AuthController.LoginResponse> response =
@@ -430,7 +430,7 @@ class AuthControllerTest {
         @DisplayName("Response entity não é null")
         void responseEntity_naoENull() {
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult("token", 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest("admin", "senha"));
@@ -442,7 +442,7 @@ class AuthControllerTest {
         @DisplayName("Response body não é null.")
         void responseBody_naoENull() {
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult("token", 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest("admin", "senha"));
@@ -453,7 +453,7 @@ class AuthControllerTest {
         @DisplayName("Response headers contêm informações corretas.")
         void responseHeaders_contemInformacoesCorretas() {
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult("token", 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest("admin", "senha"));
@@ -465,7 +465,7 @@ class AuthControllerTest {
         @DisplayName("Response pode ser serializado para JSON.")
         void response_podeSerSerializadoParaJSON() {
             when(authService.authenticate("admin", "senha"))
-                    .thenReturn(new AuthResult("token", 1L, "admin", "ADMIN"));
+                    .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
                     controller.login(new AuthController.LoginRequest("admin", "senha"));
