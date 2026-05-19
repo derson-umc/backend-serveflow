@@ -33,6 +33,7 @@ public class ServeFlowApplication {
             if (existing.isEmpty()) {
                 repo.save(User.create(
                         normalizedRoot,
+                        null,
                         encoder.encode(rootPassword),
                         UserRole.ADMIN,
                         ROOT_JOB_POSITION
@@ -43,6 +44,7 @@ public class ServeFlowApplication {
                 User updated = new User(
                         current.getId(),
                         normalizedRoot,
+                        current.getEmail(),
                         encoder.encode(rootPassword),
                         UserRole.ADMIN,
                         current.getJobposition() != null ? current.getJobposition() : ROOT_JOB_POSITION

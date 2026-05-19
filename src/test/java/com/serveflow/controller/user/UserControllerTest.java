@@ -59,11 +59,11 @@ class UserControllerTest {
     }
 
     private UserInput validInput() {
-        return new UserInput("joaosilva", "senha1234", UserRole.CAIXA, "Operador de Caixa");
+        return new UserInput("joaosilva", null, null, "senha1234", UserRole.CAIXA, "Operador de Caixa");
     }
 
     private UserOutput output(Long id) {
-        return new UserOutput(id, "joaosilva", UserRole.CAIXA, "Operador de Caixa");
+        return new UserOutput(id, "joaosilva", null, null, UserRole.CAIXA, "Operador de Caixa");
     }
 
     private String json(Object obj) throws Exception {

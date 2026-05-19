@@ -40,7 +40,7 @@ class UserServiceTest {
 
     @BeforeEach
     void setupAuthContext() {
-        User admin = new User(99L, "rootadmin", "x", UserRole.ADMIN, "Admin");
+        User admin = new User(99L, "rootadmin", null, "x", UserRole.ADMIN, "Admin");
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(admin, null, admin.getAuthorities())
         );
@@ -53,10 +53,10 @@ class UserServiceTest {
         when(encoder.encode(anyString())).thenReturn("hash");
         when(repo.save(any(User.class))).thenAnswer(inv -> {
             User u = inv.getArgument(0);
-            return new User(1L, u.getUsername(), u.getPassword(), u.getRole(), u.getJobposition());
+            return new User(1L, u.getUsername(), u.getEmail(), u.getPassword(), u.getRole(), u.getJobposition());
         });
 
-        UserOutput out = service.create(new UserInput("  JOAO  ", "123", UserRole.GARCON, "Garçom"));
+        UserOutput out = service.create(new UserInput("  JOAO  ", null, "123", UserRole.GARCON, "Garçom"));
 
         assertThat(out.username()).isEqualTo("joao");
         verify(repo).existsByUsername("joao");
@@ -68,7 +68,7 @@ class UserServiceTest {
         when(repo.existsByUsername("joao")).thenReturn(true);
 
         assertThatThrownBy(() -> service.create(
-                new UserInput("JOAO", "123", UserRole.GARCON, "Garçom"))
+                new UserInput("JOAO", null, "123", UserRole.GARCON, "Garçom"))
         ).isInstanceOf(ConflictException.class);
 
         verify(repo, never()).save(any());
@@ -77,20 +77,20 @@ class UserServiceTest {
     @Test
     @DisplayName("create gerente não pode criar admin")
     void create_gerenteNaoPodeAdmin() {
-        User gerente = new User(2L, "ger", "x", UserRole.GERENTE, "Gerente");
+        User gerente = new User(2L, "ger", null, "x", UserRole.GERENTE, "Gerente");
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(gerente, null, gerente.getAuthorities())
         );
 
         assertThatThrownBy(() -> service.create(
-                new UserInput("novo", "123", UserRole.ADMIN, "Admin"))
+                new UserInput("novo", null, "123", UserRole.ADMIN, "Admin"))
         ).isInstanceOf(BusinessRuleException.class);
     }
 
     @Test
     @DisplayName("findById ok")
     void findById_ok() {
-        User user = new User(1L, "joao", "x", UserRole.GARCON, "Garçom");
+        User user = new User(1L, "joao", null, "x", UserRole.GARCON, "Garçom");
         when(repo.findById(1L)).thenReturn(Optional.of(user));
 
         UserOutput out = service.findById(1L);
@@ -110,7 +110,7 @@ class UserServiceTest {
     @Test
     @DisplayName("findByUsername ok")
     void findByUsername_ok() {
-        User user = new User(1L, "joao", "x", UserRole.GARCON, "Garçom");
+        User user = new User(1L, "joao", null, "x", UserRole.GARCON, "Garçom");
         when(repo.findByUsername("joao")).thenReturn(Optional.of(user));
 
         User result = service.findByUsername(" JOAO ");
@@ -131,8 +131,8 @@ class UserServiceTest {
     @DisplayName("findAll retorna lista")
     void findAll_ok() {
         when(repo.findAll()).thenReturn(List.of(
-                new User(1L, "a", "x", UserRole.GARCON, "Garçom"),
-                new User(2L, "b", "x", UserRole.COZINHEIRO, "Cozinha")
+                new User(1L, "a", null, "x", UserRole.GARCON, "Garçom"),
+                new User(2L, "b", null, "x", UserRole.COZINHEIRO, "Cozinha")
         ));
 
         List<UserOutput> result = service.findAll();
@@ -140,23 +140,22 @@ class UserServiceTest {
         assertThat(result).hasSize(2);
     }
 
-
     @Test
     @DisplayName("update conflito username")
     void update_conflict() {
-        User existing = new User(1L, "joao", "old", UserRole.GARCON, "Garçom");
+        User existing = new User(1L, "joao", null, "old", UserRole.GARCON, "Garçom");
         when(repo.findById(1L)).thenReturn(Optional.of(existing));
         when(repo.existsByUsername("maria")).thenReturn(true);
 
         assertThatThrownBy(() -> service.update(1L,
-                new UserInput("maria", "x", UserRole.GARCON, "Garçom")))
+                new UserInput("maria", null, "x", UserRole.GARCON, "Garçom")))
                 .isInstanceOf(ConflictException.class);
     }
 
     @Test
     @DisplayName("changePassword ok")
     void changePassword_ok() {
-        User user = new User(1L, "joao", "old", UserRole.GARCON, "Garçom");
+        User user = new User(1L, "joao", null, "old", UserRole.GARCON, "Garçom");
         when(repo.findById(1L)).thenReturn(Optional.of(user));
         when(encoder.matches("old", "old")).thenReturn(true);
         when(encoder.matches("new", "old")).thenReturn(false);
@@ -170,7 +169,7 @@ class UserServiceTest {
     @Test
     @DisplayName("changePassword senha atual incorreta")
     void changePassword_wrongCurrent() {
-        User user = new User(1L, "joao", "old", UserRole.GARCON, "Garçom");
+        User user = new User(1L, "joao", null, "old", UserRole.GARCON, "Garçom");
         when(repo.findById(1L)).thenReturn(Optional.of(user));
         when(encoder.matches("err", "old")).thenReturn(false);
 
@@ -182,9 +181,8 @@ class UserServiceTest {
     @Test
     @DisplayName("changePassword nova igual atual")
     void changePassword_samePassword() {
-        User user = new User(1L, "joao", "old", UserRole.GARCON, "Garçom");
+        User user = new User(1L, "joao", null, "old", UserRole.GARCON, "Garçom");
         when(repo.findById(1L)).thenReturn(Optional.of(user));
-        when(encoder.matches("old", "old")).thenReturn(true);
         when(encoder.matches("old", "old")).thenReturn(true);
 
         assertThatThrownBy(() -> service.changePassword(1L,
@@ -195,7 +193,7 @@ class UserServiceTest {
     @Test
     @DisplayName("resetPassword ok")
     void resetPassword_ok() {
-        User user = new User(1L, "joao", "old", UserRole.GARCON, "Garçom");
+        User user = new User(1L, "joao", null, "old", UserRole.GARCON, "Garçom");
         when(repo.findById(1L)).thenReturn(Optional.of(user));
         when(encoder.encode("new")).thenReturn("hash");
 
@@ -207,12 +205,12 @@ class UserServiceTest {
     @Test
     @DisplayName("resetPassword gerente não pode admin")
     void resetPassword_gerenteNaoAdmin() {
-        User gerente = new User(2L, "ger", "x", UserRole.GERENTE, "Gerente");
+        User gerente = new User(2L, "ger", null, "x", UserRole.GERENTE, "Gerente");
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(gerente, null, gerente.getAuthorities())
         );
 
-        User admin = new User(1L, "admin", "x", UserRole.ADMIN, "Admin");
+        User admin = new User(1L, "admin", null, "x", UserRole.ADMIN, "Admin");
         when(repo.findById(1L)).thenReturn(Optional.of(admin));
 
         assertThatThrownBy(() -> service.resetPassword(1L, "new"))
@@ -222,7 +220,7 @@ class UserServiceTest {
     @Test
     @DisplayName("changeJobPosition ok")
     void changeJobPosition_ok() {
-        User user = new User(1L, "joao", "x", UserRole.GARCON, "Garçom");
+        User user = new User(1L, "joao", null, "x", UserRole.GARCON, "Garçom");
         when(repo.findById(1L)).thenReturn(Optional.of(user));
         when(repo.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -235,7 +233,7 @@ class UserServiceTest {
     @Test
     @DisplayName("delete ok")
     void delete_ok() {
-        User user = new User(1L, "joao", "x", UserRole.GARCON, "Garçom");
+        User user = new User(1L, "joao", null, "x", UserRole.GARCON, "Garçom");
         when(repo.findById(1L)).thenReturn(Optional.of(user));
 
         service.delete(1L);
@@ -246,11 +244,10 @@ class UserServiceTest {
     @Test
     @DisplayName("delete bloqueia admin e gerente")
     void delete_blocked() {
-        User admin = new User(1L, "admin", "x", UserRole.ADMIN, "Admin");
+        User admin = new User(1L, "admin", null, "x", UserRole.ADMIN, "Admin");
         when(repo.findById(1L)).thenReturn(Optional.of(admin));
 
         assertThatThrownBy(() -> service.delete(1L))
                 .isInstanceOf(BusinessRuleException.class);
     }
 }
-

@@ -41,7 +41,7 @@ class AuthServiceTest {
 
     @BeforeEach
     void setup() {
-        adminUser = new User(1L, "admin", "encoded-hash", UserRole.ADMIN, "Administrador");
+        adminUser = new User(1L, "admin", null, null, "encoded-hash", UserRole.ADMIN, "Administrador");
     }
 
     @Test
