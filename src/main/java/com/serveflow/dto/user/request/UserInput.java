@@ -1,5 +1,6 @@
 package com.serveflow.dto.user.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -11,7 +12,10 @@ public record UserInput(
         @Size(min = 3, max = 50, message = "Username deve ter entre 3 e 50 caracteres")
         String username,
 
-        @NotBlank(message = "Senha é obrigatória")
+        @Email(message = "E-mail inválido")
+        @Size(max = 120, message = "E-mail muito longo")
+        String email,
+
         @Size(min = 8, message = "Senha deve ter no mínimo 8 caracteres")
         String password,
 
