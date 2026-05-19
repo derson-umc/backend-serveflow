@@ -58,19 +58,25 @@ public class ProductRecipeRepositoryImpl implements ProductRecipeRepository {
         return springRepository.findByProductId(productId).map(this::toDomain);
     }
 
-    // ── mapping ───────────────────────────────────────────────────────────────
+    @Override
+    public List<ProductRecipe> findAllByStockItemId(UUID stockItemId) {
+        return springRepository.findByIngredients_StockItemId(stockItemId)
+                .stream().map(this::toDomain).toList();
+    }
 
     private ProductRecipe toDomain(ProductRecipeEntity e) {
         return new ProductRecipe(
                 e.getIdRecipe(), e.getProductId(), e.getProductName(),
                 e.getIngredients().stream().map(this::toIngredientDomain).toList(),
+                e.getPreparationMode(),
+                e.getProductType(),
                 e.getVersion()
         );
     }
 
     private RecipeIngredient toIngredientDomain(RecipeIngredientEntity e) {
         return new RecipeIngredient(e.getIdIngredient(), e.getStockItemId(),
-                e.getStockItemName(), e.getQuantityPerUnit(), e.getUnit());
+                e.getStockItemName(), e.getQuantityPerUnit(), e.getUnit(), e.getValidity());
     }
 
     private ProductRecipeEntity toEntity(ProductRecipe recipe) {
@@ -82,6 +88,8 @@ public class ProductRecipeRepositoryImpl implements ProductRecipeRepository {
         entity.setVersion(recipe.getVersion());
         entity.setProductId(recipe.getProductId());
         entity.setProductName(recipe.getProductName());
+        entity.setPreparationMode(recipe.getPreparationMode());
+        entity.setProductType(recipe.getProductType());
 
         List<RecipeIngredientEntity> updatedIngredients = recipe.getIngredients().stream()
                 .map(ingredient -> syncIngredientEntity(
@@ -105,6 +113,7 @@ public class ProductRecipeRepositoryImpl implements ProductRecipeRepository {
         entity.setStockItemName(ingredient.getStockItemName());
         entity.setQuantityPerUnit(ingredient.getQuantityPerUnit());
         entity.setUnit(ingredient.getUnit());
+        entity.setValidity(ingredient.getValidity());
         return entity;
     }
 

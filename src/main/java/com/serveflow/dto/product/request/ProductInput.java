@@ -29,5 +29,10 @@ public record ProductInput(
         BigDecimal price,
 
         @NotBlank(groups = OnCreate.class, message = "Porção é obrigatória.")
-        String portion
+        String portion,
+
+        @Size(max = 2048, message = "URL da imagem deve ter no máximo 2048 caracteres.")
+        String imageUrl,
+
+        Boolean requiresTechnicalSheet
 ) {}

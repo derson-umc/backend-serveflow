@@ -41,7 +41,8 @@ class ProductServiceTest {
                 "Lanches",
                 "Marca X",
                 new BigDecimal("29.90"),
-                "350g"
+                "350g",
+                null
         );
     }
 

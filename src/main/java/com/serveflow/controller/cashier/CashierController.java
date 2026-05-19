@@ -1,37 +1,62 @@
 package com.serveflow.controller.cashier;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.serveflow.dto.cashier.request.CashMovementInput;
+import com.serveflow.dto.cashier.request.CloseSessionInput;
+import com.serveflow.dto.cashier.request.OpenSessionInput;
+import com.serveflow.dto.cashier.response.CashMovementOutput;
+import com.serveflow.dto.cashier.response.CashSessionOutput;
+import com.serveflow.service.cashier.CashierService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
-@Tag(name = "Caixa", description = "Fechamento de contas e fluxo de caixa")
-@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/cashier")
 public class CashierController {
 
-    @Operation(summary = "Resumo do caixa do dia")
-    @GetMapping("/summary")
-    public ResponseEntity<CashierSummaryOutput> summary() {
-        return ResponseEntity.ok(new CashierSummaryOutput(
-                LocalDate.now(),
-                new BigDecimal("0.00"),
-                0,
-                new BigDecimal("0.00")
-        ));
+    private final CashierService cashierService;
+
+    public CashierController(CashierService cashierService) {
+        this.cashierService = cashierService;
     }
 
-    public record CashierSummaryOutput(
-            LocalDate date,
-            BigDecimal total,
-            int closedTables,
-            BigDecimal averageTicket
-    ) {}
+    @GetMapping("/session/current")
+    public ResponseEntity<CashSessionOutput> currentSession() {
+        return cashierService.getCurrentSession()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
+    }
+
+    @PostMapping("/session/open")
+    public ResponseEntity<CashSessionOutput> openSession(@Valid @RequestBody OpenSessionInput request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cashierService.openSession(request));
+    }
+
+    @PostMapping("/session/{id}/close")
+    public ResponseEntity<CashSessionOutput> closeSession(
+            @PathVariable UUID id,
+            @Valid @RequestBody CloseSessionInput request) {
+        return ResponseEntity.ok(cashierService.closeSession(id, request));
+    }
+
+    @GetMapping("/sessions")
+    public ResponseEntity<List<CashSessionOutput>> listSessions() {
+        return ResponseEntity.ok(cashierService.listSessions());
+    }
+
+    @PostMapping("/session/{sessionId}/movement")
+    public ResponseEntity<CashMovementOutput> addMovement(
+            @PathVariable UUID sessionId,
+            @Valid @RequestBody CashMovementInput request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cashierService.addMovement(sessionId, request));
+    }
+
+    @GetMapping("/session/{sessionId}/movements")
+    public ResponseEntity<List<CashMovementOutput>> listMovements(@PathVariable UUID sessionId) {
+        return ResponseEntity.ok(cashierService.listMovements(sessionId));
+    }
 }

@@ -29,7 +29,7 @@ public class OrderEntity implements Persistable<UUID> {
     @Column(name = "customer_name", nullable = false, length = 150)
     private String customerName;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "id_address")
     private AddressEntity address;
 
@@ -46,6 +46,9 @@ public class OrderEntity implements Persistable<UUID> {
 
     @Column(length = 500)
     private String observation;
+
+    @Column(name = "payment_method", length = 20)
+    private String paymentMethod;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> items = new ArrayList<>();

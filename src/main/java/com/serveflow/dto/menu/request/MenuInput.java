@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
+import java.time.DayOfWeek;
 import java.util.List;
 
 public record MenuInput(
@@ -15,5 +16,9 @@ public record MenuInput(
 
         @NotEmpty(message = "Menu deve conter ao menos um item.")
         @Valid
-        List<MenuItemInput> items
+        List<MenuItemInput> items,
+
+        DayOfWeek dayOfWeek,
+
+        String shift
 ) {}

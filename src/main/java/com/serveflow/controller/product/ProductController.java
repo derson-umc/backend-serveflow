@@ -52,6 +52,11 @@ public class ProductController {
         return ResponseEntity.ok(productService.update(id, request));
     }
 
+    @PatchMapping("/{id}/toggle-status")
+    public ResponseEntity<ProductOutput> toggleStatus(@PathVariable UUID id) {
+        return ResponseEntity.ok(productService.toggleStatus(id));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         productService.deactivate(id);

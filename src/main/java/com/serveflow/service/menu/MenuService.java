@@ -1,21 +1,31 @@
 package com.serveflow.service.menu;
 
+import com.serveflow.controller.kds.KdsController;
+import com.serveflow.controller.kds.KdsEventPublisher;
 import com.serveflow.dto.menu.request.MenuInput;
 import com.serveflow.dto.menu.request.PlaceOrderInput;
 import com.serveflow.dto.menu.request.RemoveMenuItemInput;
+import com.serveflow.dto.menu.response.ActiveMenuOutput;
 import com.serveflow.dto.menu.response.MenuOutput;
 import com.serveflow.dto.order.response.OrderOutput;
 import com.serveflow.integration.AddressResolver;
 import com.serveflow.model.address.Address;
 import com.serveflow.model.menu.Menu;
 import com.serveflow.model.menu.MenuItem;
+import com.serveflow.model.menu.MenuShift;
 import com.serveflow.model.order.*;
 import com.serveflow.repository.menu.MenuRepository;
 import com.serveflow.repository.order.OrderRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -24,13 +34,16 @@ public class MenuService {
     private final MenuRepository menuRepository;
     private final OrderRepository orderRepository;
     private final AddressResolver addressResolver;
+    private final KdsEventPublisher kdsEventPublisher;
 
     public MenuService(MenuRepository menuRepository,
                        OrderRepository orderRepository,
-                       AddressResolver addressResolver) {
+                       AddressResolver addressResolver,
+                       @Lazy KdsEventPublisher kdsEventPublisher) {
         this.menuRepository = menuRepository;
         this.orderRepository = orderRepository;
         this.addressResolver = addressResolver;
+        this.kdsEventPublisher = kdsEventPublisher;
     }
 
     @Transactional
@@ -38,7 +51,8 @@ public class MenuService {
         List<MenuItem> items = request.items().stream()
                 .map(i -> MenuItem.create(i.productId(), i.name(), i.description(), i.price()))
                 .toList();
-        return toOutput(menuRepository.save(Menu.create(request.name(), items)));
+        MenuShift shift = request.shift() != null ? MenuShift.valueOf(request.shift().toUpperCase()) : null;
+        return toOutput(menuRepository.save(Menu.create(request.name(), items, request.dayOfWeek(), shift)));
     }
 
     public MenuOutput findById(UUID id) {
@@ -47,6 +61,34 @@ public class MenuService {
 
     public List<MenuOutput> findAll() {
         return menuRepository.findAll().stream().map(this::toOutput).toList();
+    }
+
+    public ActiveMenuOutput getActive() {
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"));
+        DayOfWeek today = now.getDayOfWeek();
+        Optional<MenuShift> currentShift = resolveShift(now.toLocalTime());
+
+        if (currentShift.isEmpty()) {
+            return new ActiveMenuOutput(false, today.name(), null, null);
+        }
+
+        MenuShift shift = currentShift.get();
+        return menuRepository.findByDayOfWeekAndShift(today, shift)
+                .map(menu -> new ActiveMenuOutput(true, today.name(), shift.name(), toOutput(menu)))
+                .orElse(new ActiveMenuOutput(false, today.name(), shift.name(), null));
+    }
+
+    private Optional<MenuShift> resolveShift(LocalTime time) {
+        if (!time.isBefore(LocalTime.of(6, 0)) && time.isBefore(LocalTime.of(12, 0))) {
+            return Optional.of(MenuShift.MORNING);
+        }
+        if (!time.isBefore(LocalTime.of(12, 0)) && time.isBefore(LocalTime.of(18, 0))) {
+            return Optional.of(MenuShift.AFTERNOON);
+        }
+        if (!time.isBefore(LocalTime.of(18, 0)) && time.isBefore(LocalTime.of(24, 0))) {
+            return Optional.of(MenuShift.EVENING);
+        }
+        return Optional.empty();
     }
 
     @Transactional
@@ -107,7 +149,16 @@ public class MenuService {
         menu.lock(saved.getId());
         menuRepository.save(menu);
 
-        return toOrderOutput(saved);
+        OrderOutput output = toOrderOutput(saved);
+        publishKdsSafely(() -> kdsEventPublisher.publishUpdate(toKdsOutput(output)));
+        return output;
+    }
+
+    private void publishKdsSafely(Runnable action) {
+        try {
+            action.run();
+        } catch (Exception ignored) {
+        }
     }
 
     private MenuOutput toOutput(Menu menu) {
@@ -122,8 +173,18 @@ public class MenuService {
                                 i.getDescription(), i.getPrice(), i.isAvailable(),
                                 i.isRemoved(), i.getRemovedBy())
                 ).toList(),
-                menu.getCreatedAt()
+                menu.getCreatedAt(),
+                menu.getDayOfWeek() != null ? menu.getDayOfWeek().name() : null,
+                menu.getShift() != null ? menu.getShift().name() : null
         );
+    }
+
+    private KdsController.KdsOrderOutput toKdsOutput(OrderOutput o) {
+        List<KdsController.KdsItemOutput> items = o.items().stream()
+                .map(i -> new KdsController.KdsItemOutput(
+                        i.id(), i.productName(), i.quantity(), i.observation(), List.of()))
+                .toList();
+        return new KdsController.KdsOrderOutput(o.id(), o.customerName(), o.type(), o.status(), o.createdAt(), items);
     }
 
     private OrderOutput toOrderOutput(Order order) {
@@ -135,6 +196,7 @@ public class MenuService {
                 order.getStatus().name(),
                 order.getCreatedAt(),
                 order.getObservation(),
+                order.getPaymentMethod(),
                 order.getTotal(),
                 order.getItems().stream().map(item ->
                         new OrderOutput.OrderItemOutput(
