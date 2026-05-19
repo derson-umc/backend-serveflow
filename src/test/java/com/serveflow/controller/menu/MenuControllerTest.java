@@ -60,11 +60,11 @@ class MenuControllerTest {
 
     private MenuInput validMenuInput() {
         MenuItemInput item = new MenuItemInput(UUID.randomUUID(), "Hamburguer", "Clássico", new BigDecimal("29.90"));
-        return new MenuInput("Cardápio Almoço", List.of(item));
+        return new MenuInput("Cardápio Almoço", List.of(item), null, null);
     }
 
     private MenuOutput menuOutput(UUID id) {
-        return new MenuOutput(id, "Cardápio Almoço", "ACTIVE", null, List.of(), LocalDateTime.of(2026, 1, 1, 12, 0));
+        return new MenuOutput(id, "Cardápio Almoço", "ACTIVE", null, List.of(), LocalDateTime.of(2026, 1, 1, 12, 0), null, null);
     }
 
     private String json(Object obj) throws Exception {

@@ -12,6 +12,8 @@ public record ProductOutput(
         String brand,
         BigDecimal price,
         String portion,
+        String imageUrl,
         boolean active,
+        boolean requiresTechnicalSheet,
         LocalDateTime createdAt
 ) {}

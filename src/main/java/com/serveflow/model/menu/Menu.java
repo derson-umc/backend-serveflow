@@ -1,5 +1,6 @@
 package com.serveflow.model.menu;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -12,9 +13,12 @@ public class Menu {
     private final List<MenuItem> items;
     private final LocalDateTime createdAt;
     private Long version;
+    private DayOfWeek dayOfWeek;
+    private MenuShift shift;
 
     public Menu(UUID id, String name, MenuStatus status, UUID activeOrderId,
-                List<MenuItem> items, LocalDateTime createdAt, Long version) {
+                List<MenuItem> items, LocalDateTime createdAt, Long version,
+                DayOfWeek dayOfWeek, MenuShift shift) {
         this.id = Objects.requireNonNull(id, "ID do menu é obrigatório.");
         setName(name);
         this.status = Objects.requireNonNull(status, "Status do menu é obrigatório.");
@@ -22,11 +26,13 @@ public class Menu {
         this.items = new ArrayList<>(Optional.ofNullable(items).orElse(List.of()));
         this.createdAt = Objects.requireNonNull(createdAt, "Data de criação é obrigatória.");
         this.version = version;
+        this.dayOfWeek = dayOfWeek;
+        this.shift = shift;
     }
 
-    public static Menu create(String name, List<MenuItem> items) {
+    public static Menu create(String name, List<MenuItem> items, DayOfWeek dayOfWeek, MenuShift shift) {
         return new Menu(UUID.randomUUID(), name, MenuStatus.OPEN, null,
-                items, LocalDateTime.now(), null);
+                items, LocalDateTime.now(), null, dayOfWeek, shift);
     }
 
     public void lock(UUID orderId) {
@@ -73,6 +79,8 @@ public class Menu {
     public List<MenuItem> getItems() { return List.copyOf(items); }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public Long getVersion()        { return version; }
+    public DayOfWeek getDayOfWeek() { return dayOfWeek; }
+    public MenuShift getShift()     { return shift; }
 
     @Override
     public boolean equals(Object o) {

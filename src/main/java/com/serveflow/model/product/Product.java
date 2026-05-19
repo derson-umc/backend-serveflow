@@ -22,9 +22,13 @@ public class Product {
     private String brand;
     private BigDecimal price;
     private String portion;
+    private String imageUrl;
 
     @Builder.Default
     private boolean active = true;
+
+    @Builder.Default
+    private boolean requiresTechnicalSheet = false;
 
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -41,5 +45,7 @@ public class Product {
         if (other.brand != null)       this.brand       = other.brand;
         if (other.price != null)       this.price       = other.price;
         if (other.portion != null)     this.portion     = other.portion;
+        if (other.imageUrl != null)    this.imageUrl    = other.imageUrl;
+        this.requiresTechnicalSheet    = other.requiresTechnicalSheet;
     }
 }

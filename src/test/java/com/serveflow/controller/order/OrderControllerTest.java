@@ -54,7 +54,7 @@ class OrderControllerTest {
     private OrderOutput orderOutput(UUID id, String status) {
         return new OrderOutput(
                 id, "Cliente Teste", null, "LOCAL", status,
-                LocalDateTime.of(2026, 1, 1, 12, 0), null, new BigDecimal("29.90"), List.of()
+                LocalDateTime.of(2026, 1, 1, 12, 0), null, null, new BigDecimal("29.90"), List.of()
         );
     }
 

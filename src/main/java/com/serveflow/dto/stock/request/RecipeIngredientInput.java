@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public record RecipeIngredientInput(
@@ -23,5 +24,7 @@ public record RecipeIngredientInput(
 
         @NotBlank(message = "Unidade de medida é obrigatória.")
         @Size(max = 20, message = "Unidade deve ter no máximo 20 caracteres.")
-        String unit
+        String unit,
+
+        LocalDate validity
 ) {}
