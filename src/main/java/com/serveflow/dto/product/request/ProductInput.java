@@ -34,5 +34,7 @@ public record ProductInput(
         @Size(max = 2048, message = "URL da imagem deve ter no máximo 2048 caracteres.")
         String imageUrl,
 
-        Boolean requiresTechnicalSheet
+        Boolean requiresTechnicalSheet,
+
+        Boolean active
 ) {}

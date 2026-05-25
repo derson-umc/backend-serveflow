@@ -9,14 +9,14 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
-    id          BIGSERIAL    NOT NULL,
-    user_id     BIGINT       NOT NULL,
-    token_hash  VARCHAR(64)  NOT NULL,
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    username    VARCHAR(64)  NOT NULL,
+    token       VARCHAR(6)   NOT NULL,
     expires_at  TIMESTAMP    NOT NULL,
-    used_at     TIMESTAMP,
-    CONSTRAINT pk_password_reset_tokens      PRIMARY KEY (id),
-    CONSTRAINT uq_password_reset_token_hash  UNIQUE (token_hash)
-);
+    used        BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at  TIMESTAMP    NOT NULL DEFAULT NOW()
+    );
 
-CREATE INDEX IF NOT EXISTS idx_prt_token_hash ON password_reset_tokens (token_hash);
-CREATE INDEX IF NOT EXISTS idx_prt_user_id    ON password_reset_tokens (user_id);
+CREATE INDEX idx_prt_username ON password_reset_tokens (username);
+CREATE INDEX idx_prt_token    ON password_reset_tokens (token);
+

@@ -7,8 +7,8 @@ import com.serveflow.dto.stock.response.StockConsolidatedOutput;
 import com.serveflow.dto.stock.response.StockItemOutput;
 import com.serveflow.dto.stock.response.StockMovementOutput;
 import com.serveflow.dto.stock.response.StockMovementsPageOutput;
-import com.serveflow.exception.stock.RecipeNotFound;
-import com.serveflow.exception.stock.InsufficientStock;
+import com.serveflow.exception.stock.RecipeNotFoundException;
+import com.serveflow.exception.stock.InsufficientStockException;
 import com.serveflow.model.order.OrderItem;
 import com.serveflow.model.stock.*;
 import com.serveflow.repository.menu.MenuRepository;
@@ -118,7 +118,7 @@ public class StockService {
     public StockItemOutput recordLoss(UUID id, StockLossInput request) {
         StockItem item = stockItemRepository.findByIdForUpdate(id);
         if (!item.hasEnoughStock(request.quantity())) {
-            throw new InsufficientStock("Quantidade de perda (" + request.quantity() + " " + item.getUnit()
+            throw new InsufficientStockException("Quantidade de perda (" + request.quantity() + " " + item.getUnit()
                     + ") maior que o estoque disponível (" + item.getCurrentQuantity() + " " + item.getUnit() + ").");
         }
         BigDecimal before = item.getCurrentQuantity();
@@ -189,7 +189,7 @@ public class StockService {
 
     public ProductRecipeOutput findRecipeByProductId(UUID productId) {
         return toOutput(recipeRepository.findByProductId(productId)
-                .orElseThrow(() -> new RecipeNotFound(productId)));
+                .orElseThrow(() -> new RecipeNotFoundException(productId)));
     }
 
 
@@ -252,7 +252,7 @@ public class StockService {
                     BigDecimal required = ingredient.getRequiredQuantity(item.getQuantity());
                     StockItem stockItem = stockItemRepository.findById(ingredient.getStockItemId());
                     if (!stockItem.hasEnoughStock(required)) {
-                        throw new InsufficientStock(
+                        throw new InsufficientStockException(
                                 "Estoque insuficiente para '" + stockItem.getName() + "'. "
                                 + "Disponível: " + stockItem.getCurrentQuantity() + " " + stockItem.getUnit()
                                 + ", Requerido: " + required + " " + stockItem.getUnit() + "."

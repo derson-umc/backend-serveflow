@@ -1,6 +1,6 @@
 package com.serveflow.repository.stock.ProductRecipe;
 
-import com.serveflow.exception.stock.RecipeNotFound;
+import com.serveflow.exception.stock.RecipeNotFoundException;
 import com.serveflow.model.stock.ProductRecipe;
 import com.serveflow.model.stock.RecipeIngredient;
 import com.serveflow.repository.stock.RecipeIngredient.RecipeIngredientEntity;
@@ -34,7 +34,7 @@ public class ProductRecipeRepositoryImpl implements ProductRecipeRepository {
             entity = toEntity(recipe);
         } else {
             entity = springRepository.findById(recipe.getId())
-                    .orElseThrow(() -> new RecipeNotFound(recipe.getProductId()));
+                    .orElseThrow(() -> new RecipeNotFoundException(recipe.getProductId()));
             updateEntity(entity, recipe);
         }
 
@@ -45,7 +45,7 @@ public class ProductRecipeRepositoryImpl implements ProductRecipeRepository {
     public ProductRecipe findById(UUID id) {
         return springRepository.findById(id)
                 .map(this::toDomain)
-                .orElseThrow(() -> new RecipeNotFound(id));
+                .orElseThrow(() -> new RecipeNotFoundException(id));
     }
 
     @Override

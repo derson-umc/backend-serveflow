@@ -1,6 +1,6 @@
 package com.serveflow.model.stock;
 
-import com.serveflow.exception.stock.InsufficientStock;
+import com.serveflow.exception.stock.InsufficientStockException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -50,7 +50,7 @@ public class StockItem {
         if (quantity.compareTo(BigDecimal.ZERO) <= 0)
             throw new IllegalArgumentException("Quantidade a deduzir deve ser maior que zero.");
         if (currentQuantity.compareTo(quantity) < 0)
-            throw new InsufficientStock("Estoque insuficiente para '" + name + "'. "
+            throw new InsufficientStockException("Estoque insuficiente para '" + name + "'. "
                     + "Disponível: " + currentQuantity.toPlainString() + " " + unit
                     + ", Requerido: " + quantity.toPlainString() + " " + unit + ".");
         this.currentQuantity = this.currentQuantity.subtract(quantity);

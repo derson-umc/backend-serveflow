@@ -1,7 +1,7 @@
 package com.serveflow.service.menu;
 
-import com.serveflow.controller.kds.KdsController;
 import com.serveflow.controller.kds.KdsEventPublisher;
+import com.serveflow.dto.kds.response.KdsMapper;
 import com.serveflow.dto.menu.request.MenuInput;
 import com.serveflow.dto.menu.request.PlaceOrderInput;
 import com.serveflow.dto.menu.request.RemoveMenuItemInput;
@@ -35,15 +35,18 @@ public class MenuService {
     private final OrderRepository orderRepository;
     private final AddressResolver addressResolver;
     private final KdsEventPublisher kdsEventPublisher;
+    private final KdsMapper kdsMapper;
 
     public MenuService(MenuRepository menuRepository,
                        OrderRepository orderRepository,
                        AddressResolver addressResolver,
-                       @Lazy KdsEventPublisher kdsEventPublisher) {
+                       @Lazy KdsEventPublisher kdsEventPublisher,
+                       KdsMapper kdsMapper) {
         this.menuRepository = menuRepository;
         this.orderRepository = orderRepository;
         this.addressResolver = addressResolver;
         this.kdsEventPublisher = kdsEventPublisher;
+        this.kdsMapper = kdsMapper;
     }
 
     @Transactional
@@ -150,7 +153,7 @@ public class MenuService {
         menuRepository.save(menu);
 
         OrderOutput output = toOrderOutput(saved);
-        publishKdsSafely(() -> kdsEventPublisher.publishUpdate(toKdsOutput(output)));
+        publishKdsSafely(() -> kdsEventPublisher.publishUpdate(kdsMapper.toOutput(output)));
         return output;
     }
 
@@ -177,14 +180,6 @@ public class MenuService {
                 menu.getDayOfWeek() != null ? menu.getDayOfWeek().name() : null,
                 menu.getShift() != null ? menu.getShift().name() : null
         );
-    }
-
-    private KdsController.KdsOrderOutput toKdsOutput(OrderOutput o) {
-        List<KdsController.KdsItemOutput> items = o.items().stream()
-                .map(i -> new KdsController.KdsItemOutput(
-                        i.id(), i.productName(), i.quantity(), i.observation(), List.of()))
-                .toList();
-        return new KdsController.KdsOrderOutput(o.id(), o.customerName(), o.type(), o.status(), o.createdAt(), items);
     }
 
     private OrderOutput toOrderOutput(Order order) {

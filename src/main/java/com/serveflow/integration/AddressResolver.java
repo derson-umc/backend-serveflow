@@ -3,6 +3,7 @@ package com.serveflow.integration;
 import com.serveflow.dto.order.request.AddressInput;
 import com.serveflow.model.address.*;
 import com.serveflow.model.address.Number;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -11,9 +12,15 @@ import java.util.Optional;
 public class AddressResolver {
 
     private final FindPostalCode findPostalCode;
+    private final String defaultCity;
+    private final String defaultState;
 
-    public AddressResolver(FindPostalCode findPostalCode) {
+    public AddressResolver(FindPostalCode findPostalCode,
+                           @Value("${app.delivery.default-city:Cidade não informada}") String defaultCity,
+                           @Value("${app.delivery.default-state:SP}") String defaultState) {
         this.findPostalCode = findPostalCode;
+        this.defaultCity = defaultCity;
+        this.defaultState = defaultState;
     }
 
     public Address resolve(AddressInput dto) {
@@ -26,17 +33,15 @@ public class AddressResolver {
             }
         }
 
-        return hasManualFields(dto) ? buildManually(dto) : null;
+        return hasMinimumManualFields(dto) ? buildManually(dto) : null;
     }
 
     private boolean hasValidCep(AddressInput dto) {
         return dto.cep() != null && !dto.cep().isBlank();
     }
 
-    private boolean hasManualFields(AddressInput dto) {
+    private boolean hasMinimumManualFields(AddressInput dto) {
         return dto.street() != null && !dto.street().isBlank()
-                && dto.city() != null && !dto.city().isBlank()
-                && dto.state() != null && !dto.state().isBlank()
                 && dto.number() != null && !dto.number().isBlank();
     }
 
@@ -52,7 +57,9 @@ public class AddressResolver {
         Cep cep = hasValidCep(dto) ? new Cep(dto.cep()) : null;
         Complement comp = dto.complement() != null && !dto.complement().isBlank()
                 ? new Complement(dto.complement()) : null;
-        return Address.create(cep, new Street(dto.street()), new City(dto.city()),
-                new State(dto.state()), new Number(dto.number()), comp);
+        String city  = dto.city()  != null && !dto.city().isBlank()  ? dto.city()  : defaultCity;
+        String state = dto.state() != null && !dto.state().isBlank() ? dto.state() : defaultState;
+        return Address.create(cep, new Street(dto.street()), new City(city),
+                new State(state), new Number(dto.number()), comp);
     }
 }

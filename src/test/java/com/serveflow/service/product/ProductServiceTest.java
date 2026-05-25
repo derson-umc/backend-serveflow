@@ -2,7 +2,7 @@ package com.serveflow.service.product;
 
 import com.serveflow.dto.product.request.ProductInput;
 import com.serveflow.dto.product.response.ProductOutput;
-import com.serveflow.exception.product.ProductNotFound;
+import com.serveflow.exception.product.ProductNotFoundException;
 import com.serveflow.model.product.Product;
 import com.serveflow.repository.product.ProductRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -42,6 +42,8 @@ class ProductServiceTest {
                 "Marca X",
                 new BigDecimal("29.90"),
                 "350g",
+                null,
+                null,
                 null
         );
     }
@@ -131,10 +133,10 @@ class ProductServiceTest {
     @DisplayName("findById: propaga ProductNotFound quando repositório lança a exceção")
     void findById_propagatesProductNotFound_whenRepositoryThrows() {
         UUID id = UUID.randomUUID();
-        when(repository.findById(id)).thenThrow(new ProductNotFound(id));
+        when(repository.findById(id)).thenThrow(new ProductNotFoundException(id));
 
         assertThatThrownBy(() -> service.findById(id))
-                .isInstanceOf(ProductNotFound.class)
+                .isInstanceOf(ProductNotFoundException.class)
                 .hasMessageContaining(id.toString());
     }
 
@@ -185,10 +187,10 @@ class ProductServiceTest {
     @DisplayName("update: propaga ProductNotFound quando produto não existe")
     void update_propagatesProductNotFound_whenNotFound() {
         UUID id = UUID.randomUUID();
-        when(repository.findById(id)).thenThrow(new ProductNotFound(id));
+        when(repository.findById(id)).thenThrow(new ProductNotFoundException(id));
 
         assertThatThrownBy(() -> service.update(id, input()))
-                .isInstanceOf(ProductNotFound.class)
+                .isInstanceOf(ProductNotFoundException.class)
                 .hasMessageContaining(id.toString());
 
         verify(repository).findById(id);
@@ -211,10 +213,10 @@ class ProductServiceTest {
     @DisplayName("deactivate: propaga ProductNotFound quando repositório lança a exceção")
     void deactivate_propagatesProductNotFound_whenRepositoryThrows() {
         UUID id = UUID.randomUUID();
-        org.mockito.Mockito.doThrow(new ProductNotFound(id)).when(repository).deactivate(id);
+        org.mockito.Mockito.doThrow(new ProductNotFoundException(id)).when(repository).deactivate(id);
 
         assertThatThrownBy(() -> service.deactivate(id))
-                .isInstanceOf(ProductNotFound.class)
+                .isInstanceOf(ProductNotFoundException.class)
                 .hasMessageContaining(id.toString());
 
         verify(repository).deactivate(id);

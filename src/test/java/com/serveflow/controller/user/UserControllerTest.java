@@ -8,6 +8,7 @@ import com.serveflow.dto.user.request.UserInput;
 import com.serveflow.dto.user.response.UserOutput;
 import com.serveflow.exception.handler.GlobalExceptionHandler;
 import com.serveflow.exception.user.UserNotFoundException;
+import com.serveflow.service.audit.AuditService;
 import com.serveflow.model.user.UserRole;
 import com.serveflow.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +43,8 @@ class UserControllerTest {
 
     @Mock
     UserService service;
+    @Mock
+    AuditService auditService;
 
     @InjectMocks
     UserController controller;
@@ -53,17 +56,17 @@ class UserControllerTest {
     void setUp() {
         mvc = MockMvcBuilders
                 .standaloneSetup(controller)
-                .setControllerAdvice(new GlobalExceptionHandler())
+                .setControllerAdvice(new GlobalExceptionHandler(auditService))
                 .build();
         mapper = new ObjectMapper();
     }
 
     private UserInput validInput() {
-        return new UserInput("joaosilva", null, null, "senha1234", UserRole.CAIXA, "Operador de Caixa");
+        return new UserInput("joaosilva", null, "senha1234", UserRole.CAIXA, "Operador de Caixa");
     }
 
     private UserOutput output(Long id) {
-        return new UserOutput(id, "joaosilva", null, null, UserRole.CAIXA, "Operador de Caixa");
+        return new UserOutput(id, "joaosilva", null, UserRole.CAIXA, "Operador de Caixa");
     }
 
     private String json(Object obj) throws Exception {

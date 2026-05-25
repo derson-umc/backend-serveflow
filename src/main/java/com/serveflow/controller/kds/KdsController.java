@@ -1,6 +1,8 @@
 package com.serveflow.controller.kds;
 
-import com.serveflow.dto.order.response.OrderOutput;
+import com.serveflow.dto.kds.response.KdsOrderOutput;
+import com.serveflow.dto.kds.response.KdsMapper;
+import com.serveflow.model.order.OrderStatus;
 import com.serveflow.service.order.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -8,7 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,81 +20,61 @@ import java.util.UUID;
 @RequestMapping("/kds")
 public class KdsController {
 
-    private static final List<String> ACTIVE_STATUSES = List.of("CREATED", "CONFIRMED", "IN_PREPARATION");
+    private static final List<OrderStatus> ACTIVE_STATUSES =
+            List.of(OrderStatus.CREATED, OrderStatus.CONFIRMED, OrderStatus.IN_PREPARATION);
 
     private final OrderService orderService;
     private final KdsEventPublisher publisher;
+    private final KdsMapper mapper;
 
-    public KdsController(OrderService orderService, KdsEventPublisher publisher) {
+    public KdsController(OrderService orderService,
+                         KdsEventPublisher publisher,
+                         KdsMapper mapper) {
         this.orderService = orderService;
         this.publisher = publisher;
+        this.mapper = mapper;
     }
 
-    @Operation(summary = "Lista pedidos ativos para a cozinha (CONFIRMED e IN_PREPARATION)")
+    @Operation(summary = "Lista pedidos ativos para a cozinha")
     @GetMapping("/orders")
     public ResponseEntity<List<KdsOrderOutput>> openOrders() {
-        List<KdsOrderOutput> orders = ACTIVE_STATUSES.stream()
-                .flatMap(status -> orderService.findByStatus(status).stream())
-                .map(this::toKdsOutput)
-                .sorted((a, b) -> a.createdAt().compareTo(b.createdAt()))
+
+        var orders = ACTIVE_STATUSES.stream()
+                .flatMap(status -> orderService.findByStatus(status.name()).stream())
+                .map(mapper::toOutput)
+                .sorted(Comparator.comparing(KdsOrderOutput::createdAt))
                 .toList();
+
         return ResponseEntity.ok(orders);
     }
 
-    @Operation(summary = "Avança o pedido para EM PREPARO e notifica via WebSocket")
+    @Operation(summary = "Avança o pedido para EM PREPARO")
     @PatchMapping("/orders/{id}/prepare")
     public ResponseEntity<KdsOrderOutput> prepare(@PathVariable UUID id) {
-        KdsOrderOutput output = toKdsOutput(orderService.startPreparation(id));
+
+        var output = mapper.toOutput(orderService.startPreparation(id));
         publisher.publishUpdate(output);
+
         return ResponseEntity.ok(output);
     }
 
-    @Operation(summary = "Marca o pedido como PRONTO e remove do KDS via WebSocket")
+    @Operation(summary = "Marca o pedido como PRONTO")
     @PatchMapping("/orders/{id}/ready")
     public ResponseEntity<KdsOrderOutput> ready(@PathVariable UUID id) {
-        KdsOrderOutput output = toKdsOutput(orderService.markReady(id));
+
+        var output = mapper.toOutput(orderService.markReady(id));
         publisher.publishRemove(id);
+
         return ResponseEntity.ok(output);
     }
 
-    @Operation(summary = "Finaliza o pedido e remove do KDS via WebSocket")
+    @Operation(summary = "Finaliza o pedido")
     @PatchMapping("/orders/{id}/complete")
     public ResponseEntity<KdsOrderOutput> complete(@PathVariable UUID id) {
-        KdsOrderOutput output = toKdsOutput(orderService.complete(id));
+
+        var output = mapper.toOutput(orderService.complete(id));
         publisher.publishRemove(id);
+
         return ResponseEntity.ok(output);
     }
-
-    private KdsOrderOutput toKdsOutput(OrderOutput o) {
-        List<KdsItemOutput> items = o.items().stream()
-                .map(i -> new KdsItemOutput(
-                        i.id(),
-                        i.productName(),
-                        i.quantity(),
-                        i.observation(),
-                        i.additionals().stream()
-                                .map(a -> a.name() + (a.quantity() > 1 ? " x" + a.quantity() : ""))
-                                .toList()
-                ))
-                .toList();
-
-        return new KdsOrderOutput(o.id(), o.customerName(), o.type(), o.status(), o.createdAt(), items);
-    }
-
-    public record KdsOrderOutput(
-            UUID id,
-            String customerName,
-            String type,
-            String status,
-            LocalDateTime createdAt,
-            List<KdsItemOutput> items
-    ) {}
-
-    public record KdsItemOutput(
-            UUID id,
-            String productName,
-            int quantity,
-            String observation,
-            List<String> additionals
-    ) {}
 }

@@ -1,4 +1,3 @@
--- Rename accounts_receivable table and columns
 ALTER TABLE contas_receber RENAME TO accounts_receivable;
 
 ALTER TABLE accounts_receivable RENAME COLUMN id_conta_receber TO id;
@@ -23,7 +22,6 @@ ALTER TABLE accounts_receivable ADD CONSTRAINT chk_accounts_receivable_status
     CHECK (status IN ('PENDING','RECEIVED','OVERDUE','CANCELLED'));
 ALTER TABLE accounts_receivable ADD CONSTRAINT chk_accounts_receivable_amount CHECK (amount > 0);
 
--- Rename accounts_payable table and columns
 ALTER TABLE contas_pagar RENAME TO accounts_payable;
 
 ALTER TABLE accounts_payable RENAME COLUMN id_conta_pagar TO id;
@@ -48,7 +46,6 @@ ALTER TABLE accounts_payable ADD CONSTRAINT chk_accounts_payable_status
     CHECK (status IN ('PENDING','PAID','OVERDUE','CANCELLED'));
 ALTER TABLE accounts_payable ADD CONSTRAINT chk_accounts_payable_amount CHECK (amount > 0);
 
--- Rename financial_audit table and columns
 ALTER TABLE auditoria_financeira RENAME TO financial_audit;
 
 ALTER TABLE financial_audit RENAME COLUMN id_auditoria TO id;
@@ -61,7 +58,6 @@ ALTER TABLE financial_audit RENAME COLUMN criado_em TO created_at;
 
 ALTER TABLE financial_audit RENAME CONSTRAINT pk_auditoria_financeira TO pk_financial_audit;
 
--- Rename indexes
 ALTER INDEX idx_contas_receber_status    RENAME TO idx_accounts_receivable_status;
 ALTER INDEX idx_contas_receber_vencimento RENAME TO idx_accounts_receivable_due_date;
 ALTER INDEX idx_contas_pagar_status      RENAME TO idx_accounts_payable_status;
