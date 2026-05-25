@@ -65,7 +65,7 @@ public class UserService {
         }
         String username = normalizeUsername(request.username());
         if (repository.existsByUsername(username)) {
-            throw new ConflictException("Username '" + username + "' já está em uso");
+            throw new ConflictException("Username '%s' já está em uso".formatted(username));
         }
         User user = User.create(
                 username,
@@ -105,7 +105,7 @@ public class UserService {
 
         String username = normalizeUsername(request.username());
         if (!existing.getUsername().equals(username) && repository.existsByUsername(username)) {
-            throw new ConflictException("Username '" + username + "' já está em uso");
+            throw new ConflictException("Username '%s' já está em uso".formatted(username));
         }
 
         String password = (request.password() != null && !request.password().isBlank())

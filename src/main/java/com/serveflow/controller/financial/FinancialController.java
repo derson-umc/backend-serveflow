@@ -4,10 +4,16 @@ import com.serveflow.dto.financial.request.AccountPayableInput;
 import com.serveflow.dto.financial.request.AccountReceivableInput;
 import com.serveflow.dto.financial.request.SettlementInput;
 import com.serveflow.dto.financial.response.*;
+import com.serveflow.model.user.User;
+import com.serveflow.service.audit.AuditService;
 import com.serveflow.service.financial.FinancialService;
+import com.serveflow.util.IpResolverUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,13 +21,11 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/financial")
+@RequiredArgsConstructor
 public class FinancialController {
 
     private final FinancialService financialService;
-
-    public FinancialController(FinancialService financialService) {
-        this.financialService = financialService;
-    }
+    private final AuditService     auditService;
 
     @GetMapping("/cash-flow")
     public ResponseEntity<CashFlowOutput> cashFlow() {
@@ -30,8 +34,14 @@ public class FinancialController {
 
     @PostMapping("/receivables")
     public ResponseEntity<AccountReceivableOutput> createReceivable(
-            @Valid @RequestBody AccountReceivableInput request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(financialService.createReceivable(request));
+            @Valid @RequestBody AccountReceivableInput request,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest httpReq) {
+
+        AccountReceivableOutput output = financialService.createReceivable(request);
+        auditService.logAction(user.getId(), "RECEIVABLE_CREATE", "AccountReceivable",
+                null, IpResolverUtil.getClientIp(httpReq));
+        return ResponseEntity.status(HttpStatus.CREATED).body(output);
     }
 
     @GetMapping("/receivables")
@@ -47,21 +57,38 @@ public class FinancialController {
     @PatchMapping("/receivables/{id}/settle")
     public ResponseEntity<AccountReceivableOutput> settleReceivable(
             @PathVariable UUID id,
-            @Valid @RequestBody SettlementInput request) {
-        return ResponseEntity.ok(financialService.settleReceivable(id, request));
+            @Valid @RequestBody SettlementInput request,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest httpReq) {
+
+        AccountReceivableOutput output = financialService.settleReceivable(id, request);
+        auditService.logAction(user.getId(), "RECEIVABLE_SETTLE", "AccountReceivable",
+                null, IpResolverUtil.getClientIp(httpReq));
+        return ResponseEntity.ok(output);
     }
 
     @PatchMapping("/receivables/{id}/cancel")
     public ResponseEntity<AccountReceivableOutput> cancelReceivable(
             @PathVariable UUID id,
-            @RequestParam String performedBy) {
-        return ResponseEntity.ok(financialService.cancelReceivable(id, performedBy));
+            @AuthenticationPrincipal User user,
+            HttpServletRequest httpReq) {
+
+        AccountReceivableOutput output = financialService.cancelReceivable(id, user.getUsername());
+        auditService.logAction(user.getId(), "RECEIVABLE_CANCEL", "AccountReceivable",
+                null, IpResolverUtil.getClientIp(httpReq));
+        return ResponseEntity.ok(output);
     }
 
     @PostMapping("/payables")
     public ResponseEntity<AccountPayableOutput> createPayable(
-            @Valid @RequestBody AccountPayableInput request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(financialService.createPayable(request));
+            @Valid @RequestBody AccountPayableInput request,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest httpReq) {
+
+        AccountPayableOutput output = financialService.createPayable(request);
+        auditService.logAction(user.getId(), "PAYABLE_CREATE", "AccountPayable",
+                null, IpResolverUtil.getClientIp(httpReq));
+        return ResponseEntity.status(HttpStatus.CREATED).body(output);
     }
 
     @GetMapping("/payables")
@@ -77,15 +104,25 @@ public class FinancialController {
     @PatchMapping("/payables/{id}/settle")
     public ResponseEntity<AccountPayableOutput> settlePayable(
             @PathVariable UUID id,
-            @Valid @RequestBody SettlementInput request) {
-        return ResponseEntity.ok(financialService.settlePayable(id, request));
+            @Valid @RequestBody SettlementInput request,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest httpReq) {
+
+        AccountPayableOutput output = financialService.settlePayable(id, request);
+        auditService.logAction(user.getId(), "PAYABLE_SETTLE", "AccountPayable",
+                null, IpResolverUtil.getClientIp(httpReq));
+        return ResponseEntity.ok(output);
     }
 
     @PatchMapping("/payables/{id}/cancel")
     public ResponseEntity<AccountPayableOutput> cancelPayable(
             @PathVariable UUID id,
-            @RequestParam String performedBy) {
-        return ResponseEntity.ok(financialService.cancelPayable(id, performedBy));
-    }
+            @AuthenticationPrincipal User user,
+            HttpServletRequest httpReq) {
 
+        AccountPayableOutput output = financialService.cancelPayable(id, user.getUsername());
+        auditService.logAction(user.getId(), "PAYABLE_CANCEL", "AccountPayable",
+                null, IpResolverUtil.getClientIp(httpReq));
+        return ResponseEntity.ok(output);
+    }
 }

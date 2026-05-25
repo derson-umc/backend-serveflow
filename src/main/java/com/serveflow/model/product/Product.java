@@ -9,7 +9,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Product {
 
@@ -47,5 +47,6 @@ public class Product {
         if (other.portion != null)     this.portion     = other.portion;
         if (other.imageUrl != null)    this.imageUrl    = other.imageUrl;
         this.requiresTechnicalSheet    = other.requiresTechnicalSheet;
+        this.active                    = other.active;
     }
 }

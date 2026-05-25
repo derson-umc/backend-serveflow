@@ -1,6 +1,6 @@
 package com.serveflow.repository.stock.StockAlert;
 
-import com.serveflow.exception.stock.StockAlertNotFound;
+import com.serveflow.exception.stock.StockAlertNotFoundException;
 import com.serveflow.model.stock.StockAlert;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +37,7 @@ public class StockAlertRepositoryImpl implements StockAlertRepository {
     public StockAlert findById(UUID id) {
         return springRepository.findById(id)
                 .map(this::toDomain)
-                .orElseThrow(() -> new StockAlertNotFound(id));
+                .orElseThrow(() -> new StockAlertNotFoundException(id));
     }
 
     @Override

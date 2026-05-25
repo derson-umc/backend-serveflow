@@ -1,7 +1,10 @@
 package com.serveflow.controller.user;
 
+import com.serveflow.service.audit.AuditService;
 import com.serveflow.service.auth.AuthService;
 import com.serveflow.service.auth.AuthService.AuthResult;
+import com.serveflow.service.auth.PasswordResetService;
+import com.serveflow.service.auth.RefreshTokenService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -11,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -22,9 +26,19 @@ class AuthControllerTest {
 
     @Mock
     private AuthService authService;
+    @Mock
+    private AuditService auditService;
+    @Mock
+    private PasswordResetService passwordResetService;
+    @Mock
+    private RefreshTokenService refreshTokenService;
 
     @InjectMocks
     private AuthController controller;
+
+    private ResponseEntity<AuthController.LoginResponse> doLogin(AuthController.LoginRequest req) {
+        return controller.login(req, new MockHttpServletRequest());
+    }
 
     @Nested
     @DisplayName("Cenários de Sucesso - Login Válido.")
@@ -38,7 +52,7 @@ class AuthControllerTest {
                     .thenReturn(authResult);
 
             AuthController.LoginRequest request = new AuthController.LoginRequest("admin", "senha");
-            ResponseEntity<AuthController.LoginResponse> response = controller.login(request);
+            ResponseEntity<AuthController.LoginResponse> response = doLogin(request);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -54,7 +68,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult(tokenEsperado, null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest("admin", "senha"));
+                    doLogin(new AuthController.LoginRequest("admin", "senha"));
 
             assertThat(response.getBody().token()).isEqualTo(tokenEsperado);
         }
@@ -67,7 +81,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, idEsperado, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest("admin", "senha"));
+                    doLogin(new AuthController.LoginRequest("admin", "senha"));
 
             assertThat(response.getBody().id()).isEqualTo(idEsperado);
         }
@@ -80,7 +94,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, 1L, usernameEsperado, "USER"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest("anderson.ramos", "senha123"));
+                    doLogin(new AuthController.LoginRequest("anderson.ramos", "senha123"));
 
             assertThat(response.getBody().username()).isEqualTo(usernameEsperado);
         }
@@ -92,7 +106,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest("admin", "senha"));
+                    doLogin(new AuthController.LoginRequest("admin", "senha"));
 
             assertThat(response.getBody().role()).isEqualTo("ADMIN");
         }
@@ -104,21 +118,21 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> responseAdmin =
-                    controller.login(new AuthController.LoginRequest("admin", "senha"));
+                    doLogin(new AuthController.LoginRequest("admin", "senha"));
             assertThat(responseAdmin.getBody().role()).isEqualTo("ADMIN");
 
             when(authService.authenticate("user", "senha"))
                     .thenReturn(new AuthResult("token", null, 2L, "user", "USER"));
 
             ResponseEntity<AuthController.LoginResponse> responseUser =
-                    controller.login(new AuthController.LoginRequest("user", "senha"));
+                    doLogin(new AuthController.LoginRequest("user", "senha"));
             assertThat(responseUser.getBody().role()).isEqualTo("USER");
 
             when(authService.authenticate("manager", "senha"))
                     .thenReturn(new AuthResult("token", null, 3L, "manager", "MANAGER"));
 
             ResponseEntity<AuthController.LoginResponse> responseManager =
-                    controller.login(new AuthController.LoginRequest("manager", "senha"));
+                    doLogin(new AuthController.LoginRequest("manager", "senha"));
             assertThat(responseManager.getBody().role()).isEqualTo("MANAGER");
         }
 
@@ -128,7 +142,7 @@ class AuthControllerTest {
             when(authService.authenticate("admin", "senha"))
                     .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
-            controller.login(new AuthController.LoginRequest("admin", "senha"));
+            doLogin(new AuthController.LoginRequest("admin", "senha"));
 
             verify(authService, times(1)).authenticate("admin", "senha");
         }
@@ -139,9 +153,9 @@ class AuthControllerTest {
             when(authService.authenticate(anyString(), anyString()))
                     .thenReturn(new AuthResult("token", null, 1L, "user", "USER"));
 
-            controller.login(new AuthController.LoginRequest("user1", "pass1"));
-            controller.login(new AuthController.LoginRequest("user2", "pass2"));
-            controller.login(new AuthController.LoginRequest("user3", "pass3"));
+            doLogin(new AuthController.LoginRequest("user1", "pass1"));
+            doLogin(new AuthController.LoginRequest("user2", "pass2"));
+            doLogin(new AuthController.LoginRequest("user3", "pass3"));
 
             verify(authService, times(3)).authenticate(anyString(), anyString());
         }
@@ -153,7 +167,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest("admin", "senha"));
+                    doLogin(new AuthController.LoginRequest("admin", "senha"));
 
             AuthController.LoginResponse body = response.getBody();
             assertThat(body).isNotNull();
@@ -175,7 +189,7 @@ class AuthControllerTest {
                     .thenThrow(new IllegalArgumentException("Credenciais inválidas"));
 
             assertThatThrownBy(() ->
-                    controller.login(new AuthController.LoginRequest("admin", "senhaErrada"))
+                    doLogin(new AuthController.LoginRequest("admin", "senhaErrada"))
             ).isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Credenciais inválidas");
         }
@@ -187,7 +201,7 @@ class AuthControllerTest {
                     .thenThrow(new IllegalArgumentException("Usuário não encontrado"));
 
             assertThatThrownBy(() ->
-                    controller.login(new AuthController.LoginRequest("usuarioInexistente", "senha"))
+                    doLogin(new AuthController.LoginRequest("usuarioInexistente", "senha"))
             ).isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Usuário não encontrado");
         }
@@ -199,7 +213,7 @@ class AuthControllerTest {
                     .thenThrow(new IllegalArgumentException("Usuário não pode ser null"));
 
             assertThatThrownBy(() ->
-                    controller.login(new AuthController.LoginRequest(null, "senha"))
+                    doLogin(new AuthController.LoginRequest(null, "senha"))
             ).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -210,7 +224,7 @@ class AuthControllerTest {
                     .thenThrow(new IllegalArgumentException("Senha não pode ser null"));
 
             assertThatThrownBy(() ->
-                    controller.login(new AuthController.LoginRequest("admin", null))
+                    doLogin(new AuthController.LoginRequest("admin", null))
             ).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -221,7 +235,7 @@ class AuthControllerTest {
                     .thenThrow(new IllegalArgumentException("Usuário não pode ser vazio"));
 
             assertThatThrownBy(() ->
-                    controller.login(new AuthController.LoginRequest("", "senha"))
+                    doLogin(new AuthController.LoginRequest("", "senha"))
             ).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -232,7 +246,7 @@ class AuthControllerTest {
                     .thenThrow(new IllegalArgumentException("Senha não pode ser vazia"));
 
             assertThatThrownBy(() ->
-                    controller.login(new AuthController.LoginRequest("admin", ""))
+                    doLogin(new AuthController.LoginRequest("admin", ""))
             ).isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -243,7 +257,7 @@ class AuthControllerTest {
                     .thenThrow(new IllegalArgumentException("Usuário e senha não podem conter apenas espaços"));
 
             assertThatThrownBy(() ->
-                    controller.login(new AuthController.LoginRequest("   ", "   "))
+                    doLogin(new AuthController.LoginRequest("   ", "   "))
             ).isInstanceOf(IllegalArgumentException.class);
         }
     }
@@ -260,7 +274,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, 1L, usuarioLongo, "USER"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest(usuarioLongo, "senha"));
+                    doLogin(new AuthController.LoginRequest(usuarioLongo, "senha"));
 
             assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         }
@@ -273,7 +287,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest("admin", senhaLonga));
+                    doLogin(new AuthController.LoginRequest("admin", senhaLonga));
 
             assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         }
@@ -286,7 +300,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, 1L, usuarioEspecial, "USER"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest(usuarioEspecial, "senha!@#$"));
+                    doLogin(new AuthController.LoginRequest(usuarioEspecial, "senha!@#$"));
 
             assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         }
@@ -299,7 +313,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, 1L, usuarioUnicode, "USER"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest(usuarioUnicode, "senhaçãõ"));
+                    doLogin(new AuthController.LoginRequest(usuarioUnicode, "senhaçãõ"));
 
             assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         }
@@ -312,7 +326,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, idGrande, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest("admin", "senha"));
+                    doLogin(new AuthController.LoginRequest("admin", "senha"));
 
             assertThat(response.getBody().id()).isEqualTo(idGrande);
         }
@@ -325,7 +339,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult(tokenLongo, null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest("admin", "senha"));
+                    doLogin(new AuthController.LoginRequest("admin", "senha"));
 
             assertThat(response.getBody().token()).isEqualTo(tokenLongo);
         }
@@ -341,7 +355,7 @@ class AuthControllerTest {
             when(authService.authenticate("admin", "senha"))
                     .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
-            controller.login(new AuthController.LoginRequest("admin", "senha"));
+            doLogin(new AuthController.LoginRequest("admin", "senha"));
 
             verify(authService, times(1)).authenticate("admin", "senha");
         }
@@ -352,7 +366,7 @@ class AuthControllerTest {
             when(authService.authenticate("admin", "senha"))
                     .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
-            controller.login(new AuthController.LoginRequest("admin", "senha"));
+            doLogin(new AuthController.LoginRequest("admin", "senha"));
 
             verify(authService, times(1)).authenticate("admin", "senha");
             verifyNoMoreInteractions(authService);
@@ -367,9 +381,9 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token-user2", null, 2L, "user2", "USER"));
 
             ResponseEntity<AuthController.LoginResponse> response1 =
-                    controller.login(new AuthController.LoginRequest("user1", "senha"));
+                    doLogin(new AuthController.LoginRequest("user1", "senha"));
             ResponseEntity<AuthController.LoginResponse> response2 =
-                    controller.login(new AuthController.LoginRequest("user2", "senha"));
+                    doLogin(new AuthController.LoginRequest("user2", "senha"));
 
             assertThat(response1.getBody().token()).isNotEqualTo(response2.getBody().token());
             assertThat(response1.getBody().id()).isNotEqualTo(response2.getBody().id());
@@ -383,9 +397,9 @@ class AuthControllerTest {
                     .thenReturn(resultado);
 
             ResponseEntity<AuthController.LoginResponse> response1 =
-                    controller.login(new AuthController.LoginRequest("admin", "senha"));
+                    doLogin(new AuthController.LoginRequest("admin", "senha"));
             ResponseEntity<AuthController.LoginResponse> response2 =
-                    controller.login(new AuthController.LoginRequest("admin", "senha"));
+                    doLogin(new AuthController.LoginRequest("admin", "senha"));
 
             assertThat(response1.getBody()).isEqualTo(response2.getBody());
         }
@@ -402,7 +416,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             long inicio = System.currentTimeMillis();
-            controller.login(new AuthController.LoginRequest("admin", "senha"));
+            doLogin(new AuthController.LoginRequest("admin", "senha"));
             long duracao = System.currentTimeMillis() - inicio;
 
             assertThat(duracao).isLessThan(1000);
@@ -416,7 +430,7 @@ class AuthControllerTest {
 
             for (int i = 0; i < 100; i++) {
                 ResponseEntity<AuthController.LoginResponse> response =
-                        controller.login(new AuthController.LoginRequest("user" + i, "senha"));
+                        doLogin(new AuthController.LoginRequest("user" + i, "senha"));
                 assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
             }
         }
@@ -433,7 +447,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest("admin", "senha"));
+                    doLogin(new AuthController.LoginRequest("admin", "senha"));
 
             assertThat(response).isNotNull();
         }
@@ -445,7 +459,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest("admin", "senha"));
+                    doLogin(new AuthController.LoginRequest("admin", "senha"));
             assertThat(response.getBody()).isNotNull();
         }
 
@@ -456,7 +470,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest("admin", "senha"));
+                    doLogin(new AuthController.LoginRequest("admin", "senha"));
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getStatusCodeValue()).isEqualTo(200);
         }
@@ -468,7 +482,7 @@ class AuthControllerTest {
                     .thenReturn(new AuthResult("token", null, 1L, "admin", "ADMIN"));
 
             ResponseEntity<AuthController.LoginResponse> response =
-                    controller.login(new AuthController.LoginRequest("admin", "senha"));
+                    doLogin(new AuthController.LoginRequest("admin", "senha"));
 
             AuthController.LoginResponse body = response.getBody();
             assertThat(body).isNotNull();

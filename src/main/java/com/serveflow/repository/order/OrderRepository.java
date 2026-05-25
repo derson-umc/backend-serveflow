@@ -1,6 +1,6 @@
 package com.serveflow.repository.order;
 
-import com.serveflow.exception.order.OrderNotFound;
+import com.serveflow.exception.order.OrderNotFoundException;
 import com.serveflow.model.address.*;
 import com.serveflow.model.address.Number;
 import com.serveflow.model.order.*;
@@ -8,9 +8,10 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Repository
 @Transactional(readOnly = true)
@@ -34,7 +35,7 @@ public class OrderRepository {
             entity = toEntity(order);
         } else {
             entity = springRepository.findById(order.getId())
-                    .orElseThrow(() -> new OrderNotFound(order.getId()));
+                    .orElseThrow(() -> new OrderNotFoundException(order.getId()));
             updateEntity(entity, order);
         }
 
@@ -44,7 +45,7 @@ public class OrderRepository {
     public Order findById(UUID id) {
         return springRepository.findById(id)
                 .map(this::toDomain)
-                .orElseThrow(() -> new OrderNotFound(id));
+                .orElseThrow(() -> new OrderNotFoundException(id));
     }
 
     public List<Order> findAll() {
@@ -116,15 +117,24 @@ public class OrderRepository {
             entity.setAddress(toAddressEntity(order.getAddress()));
         }
 
-        List<OrderItemEntity> updatedItems = order.getItems().stream()
-                .map(item -> syncItemEntity(
-                        findOrNew(entity.getItems(), item.getId(),
-                                OrderItemEntity::getIdOrderItem, OrderItemEntity::new),
-                        item, entity))
-                .toList();
+        // Merge items without clear()+addAll() to avoid Hibernate orphanRemoval
+        // delete-then-reinsert cycle that can cause FK constraint violations.
+        Map<UUID, OrderItemEntity> existingById = entity.getItems().stream()
+                .collect(Collectors.toMap(OrderItemEntity::getIdOrderItem, Function.identity()));
 
-        entity.getItems().clear();
-        entity.getItems().addAll(updatedItems);
+        List<UUID> domainIds = order.getItems().stream().map(OrderItem::getId).toList();
+
+        // Remove items no longer in the domain model (handles item removal)
+        entity.getItems().removeIf(e -> !domainIds.contains(e.getIdOrderItem()));
+
+        // Update existing or add new items in-place
+        for (OrderItem item : order.getItems()) {
+            OrderItemEntity itemEntity = existingById.getOrDefault(item.getId(), new OrderItemEntity());
+            syncItemEntity(itemEntity, item, entity);
+            if (!entity.getItems().contains(itemEntity)) {
+                entity.getItems().add(itemEntity);
+            }
+        }
 
         return entity;
     }
@@ -138,15 +148,22 @@ public class OrderRepository {
         entity.setUnitPrice(item.getUnitPrice());
         entity.setObservation(item.getObservation());
 
-        List<ItemAdditionalEntity> updatedAdditionals = item.getAdditionals().stream()
-                .map(add -> syncAdditionalEntity(
-                        findOrNew(entity.getAdditionals(), add.getId(),
-                                ItemAdditionalEntity::getIdItemAdditional, ItemAdditionalEntity::new),
-                        add, entity))
-                .toList();
+        // Merge additionals without clear()+addAll() for the same reason as items
+        Map<UUID, ItemAdditionalEntity> existingById = entity.getAdditionals().stream()
+                .collect(Collectors.toMap(ItemAdditionalEntity::getIdItemAdditional, Function.identity()));
 
-        entity.getAdditionals().clear();
-        entity.getAdditionals().addAll(updatedAdditionals);
+        List<UUID> domainAddIds = item.getAdditionals().stream()
+                .map(ItemAdditional::getId).toList();
+
+        entity.getAdditionals().removeIf(a -> !domainAddIds.contains(a.getIdItemAdditional()));
+
+        for (ItemAdditional add : item.getAdditionals()) {
+            ItemAdditionalEntity addEntity = existingById.getOrDefault(add.getId(), new ItemAdditionalEntity());
+            syncAdditionalEntity(addEntity, add, entity);
+            if (!entity.getAdditionals().contains(addEntity)) {
+                entity.getAdditionals().add(addEntity);
+            }
+        }
 
         return entity;
     }
@@ -187,10 +204,4 @@ public class OrderRepository {
         return value != null ? value.trim().toLowerCase() : null;
     }
 
-    private <E, ID> E findOrNew(List<E> list, ID id, Function<E, ID> idGetter, Supplier<E> factory) {
-        return list.stream()
-                .filter(e -> id != null && id.equals(idGetter.apply(e)))
-                .findFirst()
-                .orElseGet(factory);
-    }
 }

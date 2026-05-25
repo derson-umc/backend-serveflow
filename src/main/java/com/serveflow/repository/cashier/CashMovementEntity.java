@@ -40,6 +40,9 @@ public class CashMovementEntity {
     @Column(name = "performed_by", nullable = false, length = 150)
     private String performedBy;
 
+    @Column(name = "origem", nullable = false, length = 20)
+    private String origem;
+
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
