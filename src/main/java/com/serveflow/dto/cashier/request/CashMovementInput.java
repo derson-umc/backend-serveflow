@@ -19,8 +19,5 @@ public record CashMovementInput(
         @NotBlank(message = "description is required")
         String description,
 
-        String category,
-
-        @NotBlank(message = "performedBy is required")
-        String performedBy
+        String category
 ) {}

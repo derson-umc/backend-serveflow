@@ -2,23 +2,25 @@ package com.serveflow.exception.handler;
 
 import com.serveflow.exception.auth.InvalidResetTokenException;
 import com.serveflow.exception.cashier.CashSessionAlreadyClosedException;
-import org.springframework.dao.OptimisticLockingFailureException;
 import com.serveflow.exception.cashier.CashSessionNotFoundException;
 import com.serveflow.exception.cashier.OpenSessionAlreadyExistsException;
 import com.serveflow.exception.financial.AccountNotFoundException;
 import com.serveflow.exception.financial.DuplicateSettlementException;
 import com.serveflow.exception.financial.InconsistentAmountException;
-import com.serveflow.exception.menu.MenuNotFound;
-import com.serveflow.exception.order.OrderNotFound;
-import com.serveflow.exception.product.ProductNotFound;
-import com.serveflow.exception.stock.InsufficientStock;
-import com.serveflow.exception.stock.RecipeNotFound;
-import com.serveflow.exception.stock.StockAlertNotFound;
-import com.serveflow.exception.stock.StockItemNotFound;
+import com.serveflow.exception.menu.MenuNotFoundException;
+import com.serveflow.exception.order.OrderNotFoundException;
+import com.serveflow.exception.product.ProductNotFoundException;
+import com.serveflow.exception.stock.InsufficientStockException;
+import com.serveflow.exception.stock.RecipeNotFoundException;
+import com.serveflow.exception.stock.StockAlertNotFoundException;
+import com.serveflow.exception.stock.StockItemNotFoundException;
 import com.serveflow.exception.user.BusinessRuleException;
 import com.serveflow.exception.user.ConflictException;
 import com.serveflow.exception.user.UserNotFoundException;
+import com.serveflow.service.audit.AuditService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -33,45 +35,48 @@ import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final AuditService auditService;
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(ProductNotFound.class)
-    public ResponseEntity<Map<String, Object>> handleProductNotFound(ProductNotFound ex) {
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleProductNotFound(ProductNotFoundException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(MenuNotFound.class)
-    public ResponseEntity<Map<String, Object>> handleMenuNotFound(MenuNotFound ex) {
+    @ExceptionHandler(MenuNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleMenuNotFound(MenuNotFoundException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(OrderNotFound.class)
-    public ResponseEntity<Map<String, Object>> handleOrderNotFound(OrderNotFound ex) {
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleOrderNotFound(OrderNotFoundException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(StockItemNotFound.class)
-    public ResponseEntity<Map<String, Object>> handleStockItemNotFound(StockItemNotFound ex) {
+    @ExceptionHandler(StockItemNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleStockItemNotFound(StockItemNotFoundException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(RecipeNotFound.class)
-    public ResponseEntity<Map<String, Object>> handleRecipeNotFound(RecipeNotFound ex) {
+    @ExceptionHandler(RecipeNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleRecipeNotFound(RecipeNotFoundException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(StockAlertNotFound.class)
-    public ResponseEntity<Map<String, Object>> handleStockAlertNotFound(StockAlertNotFound ex) {
+    @ExceptionHandler(StockAlertNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleStockAlertNotFound(StockAlertNotFoundException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler(InsufficientStock.class)
-    public ResponseEntity<Map<String, Object>> handleInsufficientStock(InsufficientStock ex) {
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<Map<String, Object>> handleInsufficientStock(InsufficientStockException ex) {
         return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
     }
 
@@ -117,7 +122,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(OptimisticLockingFailureException.class)
     public ResponseEntity<Map<String, Object>> handleOptimisticLock(OptimisticLockingFailureException ex) {
-        log.warn("Conflito de versão (optimistic lock): {}", ex.getMessage());
+        log.warn("Optimistic lock conflict: {}", ex.getMessage());
         return buildResponse(HttpStatus.CONFLICT, "O recurso foi modificado por outra operação. Tente novamente.");
     }
 
@@ -128,7 +133,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidResetTokenException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidResetToken(InvalidResetTokenException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, "INVALID_RESET_TOKEN");
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -158,7 +163,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
-        log.error("Erro interno não tratado", ex);
+        log.error("Unhandled internal error", ex);
+        auditService.logError(ex, "GlobalExceptionHandler");
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno do servidor.");
     }
 

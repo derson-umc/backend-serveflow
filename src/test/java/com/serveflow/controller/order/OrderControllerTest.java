@@ -4,9 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.serveflow.dto.order.response.OrderOutput;
 import com.serveflow.exception.handler.GlobalExceptionHandler;
-import com.serveflow.exception.order.OrderNotFound;
-import com.serveflow.exception.stock.InsufficientStock;
+import com.serveflow.exception.order.OrderNotFoundException;
+import com.serveflow.exception.stock.InsufficientStockException;
+import com.serveflow.model.user.User;
+import com.serveflow.model.user.UserRole;
+import com.serveflow.service.audit.AuditService;
 import com.serveflow.service.order.OrderService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +19,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -35,6 +42,8 @@ class OrderControllerTest {
 
     @Mock
     OrderService orderService;
+    @Mock
+    AuditService auditService;
 
     @InjectMocks
     OrderController controller;
@@ -44,11 +53,20 @@ class OrderControllerTest {
 
     @BeforeEach
     void setUp() {
+        User mockUser = new User(1L, "admin", "admin@test.com", "pass", UserRole.ADMIN, "Administrador");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockUser, null, mockUser.getAuthorities()));
         mvc = MockMvcBuilders
                 .standaloneSetup(controller)
-                .setControllerAdvice(new GlobalExceptionHandler())
+                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+                .setControllerAdvice(new GlobalExceptionHandler(auditService))
                 .build();
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     private OrderOutput orderOutput(UUID id, String status) {
@@ -100,7 +118,7 @@ class OrderControllerTest {
     @DisplayName("GET /orders/{id}: retorna 404 quando pedido não existe")
     void findById_returns404WhenNotFound() throws Exception {
         UUID id = UUID.randomUUID();
-        when(orderService.findById(id)).thenThrow(new OrderNotFound(id));
+        when(orderService.findById(id)).thenThrow(new OrderNotFoundException(id));
 
         mvc.perform(get("/orders/{id}", id))
                 .andExpect(status().isNotFound())
@@ -139,7 +157,7 @@ class OrderControllerTest {
     @DisplayName("PATCH /orders/{id}/confirm: retorna 404 quando pedido não existe")
     void confirm_returns404WhenNotFound() throws Exception {
         UUID id = UUID.randomUUID();
-        when(orderService.confirm(id)).thenThrow(new OrderNotFound(id));
+        when(orderService.confirm(id)).thenThrow(new OrderNotFoundException(id));
 
         mvc.perform(patch("/orders/{id}/confirm", id))
                 .andExpect(status().isNotFound())
@@ -150,7 +168,7 @@ class OrderControllerTest {
     @DisplayName("PATCH /orders/{id}/confirm: retorna 422 quando estoque insuficiente")
     void confirm_returns422WhenInsufficientStock() throws Exception {
         UUID id = UUID.randomUUID();
-        when(orderService.confirm(id)).thenThrow(new InsufficientStock("Estoque insuficiente para: Farinha"));
+        when(orderService.confirm(id)).thenThrow(new InsufficientStockException("Estoque insuficiente para: Farinha"));
 
         mvc.perform(patch("/orders/{id}/confirm", id))
                 .andExpect(status().isUnprocessableEntity())
@@ -213,7 +231,7 @@ class OrderControllerTest {
     @DisplayName("PATCH /orders/{id}/cancel: retorna 404 quando pedido não existe")
     void cancel_returns404WhenNotFound() throws Exception {
         UUID id = UUID.randomUUID();
-        when(orderService.cancel(id)).thenThrow(new OrderNotFound(id));
+        when(orderService.cancel(id)).thenThrow(new OrderNotFoundException(id));
 
         mvc.perform(patch("/orders/{id}/cancel", id))
                 .andExpect(status().isNotFound())

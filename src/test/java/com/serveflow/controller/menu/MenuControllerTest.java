@@ -8,7 +8,8 @@ import com.serveflow.dto.menu.request.RemoveMenuItemInput;
 import com.serveflow.dto.menu.request.UpdateAvailabilityInput;
 import com.serveflow.dto.menu.response.MenuOutput;
 import com.serveflow.exception.handler.GlobalExceptionHandler;
-import com.serveflow.exception.menu.MenuNotFound;
+import com.serveflow.exception.menu.MenuNotFoundException;
+import com.serveflow.service.audit.AuditService;
 import com.serveflow.service.menu.MenuService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,6 +43,8 @@ class MenuControllerTest {
 
     @Mock
     MenuService menuService;
+    @Mock
+    AuditService auditService;
 
     @InjectMocks
     MenuController controller;
@@ -53,7 +56,7 @@ class MenuControllerTest {
     void setUp() {
         mvc = MockMvcBuilders
                 .standaloneSetup(controller)
-                .setControllerAdvice(new GlobalExceptionHandler())
+                .setControllerAdvice(new GlobalExceptionHandler(auditService))
                 .build();
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     }
@@ -149,7 +152,7 @@ class MenuControllerTest {
     @DisplayName("GET /menus/{id}: retorna 404 quando menu não existe")
     void findById_returns404WhenNotFound() throws Exception {
         UUID id = UUID.randomUUID();
-        when(menuService.findById(id)).thenThrow(new MenuNotFound(id));
+        when(menuService.findById(id)).thenThrow(new MenuNotFoundException(id));
 
         mvc.perform(get("/menus/{id}", id))
                 .andExpect(status().isNotFound())
@@ -173,7 +176,7 @@ class MenuControllerTest {
     @DisplayName("PATCH /menus/{id}/unlock: retorna 404 quando menu não existe")
     void unlock_returns404WhenNotFound() throws Exception {
         UUID id = UUID.randomUUID();
-        when(menuService.unlock(id)).thenThrow(new MenuNotFound(id));
+        when(menuService.unlock(id)).thenThrow(new MenuNotFoundException(id));
 
         mvc.perform(patch("/menus/{id}/unlock", id))
                 .andExpect(status().isNotFound())

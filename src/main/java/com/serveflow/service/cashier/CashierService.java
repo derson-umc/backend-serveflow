@@ -5,6 +5,7 @@ import com.serveflow.dto.cashier.request.CloseSessionInput;
 import com.serveflow.dto.cashier.request.OpenSessionInput;
 import com.serveflow.dto.cashier.response.CashMovementOutput;
 import com.serveflow.dto.cashier.response.CashSessionOutput;
+import com.serveflow.exception.cashier.CashSessionAlreadyClosedException;
 import com.serveflow.exception.cashier.CashSessionNotFoundException;
 import com.serveflow.exception.cashier.OpenSessionAlreadyExistsException;
 import com.serveflow.model.cashier.CashSession;
@@ -23,31 +24,31 @@ import java.util.UUID;
 @Service
 public class CashierService {
 
-    private final SpringCashSessionRepository sessionRepository;
+    private final SpringCashSessionRepository  sessionRepository;
     private final SpringCashMovementRepository movementRepository;
 
     public CashierService(SpringCashSessionRepository sessionRepository,
                           SpringCashMovementRepository movementRepository) {
-        this.sessionRepository = sessionRepository;
+        this.sessionRepository  = sessionRepository;
         this.movementRepository = movementRepository;
     }
 
     @Transactional
-    public CashSessionOutput openSession(OpenSessionInput request) {
+    public CashSessionOutput openSession(OpenSessionInput request, String username) {
         if (sessionRepository.existsByStatus(CashSessionStatus.OPEN)) {
             throw new OpenSessionAlreadyExistsException();
         }
-        CashSession session = CashSession.open(request.initialBalance(), request.observation(), request.openedBy());
+        CashSession session = CashSession.open(request.initialBalance(), request.observation(), username);
         CashSessionEntity saved = sessionRepository.save(toEntity(session));
         return toOutput(saved);
     }
 
     @Transactional
-    public CashSessionOutput closeSession(UUID id, CloseSessionInput request) {
+    public CashSessionOutput closeSession(UUID id, CloseSessionInput request, String username) {
         CashSessionEntity entity = sessionRepository.findById(id)
                 .orElseThrow(() -> new CashSessionNotFoundException(id));
         CashSession session = toDomain(entity);
-        session.close(request.closedBy(), request.closingObservation());
+        session.close(username, request.closingObservation());
         updateEntity(entity, session);
         return toOutput(sessionRepository.save(entity));
     }
@@ -57,17 +58,27 @@ public class CashierService {
                 .map(this::toOutput);
     }
 
+    public Optional<UUID> getCurrentSessionId() {
+        return sessionRepository.findFirstByStatusOrderByOpenedAtDesc(CashSessionStatus.OPEN)
+                .map(CashSessionEntity::getId);
+    }
+
     public List<CashSessionOutput> listSessions() {
         return sessionRepository.findAllByOrderByOpenedAtDesc().stream()
                 .map(this::toOutput).toList();
     }
 
     @Transactional
-    public CashMovementOutput addMovement(UUID sessionId, CashMovementInput request) {
+    public CashMovementOutput addMovement(UUID sessionId, CashMovementInput request, String username) {
+        return addMovement(sessionId, request, username, "MANUAL");
+    }
+
+    @Transactional
+    public CashMovementOutput addMovement(UUID sessionId, CashMovementInput request, String username, String origem) {
         CashSessionEntity session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new CashSessionNotFoundException(sessionId));
         if (session.getStatus() == CashSessionStatus.CLOSED) {
-            throw new com.serveflow.exception.cashier.CashSessionAlreadyClosedException(sessionId);
+            throw new CashSessionAlreadyClosedException(sessionId);
         }
         CashMovementEntity entity = new CashMovementEntity();
         entity.setSessionId(sessionId);
@@ -75,7 +86,8 @@ public class CashierService {
         entity.setAmount(request.amount());
         entity.setDescription(request.description());
         entity.setCategory(request.category());
-        entity.setPerformedBy(request.performedBy());
+        entity.setPerformedBy(username);
+        entity.setOrigem(origem);
         return toMovementOutput(movementRepository.save(entity));
     }
 
@@ -87,6 +99,7 @@ public class CashierService {
                 .map(this::toMovementOutput).toList();
     }
 
+    // ── Mappers ───────────────────────────────────────────────────────────────
 
     private CashSessionEntity toEntity(CashSession s) {
         CashSessionEntity e = new CashSessionEntity();
@@ -120,6 +133,6 @@ public class CashierService {
     private CashMovementOutput toMovementOutput(CashMovementEntity e) {
         return new CashMovementOutput(e.getId(), e.getSessionId(), e.getType().name(),
                 e.getAmount(), e.getDescription(), e.getCategory(),
-                e.getPerformedBy(), e.getCreatedAt());
+                e.getPerformedBy(), e.getOrigem(), e.getCreatedAt());
     }
 }

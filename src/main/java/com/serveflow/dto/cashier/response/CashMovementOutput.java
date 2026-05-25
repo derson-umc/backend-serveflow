@@ -5,12 +5,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record CashMovementOutput(
-        UUID id,
-        UUID sessionId,
-        String type,
-        BigDecimal amount,
-        String description,
-        String category,
-        String performedBy,
+        UUID          id,
+        UUID          sessionId,
+        String        type,
+        BigDecimal    amount,
+        String        description,
+        String        category,
+        String        performedBy,
+        String        origem,
         LocalDateTime createdAt
 ) {}

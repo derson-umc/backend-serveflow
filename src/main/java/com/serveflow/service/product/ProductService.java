@@ -38,10 +38,18 @@ public class ProductService {
         return repository.findAllActive().stream().map(this::toOutput).toList();
     }
 
+    public List<ProductOutput> findAll() {
+        return repository.findAll().stream().map(this::toOutput).toList();
+    }
+
     @Transactional
     public ProductOutput update(UUID id, ProductInput request) {
         Product existing = repository.findById(id);
-        existing.update(toDomain(request));
+        Product patch = toDomain(request);
+        if (request.active() == null) {
+            patch = patch.toBuilder().active(existing.isActive()).build();
+        }
+        existing.update(patch);
         return toOutput(repository.save(existing));
     }
 
@@ -66,6 +74,7 @@ public class ProductService {
                 .portion(dto.portion())
                 .imageUrl(dto.imageUrl())
                 .requiresTechnicalSheet(dto.requiresTechnicalSheet() != null && dto.requiresTechnicalSheet())
+                .active(dto.active() == null || dto.active())
                 .build();
     }
 
