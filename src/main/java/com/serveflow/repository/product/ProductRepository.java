@@ -1,6 +1,6 @@
 package com.serveflow.repository.product;
 
-import com.serveflow.exception.product.ProductNotFound;
+import com.serveflow.exception.product.ProductNotFoundException;
 import com.serveflow.model.product.Product;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +27,7 @@ public class ProductRepository {
             entity = toEntity(product);
         } else {
             entity = springRepository.findById(product.getId())
-                    .orElseThrow(() -> new ProductNotFound(product.getId()));
+                    .orElseThrow(() -> new ProductNotFoundException(product.getId()));
             updateEntity(entity, product);
         }
 
@@ -43,17 +43,21 @@ public class ProductRepository {
     public Product findById(UUID id) {
         return springRepository.findById(id)
                 .map(this::toDomain)
-                .orElseThrow(() -> new ProductNotFound(id));
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     public List<Product> findAllActive() {
         return springRepository.findAllByActiveTrue().stream().map(this::toDomain).toList();
     }
 
+    public List<Product> findAll() {
+        return springRepository.findAll().stream().map(this::toDomain).toList();
+    }
+
     @Transactional
     public void deactivate(UUID id) {
         ProductEntity entity = springRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFound(id));
+                .orElseThrow(() -> new ProductNotFoundException(id));
         entity.setActive(false);
         springRepository.save(entity);
     }
@@ -61,7 +65,7 @@ public class ProductRepository {
     @Transactional
     public Product toggleActive(UUID id) {
         ProductEntity entity = springRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFound(id));
+                .orElseThrow(() -> new ProductNotFoundException(id));
         entity.setActive(!entity.isActive());
         return toDomain(springRepository.save(entity));
     }

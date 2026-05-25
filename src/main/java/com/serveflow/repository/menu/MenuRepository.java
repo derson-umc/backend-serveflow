@@ -1,6 +1,6 @@
 package com.serveflow.repository.menu;
 
-import com.serveflow.exception.menu.MenuNotFound;
+import com.serveflow.exception.menu.MenuNotFoundException;
 import com.serveflow.model.menu.Menu;
 import com.serveflow.model.menu.MenuItem;
 import com.serveflow.model.menu.MenuShift;
@@ -34,7 +34,7 @@ public class MenuRepository {
             entity = toEntity(menu);
         } else {
             entity = springRepository.findById(menu.getId())
-                    .orElseThrow(() -> new MenuNotFound(menu.getId()));
+                    .orElseThrow(() -> new MenuNotFoundException(menu.getId()));
             updateEntity(entity, menu);
         }
 
@@ -44,7 +44,7 @@ public class MenuRepository {
     public Menu findById(UUID id) {
         return springRepository.findById(id)
                 .map(this::toDomain)
-                .orElseThrow(() -> new MenuNotFound(id));
+                .orElseThrow(() -> new MenuNotFoundException(id));
     }
 
     public List<Menu> findAll() {

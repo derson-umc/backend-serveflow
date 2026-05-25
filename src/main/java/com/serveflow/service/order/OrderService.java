@@ -1,15 +1,18 @@
 package com.serveflow.service.order;
 
-import com.serveflow.controller.kds.KdsController;
 import com.serveflow.controller.kds.KdsEventPublisher;
+import com.serveflow.dto.kds.response.KdsMapper;
 import com.serveflow.dto.order.request.*;
 import com.serveflow.dto.order.response.OrderOutput;
+import com.serveflow.events.OrderCompletedEvent;
 import com.serveflow.integration.AddressResolver;
 import com.serveflow.model.address.Address;
 import com.serveflow.model.order.*;
 import com.serveflow.repository.menu.MenuRepository;
 import com.serveflow.repository.order.OrderRepository;
 import com.serveflow.service.stock.StockService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,25 +22,32 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+@Slf4j
 @Service
 public class OrderService {
 
-    private final OrderRepository orderRepository;
-    private final AddressResolver addressResolver;
-    private final StockService stockService;
-    private final MenuRepository menuRepository;
-    private final KdsEventPublisher kdsEventPublisher;
+    private final OrderRepository           orderRepository;
+    private final AddressResolver           addressResolver;
+    private final StockService              stockService;
+    private final MenuRepository            menuRepository;
+    private final KdsEventPublisher         kdsEventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
+    private final KdsMapper                 kdsMapper;
 
     public OrderService(OrderRepository orderRepository,
                         AddressResolver addressResolver,
                         StockService stockService,
                         MenuRepository menuRepository,
-                        @Lazy KdsEventPublisher kdsEventPublisher) {
-        this.orderRepository = orderRepository;
-        this.addressResolver = addressResolver;
-        this.stockService = stockService;
-        this.menuRepository = menuRepository;
+                        @Lazy KdsEventPublisher kdsEventPublisher,
+                        ApplicationEventPublisher eventPublisher,
+                        KdsMapper kdsMapper) {
+        this.orderRepository   = orderRepository;
+        this.addressResolver   = addressResolver;
+        this.stockService      = stockService;
+        this.menuRepository    = menuRepository;
         this.kdsEventPublisher = kdsEventPublisher;
+        this.eventPublisher    = eventPublisher;
+        this.kdsMapper         = kdsMapper;
     }
 
     @Transactional
@@ -56,7 +66,7 @@ public class OrderService {
         }
 
         OrderOutput output = toOutput(orderRepository.save(order));
-        publishKdsSafely(() -> kdsEventPublisher.publishUpdate(toKdsOutput(output)));
+        publishKdsSafely(() -> kdsEventPublisher.publishUpdate(kdsMapper.toOutput(output)));
         return output;
     }
 
@@ -81,7 +91,7 @@ public class OrderService {
         Order saved = orderRepository.save(order);
         stockService.deductForOrder(saved.getId(), saved.getItems());
         OrderOutput output = toOutput(saved);
-        publishKdsSafely(() -> kdsEventPublisher.publishUpdate(toKdsOutput(output)));
+        publishKdsSafely(() -> kdsEventPublisher.publishUpdate(kdsMapper.toOutput(output)));
         return output;
     }
 
@@ -97,7 +107,7 @@ public class OrderService {
         }
         order.startPreparation();
         OrderOutput output = toOutput(orderRepository.save(order));
-        publishKdsSafely(() -> kdsEventPublisher.publishUpdate(toKdsOutput(output)));
+        publishKdsSafely(() -> kdsEventPublisher.publishUpdate(kdsMapper.toOutput(output)));
         return output;
     }
 
@@ -121,17 +131,53 @@ public class OrderService {
         unlockMenuByOrder(saved.getId());
         OrderOutput output = toOutput(saved);
         publishKdsSafely(() -> kdsEventPublisher.publishRemove(output.id()));
+        eventPublisher.publishEvent(new OrderCompletedEvent(
+                saved.getId(),
+                saved.getCustomerName(),
+                saved.getType().name(),
+                saved.getPaymentMethod(),
+                saved.getTotal()
+        ));
+        return output;
+    }
+
+    @Transactional
+    public OrderOutput settleFromCashier(UUID id, String paymentMethod) {
+        Order order = orderRepository.findById(id);
+        order.registerPayment(paymentMethod);
+        order.complete();
+        Order saved = orderRepository.save(order);
+        unlockMenuByOrder(saved.getId());
+        OrderOutput output = toOutput(saved);
+        publishKdsSafely(() -> kdsEventPublisher.publishRemove(output.id()));
+        eventPublisher.publishEvent(new OrderCompletedEvent(
+                saved.getId(),
+                saved.getCustomerName(),
+                saved.getType().name(),
+                saved.getPaymentMethod(),
+                saved.getTotal()
+        ));
         return output;
     }
 
     @Transactional
     public OrderOutput cancel(UUID id) {
+        log.debug("Cancelando pedido id={}", id);
         Order order = orderRepository.findById(id);
+        log.debug("Pedido encontrado: status={}, itens={}", order.getStatus(), order.getItems().size());
         boolean stockWasDeducted = order.getStatus() != OrderStatus.CREATED;
         order.cancel();
         Order saved = orderRepository.save(order);
+        log.debug("Pedido salvo com status CANCELADO");
         if (stockWasDeducted) {
-            stockService.restoreForOrder(saved.getId(), saved.getItems());
+            log.debug("Restaurando estoque para {} itens", saved.getItems().size());
+            try {
+                stockService.restoreForOrder(saved.getId(), saved.getItems());
+                log.debug("Estoque restaurado com sucesso");
+            } catch (Exception e) {
+                log.error("Falha ao restaurar estoque para pedido {}: {}", saved.getId(), e.getMessage(), e);
+                throw e;
+            }
         }
         unlockMenuByOrder(saved.getId());
         publishKdsSafely(() -> kdsEventPublisher.publishRemove(saved.getId()));
@@ -143,18 +189,6 @@ public class OrderService {
             action.run();
         } catch (Exception ignored) {
         }
-    }
-
-    private KdsController.KdsOrderOutput toKdsOutput(OrderOutput o) {
-        List<KdsController.KdsItemOutput> items = o.items().stream()
-                .map(i -> new KdsController.KdsItemOutput(
-                        i.id(), i.productName(), i.quantity(), i.observation(),
-                        i.additionals().stream()
-                                .map(a -> a.name() + (a.quantity() > 1 ? " x" + a.quantity() : ""))
-                                .toList()
-                ))
-                .toList();
-        return new KdsController.KdsOrderOutput(o.id(), o.customerName(), o.type(), o.status(), o.createdAt(), items);
     }
 
     private void unlockMenuByOrder(UUID orderId) {

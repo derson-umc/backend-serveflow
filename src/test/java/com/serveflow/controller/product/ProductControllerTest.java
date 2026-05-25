@@ -5,8 +5,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.serveflow.dto.product.request.ProductInput;
 import com.serveflow.dto.product.response.ProductOutput;
 import com.serveflow.exception.handler.GlobalExceptionHandler;
-import com.serveflow.exception.product.ProductNotFound;
+import com.serveflow.exception.product.ProductNotFoundException;
+import com.serveflow.model.user.User;
+import com.serveflow.model.user.UserRole;
+import com.serveflow.service.audit.AuditService;
 import com.serveflow.service.product.ProductService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +19,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -42,6 +49,8 @@ class ProductControllerTest {
 
     @Mock
     ProductService productService;
+    @Mock
+    AuditService auditService;
 
     @InjectMocks
     ProductController controller;
@@ -51,13 +60,21 @@ class ProductControllerTest {
 
     @BeforeEach
     void setUp() {
+        User mockUser = new User(1L, "admin", "admin@test.com", "pass", UserRole.ADMIN, "Administrador");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockUser, null, mockUser.getAuthorities()));
         mvc = MockMvcBuilders
                 .standaloneSetup(controller)
-                .setControllerAdvice(new GlobalExceptionHandler())
+                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+                .setControllerAdvice(new GlobalExceptionHandler(auditService))
                 .build();
         mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     }
 
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
 
     private ProductInput validInput() {
         return new ProductInput(
@@ -67,6 +84,8 @@ class ProductControllerTest {
                 "Marca X",
                 new BigDecimal("29.90"),
                 "350g",
+                null,
+                null,
                 null
         );
     }
@@ -82,6 +101,7 @@ class ProductControllerTest {
                 "350g",
                 null,
                 true,
+                false,
                 LocalDateTime.of(2026, 1, 1, 12, 0)
         );
     }
@@ -110,7 +130,7 @@ class ProductControllerTest {
     @Test
     @DisplayName("POST /products: retorna 400 quando campos obrigatórios estão ausentes")
     void create_returns400WhenRequiredFieldsMissing() throws Exception {
-        ProductInput invalid = new ProductInput(null, null, null, null, null, null, null);
+        ProductInput invalid = new ProductInput(null, null, null, null, null, null, null, null, null);
 
         mvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -173,7 +193,7 @@ class ProductControllerTest {
     @DisplayName("GET /products/{id}: retorna 404 quando produto não existe")
     void findById_returns404WhenNotFound() throws Exception {
         UUID id = UUID.randomUUID();
-        when(productService.findById(id)).thenThrow(new ProductNotFound(id));
+        when(productService.findById(id)).thenThrow(new ProductNotFoundException(id));
 
         mvc.perform(get("/products/{id}", id))
                 .andExpect(status().isNotFound())
@@ -230,7 +250,7 @@ class ProductControllerTest {
     @DisplayName("PUT /products/{id}: retorna 404 quando produto não existe")
     void update_returns404WhenNotFound() throws Exception {
         UUID id = UUID.randomUUID();
-        when(productService.update(eq(id), any(ProductInput.class))).thenThrow(new ProductNotFound(id));
+        when(productService.update(eq(id), any(ProductInput.class))).thenThrow(new ProductNotFoundException(id));
 
         mvc.perform(put("/products/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -238,7 +258,7 @@ class ProductControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
     }
-    
+
     @Test
     @DisplayName("DELETE /products/{id}: retorna 204 sem body ao desativar")
     void deactivate_returns204NoContent() throws Exception {
@@ -255,7 +275,7 @@ class ProductControllerTest {
     @DisplayName("DELETE /products/{id}: retorna 404 quando produto não existe")
     void deactivate_returns404WhenNotFound() throws Exception {
         UUID id = UUID.randomUUID();
-        doThrow(new ProductNotFound(id)).when(productService).deactivate(id);
+        doThrow(new ProductNotFoundException(id)).when(productService).deactivate(id);
 
         mvc.perform(delete("/products/{id}", id))
                 .andExpect(status().isNotFound())
