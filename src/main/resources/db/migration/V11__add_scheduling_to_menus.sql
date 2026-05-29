@@ -1,3 +1,3 @@
 ALTER TABLE menus
-    ADD COLUMN day_of_week VARCHAR(15),
-    ADD COLUMN shift       VARCHAR(20);
+    ADD COLUMN IF NOT EXISTS day_of_week VARCHAR(15),
+    ADD COLUMN IF NOT EXISTS shift       VARCHAR(20);

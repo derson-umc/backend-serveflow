@@ -1,1 +1,1 @@
-ALTER TABLE orders ADD COLUMN payment_method VARCHAR(20);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(20);
