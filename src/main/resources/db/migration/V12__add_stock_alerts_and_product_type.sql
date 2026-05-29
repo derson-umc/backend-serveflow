@@ -1,4 +1,4 @@
-CREATE TABLE stock_alerts (
+CREATE TABLE IF NOT EXISTS stock_alerts (
     id_alert        UUID          PRIMARY KEY,
     stock_item_id   UUID          NOT NULL REFERENCES stock_items(id_stock_item),
     stock_item_name VARCHAR(150)  NOT NULL,
@@ -13,4 +13,4 @@ CREATE INDEX IF NOT EXISTS idx_stock_alerts_item   ON stock_alerts(stock_item_id
 CREATE INDEX IF NOT EXISTS idx_stock_alerts_active ON stock_alerts(stock_item_id) WHERE resolved = FALSE;
 
 ALTER TABLE product_recipes
-    ADD COLUMN product_type VARCHAR(20) NOT NULL DEFAULT 'FABRICATED';
+    ADD COLUMN IF NOT EXISTS product_type VARCHAR(20) NOT NULL DEFAULT 'FABRICATED';
