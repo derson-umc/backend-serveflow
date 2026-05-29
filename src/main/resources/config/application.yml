@@ -28,8 +28,6 @@ spring:
 
   flyway:
     locations: classpath:db/migration
-    baseline-on-migrate: true
-    baseline-version: 26
 
   servlet:
     multipart:
