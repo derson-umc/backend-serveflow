@@ -1,6 +1,7 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT:5432}/${POSTGRES_DB:postgres}?prepareThreshold=0&sslmode=require
+    # Transaction pooler (PgBouncer) — porta 6543, para conexões da aplicação
+    url: jdbc:postgresql://${POSTGRES_HOST}:6543/${POSTGRES_DB:postgres}?prepareThreshold=0&sslmode=require
     hikari:
       maximum-pool-size: 3
       minimum-idle: 1
@@ -16,6 +17,10 @@ spring:
             non_contextual_creation: true
 
   flyway:
+    # Session pooler — porta 5432, necessário para Flyway (suporta advisory locks)
+    url: jdbc:postgresql://${POSTGRES_HOST}:5432/${POSTGRES_DB:postgres}?sslmode=require
+    user: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     out-of-order: false
     validate-on-migrate: true
 
