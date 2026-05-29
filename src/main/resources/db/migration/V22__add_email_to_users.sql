@@ -1,2 +1,2 @@
-ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(120);
-CREATE UNIQUE INDEX IF NOT EXISTS uq_users_email ON users (email);
+-- Schema base criado por V0__init_database.sql
+SELECT 1;

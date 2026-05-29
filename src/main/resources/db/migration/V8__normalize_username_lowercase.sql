@@ -1,3 +1,4 @@
+-- Normaliza usernames existentes para lowercase
 UPDATE users SET username = LOWER(username) WHERE username <> LOWER(username);
 
 DO $$

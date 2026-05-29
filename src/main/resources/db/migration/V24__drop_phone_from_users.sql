@@ -1,1 +1,2 @@
-ALTER TABLE users DROP COLUMN IF EXISTS phone;
+-- Schema base criado por V0__init_database.sql
+SELECT 1;
