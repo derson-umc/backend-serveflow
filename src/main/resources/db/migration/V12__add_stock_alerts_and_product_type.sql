@@ -9,8 +9,8 @@ CREATE TABLE stock_alerts (
     resolved_at     TIMESTAMP
 );
 
-CREATE INDEX idx_stock_alerts_item   ON stock_alerts(stock_item_id);
-CREATE INDEX idx_stock_alerts_active ON stock_alerts(stock_item_id) WHERE resolved = FALSE;
+CREATE INDEX IF NOT EXISTS idx_stock_alerts_item   ON stock_alerts(stock_item_id);
+CREATE INDEX IF NOT EXISTS idx_stock_alerts_active ON stock_alerts(stock_item_id) WHERE resolved = FALSE;
 
 ALTER TABLE product_recipes
     ADD COLUMN product_type VARCHAR(20) NOT NULL DEFAULT 'FABRICATED';

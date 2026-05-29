@@ -17,6 +17,6 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     created_at  TIMESTAMP    NOT NULL DEFAULT NOW()
     );
 
-CREATE INDEX idx_prt_username ON password_reset_tokens (username);
-CREATE INDEX idx_prt_token    ON password_reset_tokens (token);
+CREATE INDEX IF NOT EXISTS idx_prt_username ON password_reset_tokens (username);
+CREATE INDEX IF NOT EXISTS idx_prt_token    ON password_reset_tokens (token);
 
