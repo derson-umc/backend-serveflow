@@ -43,9 +43,9 @@ CREATE TABLE auditoria_financeira (
     CONSTRAINT pk_auditoria_financeira PRIMARY KEY (id_auditoria)
 );
 
-CREATE INDEX idx_contas_receber_status   ON contas_receber (status);
-CREATE INDEX idx_contas_receber_vencimento ON contas_receber (vencimento);
-CREATE INDEX idx_contas_pagar_status     ON contas_pagar (status);
-CREATE INDEX idx_contas_pagar_vencimento ON contas_pagar (vencimento);
-CREATE INDEX idx_auditoria_entidade_id   ON auditoria_financeira (entidade_id);
-CREATE INDEX idx_auditoria_criado_em     ON auditoria_financeira (criado_em DESC);
+CREATE INDEX IF NOT EXISTS idx_contas_receber_status   ON contas_receber (status);
+CREATE INDEX IF NOT EXISTS idx_contas_receber_vencimento ON contas_receber (vencimento);
+CREATE INDEX IF NOT EXISTS idx_contas_pagar_status     ON contas_pagar (status);
+CREATE INDEX IF NOT EXISTS idx_contas_pagar_vencimento ON contas_pagar (vencimento);
+CREATE INDEX IF NOT EXISTS idx_auditoria_entidade_id   ON auditoria_financeira (entidade_id);
+CREATE INDEX IF NOT EXISTS idx_auditoria_criado_em     ON auditoria_financeira (criado_em DESC);
