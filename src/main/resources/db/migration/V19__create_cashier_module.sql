@@ -1,4 +1,4 @@
-CREATE TABLE cash_sessions (
+CREATE TABLE IF NOT EXISTS cash_sessions (
     id                   UUID          NOT NULL,
     version              BIGINT,
     status               VARCHAR(10)   NOT NULL DEFAULT 'OPEN',
@@ -14,7 +14,7 @@ CREATE TABLE cash_sessions (
     CONSTRAINT chk_cash_session_balance CHECK (initial_balance >= 0)
 );
 
-CREATE TABLE cash_movements (
+CREATE TABLE IF NOT EXISTS cash_movements (
     id            UUID          NOT NULL DEFAULT gen_random_uuid(),
     session_id    UUID          NOT NULL,
     type          VARCHAR(10)   NOT NULL,

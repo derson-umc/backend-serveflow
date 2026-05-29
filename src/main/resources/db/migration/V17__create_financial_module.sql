@@ -1,4 +1,4 @@
-CREATE TABLE contas_receber (
+CREATE TABLE IF NOT EXISTS contas_receber (
     id_conta_receber   UUID         NOT NULL,
     version            BIGINT,
     descricao          VARCHAR(300) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE contas_receber (
     CONSTRAINT chk_conta_receber_status CHECK (status IN ('PENDENTE','RECEBIDA','VENCIDA','CANCELADA'))
 );
 
-CREATE TABLE contas_pagar (
+CREATE TABLE IF NOT EXISTS contas_pagar (
     id_conta_pagar  UUID         NOT NULL,
     version         BIGINT,
     descricao       VARCHAR(300) NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE contas_pagar (
     CONSTRAINT chk_conta_pagar_status CHECK (status IN ('PENDENTE','PAGA','VENCIDA','CANCELADA'))
 );
 
-CREATE TABLE auditoria_financeira (
+CREATE TABLE IF NOT EXISTS auditoria_financeira (
     id_auditoria   UUID         NOT NULL DEFAULT gen_random_uuid(),
     tipo_entidade  VARCHAR(30)  NOT NULL,
     entidade_id    UUID         NOT NULL,
@@ -43,9 +43,9 @@ CREATE TABLE auditoria_financeira (
     CONSTRAINT pk_auditoria_financeira PRIMARY KEY (id_auditoria)
 );
 
-CREATE INDEX IF NOT EXISTS idx_contas_receber_status   ON contas_receber (status);
+CREATE INDEX IF NOT EXISTS idx_contas_receber_status    ON contas_receber (status);
 CREATE INDEX IF NOT EXISTS idx_contas_receber_vencimento ON contas_receber (vencimento);
-CREATE INDEX IF NOT EXISTS idx_contas_pagar_status     ON contas_pagar (status);
-CREATE INDEX IF NOT EXISTS idx_contas_pagar_vencimento ON contas_pagar (vencimento);
-CREATE INDEX IF NOT EXISTS idx_auditoria_entidade_id   ON auditoria_financeira (entidade_id);
-CREATE INDEX IF NOT EXISTS idx_auditoria_criado_em     ON auditoria_financeira (criado_em DESC);
+CREATE INDEX IF NOT EXISTS idx_contas_pagar_status      ON contas_pagar (status);
+CREATE INDEX IF NOT EXISTS idx_contas_pagar_vencimento  ON contas_pagar (vencimento);
+CREATE INDEX IF NOT EXISTS idx_auditoria_entidade_id    ON auditoria_financeira (entidade_id);
+CREATE INDEX IF NOT EXISTS idx_auditoria_criado_em      ON auditoria_financeira (criado_em DESC);
