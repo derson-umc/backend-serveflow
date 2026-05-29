@@ -1,8 +1,19 @@
 spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT:5432}/${POSTGRES_DB:postgres}?prepareThreshold=0&sslmode=require
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+
   jpa:
     show-sql: false
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
 
   flyway:
     out-of-order: false
