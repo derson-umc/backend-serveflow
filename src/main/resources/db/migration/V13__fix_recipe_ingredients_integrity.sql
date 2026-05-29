@@ -1,22 +1,2 @@
-
-DELETE FROM recipe_ingredients
-WHERE stock_item_id NOT IN (SELECT id_stock_item FROM stock_items);
-
-DELETE FROM product_recipes
-WHERE id_recipe NOT IN (SELECT id_recipe FROM recipe_ingredients);
-
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.table_constraints
-        WHERE constraint_name = 'fk_recipe_ingredients_stock_item'
-          AND table_name      = 'recipe_ingredients'
-          AND table_schema    = 'public'
-    ) THEN
-        ALTER TABLE recipe_ingredients
-            ADD CONSTRAINT fk_recipe_ingredients_stock_item
-                FOREIGN KEY (stock_item_id)
-                REFERENCES stock_items(id_stock_item)
-                ON DELETE RESTRICT;
-    END IF;
-END $$;
+-- Schema base criado por V0__init_database.sql
+SELECT 1;

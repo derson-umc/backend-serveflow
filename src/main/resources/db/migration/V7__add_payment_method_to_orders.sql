@@ -1,1 +1,2 @@
-ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(20);
+-- Schema base criado por V0__init_database.sql
+SELECT 1;
