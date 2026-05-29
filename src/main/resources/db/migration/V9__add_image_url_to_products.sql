@@ -1,2 +1,2 @@
-ALTER TABLE products
-    ADD COLUMN IF NOT EXISTS image_url VARCHAR(2048);
+-- Schema base criado por V0__init_database.sql
+SELECT 1;

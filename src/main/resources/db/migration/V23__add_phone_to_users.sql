@@ -1,1 +1,2 @@
-ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20);
+-- Schema base criado por V0__init_database.sql
+SELECT 1;
