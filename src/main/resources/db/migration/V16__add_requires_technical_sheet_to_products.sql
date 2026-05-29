@@ -1,2 +1,2 @@
-ALTER TABLE products
-    ADD COLUMN IF NOT EXISTS requires_technical_sheet BOOLEAN NOT NULL DEFAULT FALSE;
+-- Schema base criado por V0__init_database.sql
+SELECT 1;
