@@ -21,6 +21,10 @@ spring:
     url: jdbc:postgresql://${POSTGRES_HOST}:5432/${POSTGRES_DB:postgres}?sslmode=require
     user: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
+    # Supabase já tem objetos no schema public (tabelas internas).
+    # baseline-version: 0 garante que TODAS as migrações V1-V26 sejam executadas.
+    baseline-on-migrate: true
+    baseline-version: 0
     out-of-order: false
     validate-on-migrate: true
 
