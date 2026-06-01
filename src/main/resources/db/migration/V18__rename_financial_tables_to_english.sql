@@ -1,2 +1,1 @@
--- Schema base criado por V0__init_database.sql
-SELECT 1;
+-- Section removed due to redundancy and for causing conflicts during migration execution.

@@ -313,7 +313,6 @@ public class StockService {
         }
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────────
 
     private void triggerLowStockActions(StockItem stockItem) {
         if (!alertRepository.existsActiveByStockItemId(stockItem.getId())) {
@@ -344,7 +343,6 @@ public class StockService {
                 .toList();
     }
 
-    // ── Output mappers ────────────────────────────────────────────────────────
 
     private StockItemOutput toOutput(StockItem item) {
         return new StockItemOutput(

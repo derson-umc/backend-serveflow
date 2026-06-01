@@ -1,6 +1,6 @@
 spring:
   datasource:
-    # Transaction pooler (PgBouncer) — porta 6543, para conexões da aplicação
+
     url: jdbc:postgresql://${POSTGRES_HOST}:6543/${POSTGRES_DB:postgres}?prepareThreshold=0&sslmode=require
     hikari:
       maximum-pool-size: 3
@@ -17,12 +17,10 @@ spring:
             non_contextual_creation: true
 
   flyway:
-    # Session pooler — porta 5432, necessário para Flyway (suporta advisory locks)
     url: jdbc:postgresql://${POSTGRES_HOST}:5432/${POSTGRES_DB:postgres}?sslmode=require
-    user: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
-    # Supabase já tem objetos no schema public (tabelas internas).
-    # baseline-version: 0 garante que TODAS as migrações V1-V26 sejam executadas.
+    user: ${POSTGRES_FLYWAY_USER:postgres}
+    password: ${POSTGRES_FLYWAY_PASSWORD}
+
     baseline-on-migrate: true
     baseline-version: 0
     out-of-order: false
