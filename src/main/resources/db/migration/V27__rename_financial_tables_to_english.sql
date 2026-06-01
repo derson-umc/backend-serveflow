@@ -1,40 +1,52 @@
 DO $$
 BEGIN
     IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'contas_pagar') THEN
-        ALTER TABLE contas_pagar RENAME TO accounts_payable;
-        ALTER TABLE accounts_payable RENAME COLUMN id_conta_pagar TO id;
-        ALTER TABLE accounts_payable RENAME COLUMN descricao TO description;
-        ALTER TABLE accounts_payable RENAME COLUMN vencimento TO due_date;
-        ALTER TABLE accounts_payable RENAME COLUMN valor TO amount;
-        ALTER TABLE accounts_payable RENAME COLUMN pago_em TO paid_at;
-        ALTER TABLE accounts_payable RENAME COLUMN valor_pago TO paid_amount;
-        ALTER TABLE accounts_payable RENAME COLUMN categoria TO category;
-        ALTER TABLE accounts_payable RENAME COLUMN fornecedor TO supplier;
-        ALTER TABLE accounts_payable RENAME COLUMN criado_em TO created_at;
+        IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'accounts_payable') THEN
+            ALTER TABLE contas_pagar RENAME TO accounts_payable;
+            ALTER TABLE accounts_payable RENAME COLUMN id_conta_pagar TO id;
+            ALTER TABLE accounts_payable RENAME COLUMN descricao TO description;
+            ALTER TABLE accounts_payable RENAME COLUMN vencimento TO due_date;
+            ALTER TABLE accounts_payable RENAME COLUMN valor TO amount;
+            ALTER TABLE accounts_payable RENAME COLUMN pago_em TO paid_at;
+            ALTER TABLE accounts_payable RENAME COLUMN valor_pago TO paid_amount;
+            ALTER TABLE accounts_payable RENAME COLUMN categoria TO category;
+            ALTER TABLE accounts_payable RENAME COLUMN fornecedor TO supplier;
+            ALTER TABLE accounts_payable RENAME COLUMN criado_em TO created_at;
+        ELSE
+            DROP TABLE contas_pagar;
+        END IF;
     END IF;
 
     IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'contas_receber') THEN
-        ALTER TABLE contas_receber RENAME TO accounts_receivable;
-        ALTER TABLE accounts_receivable RENAME COLUMN id_conta_receber TO id;
-        ALTER TABLE accounts_receivable RENAME COLUMN descricao TO description;
-        ALTER TABLE accounts_receivable RENAME COLUMN vencimento TO due_date;
-        ALTER TABLE accounts_receivable RENAME COLUMN valor TO amount;
-        ALTER TABLE accounts_receivable RENAME COLUMN recebido_em TO received_at;
-        ALTER TABLE accounts_receivable RENAME COLUMN valor_recebido TO received_amount;
-        ALTER TABLE accounts_receivable RENAME COLUMN categoria TO category;
-        ALTER TABLE accounts_receivable RENAME COLUMN pedido_origem_id TO source_order_id;
-        ALTER TABLE accounts_receivable RENAME COLUMN criado_em TO created_at;
+        IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'accounts_receivable') THEN
+            ALTER TABLE contas_receber RENAME TO accounts_receivable;
+            ALTER TABLE accounts_receivable RENAME COLUMN id_conta_receber TO id;
+            ALTER TABLE accounts_receivable RENAME COLUMN descricao TO description;
+            ALTER TABLE accounts_receivable RENAME COLUMN vencimento TO due_date;
+            ALTER TABLE accounts_receivable RENAME COLUMN valor TO amount;
+            ALTER TABLE accounts_receivable RENAME COLUMN recebido_em TO received_at;
+            ALTER TABLE accounts_receivable RENAME COLUMN valor_recebido TO received_amount;
+            ALTER TABLE accounts_receivable RENAME COLUMN categoria TO category;
+            ALTER TABLE accounts_receivable RENAME COLUMN pedido_origem_id TO source_order_id;
+            ALTER TABLE accounts_receivable RENAME COLUMN criado_em TO created_at;
+        ELSE
+            DROP TABLE contas_receber;
+        END IF;
     END IF;
 
     IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'auditoria_financeira') THEN
-        ALTER TABLE auditoria_financeira RENAME TO financial_audit;
-        ALTER TABLE financial_audit RENAME COLUMN id_auditoria TO id;
-        ALTER TABLE financial_audit RENAME COLUMN tipo_entidade TO entity_type;
-        ALTER TABLE financial_audit RENAME COLUMN entidade_id TO entity_id;
-        ALTER TABLE financial_audit RENAME COLUMN acao TO action;
-        ALTER TABLE financial_audit RENAME COLUMN realizado_por TO performed_by;
-        ALTER TABLE financial_audit RENAME COLUMN descricao TO description;
-        ALTER TABLE financial_audit RENAME COLUMN criado_em TO created_at;
+        IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'financial_audit') THEN
+            ALTER TABLE auditoria_financeira RENAME TO financial_audit;
+            ALTER TABLE financial_audit RENAME COLUMN id_auditoria TO id;
+            ALTER TABLE financial_audit RENAME COLUMN tipo_entidade TO entity_type;
+            ALTER TABLE financial_audit RENAME COLUMN entidade_id TO entity_id;
+            ALTER TABLE financial_audit RENAME COLUMN acao TO action;
+            ALTER TABLE financial_audit RENAME COLUMN realizado_por TO performed_by;
+            ALTER TABLE financial_audit RENAME COLUMN descricao TO description;
+            ALTER TABLE financial_audit RENAME COLUMN criado_em TO created_at;
+        ELSE
+            DROP TABLE auditoria_financeira;
+        END IF;
     END IF;
 END $$;
 
