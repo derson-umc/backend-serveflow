@@ -11,7 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Locale;
+import com.serveflow.util.UsernameUtils;
 
 @Slf4j
 @Service
@@ -24,7 +24,8 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
 
     public AuthResult authenticate(String rawUsername, String rawPassword) {
-        String username = normalizeUsername(rawUsername);
+        String username = UsernameUtils.normalize(rawUsername);
+        if (username == null) throw new BusinessRuleException("Credenciais inválidas");
         String password = normalizePassword(rawPassword);
 
         User user = userRepository.findByUsername(username)
@@ -57,10 +58,6 @@ public class AuthService {
             log.warn("Refresh token não pôde ser criado para userId={}: {}", userId, e.getMessage());
             return null;
         }
-    }
-
-    private static String normalizeUsername(String value) {
-        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
     private static String normalizePassword(String value) {
