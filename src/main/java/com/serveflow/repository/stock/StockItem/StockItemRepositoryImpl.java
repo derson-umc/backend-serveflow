@@ -59,7 +59,6 @@ public class StockItemRepositoryImpl implements StockItemRepository {
         return springRepository.findByStatus(status).stream().map(this::toDomain).toList();
     }
 
-    // ── mapping ───────────────────────────────────────────────────────────────
 
     private StockItem toDomain(StockItemEntity e) {
         return new StockItem(

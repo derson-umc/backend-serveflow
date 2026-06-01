@@ -3,6 +3,7 @@ package com.serveflow.dto.user.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import com.serveflow.model.user.UserRole;
 
@@ -10,6 +11,8 @@ public record UserInput(
 
         @NotBlank(message = "Username é obrigatório")
         @Size(min = 3, max = 50, message = "Username deve ter entre 3 e 50 caracteres")
+        @Pattern(regexp = "^\\S.*\\S$|^\\S$",
+                 message = "Username não pode começar ou terminar com espaços")
         String username,
 
         @Email(message = "E-mail inválido")

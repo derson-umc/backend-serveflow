@@ -71,8 +71,7 @@ public class DashboardController {
         LocalDate start = startDate.isBlank() ? LocalDate.now() : LocalDate.parse(startDate);
         LocalDate end   = endDate.isBlank()   ? LocalDate.now() : LocalDate.parse(endDate);
 
-        List<Object[]> rows = orderRepository.cashierReportByPayment(
-                start.toString(), end.toString());
+        List<Object[]> rows = orderRepository.cashierReportByPayment(start, end);
 
         List<PaymentSummary> payments = rows.stream()
                 .map(row -> new PaymentSummary(
