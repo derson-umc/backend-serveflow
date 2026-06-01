@@ -124,10 +124,8 @@ public class OrderRepository {
 
         List<UUID> domainIds = order.getItems().stream().map(OrderItem::getId).toList();
 
-        // Remove items no longer in the domain model (handles item removal)
         entity.getItems().removeIf(e -> !domainIds.contains(e.getIdOrderItem()));
 
-        // Update existing or add new items in-place
         for (OrderItem item : order.getItems()) {
             OrderItemEntity itemEntity = existingById.getOrDefault(item.getId(), new OrderItemEntity());
             syncItemEntity(itemEntity, item, entity);

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import com.serveflow.util.UsernameUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,7 +51,8 @@ public class PasswordResetService {
 
     @Transactional(readOnly = true)
     public IdentifyResult identifyUser(String identifier) {
-        String normalized = identifier.toLowerCase().trim();
+        String normalized = UsernameUtils.normalize(identifier);
+        if (normalized == null) return new IdentifyResult(null, null);
         return userRepository.findByUsername(normalized)
                 .or(() -> userRepository.findByEmail(normalized))
                 .map(user -> new IdentifyResult(user.getUsername(), maskEmail(user.getEmail())))
@@ -90,15 +92,18 @@ public class PasswordResetService {
     }
 
     private UserEntity findUserByIdentifier(String identifier) {
-        String normalized = identifier.toLowerCase().trim();
+        String normalized = UsernameUtils.normalize(identifier);
+        if (normalized == null) throw new UserNotFoundException("(vazio)");
         return userRepository.findByUsername(normalized)
                 .or(() -> userRepository.findByEmail(normalized))
                 .orElseThrow(() -> new UserNotFoundException(normalized));
     }
 
     private PasswordResetTokenEntity findValidToken(String username, String token) {
+        String normalized = UsernameUtils.normalize(username);
+        if (normalized == null) throw new InvalidResetTokenException();
         return tokenRepository
-                .findByUsernameAndTokenAndUsedFalse(username.toLowerCase().trim(), token)
+                .findByUsernameAndTokenAndUsedFalse(normalized, token)
                 .filter(t -> t.getExpiresAt().isAfter(LocalDateTime.now()))
                 .orElseThrow(InvalidResetTokenException::new);
     }
@@ -176,7 +181,6 @@ public class PasswordResetService {
                             <td style="padding:0 40px 32px;">
                               <p style="margin:0;font-size:13px;color:#aaaaaa;line-height:1.6;border-top:1px solid #eeeeee;padding-top:20px;">
                                 Se você não solicitou a redefinição de senha, ignore este e-mail com segurança.
-                                Sua senha permanece inalterada.
                               </p>
                             </td>
                           </tr>

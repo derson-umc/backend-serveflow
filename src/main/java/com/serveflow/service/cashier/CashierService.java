@@ -99,7 +99,6 @@ public class CashierService {
                 .map(this::toMovementOutput).toList();
     }
 
-    // ── Mappers ───────────────────────────────────────────────────────────────
 
     private CashSessionEntity toEntity(CashSession s) {
         CashSessionEntity e = new CashSessionEntity();

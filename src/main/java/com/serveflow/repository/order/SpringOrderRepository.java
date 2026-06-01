@@ -3,8 +3,10 @@ package com.serveflow.repository.order;
 import com.serveflow.model.order.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -64,18 +66,15 @@ public interface SpringOrderRepository extends JpaRepository<OrderEntity, UUID> 
 
     @Query(value = """
             SELECT
-                o.payment_method                                  AS method,
-                COUNT(o.id_order)                                 AS orders_count,
-                COALESCE(SUM(oi.quantity * oi.unit_price), 0)    AS total
-            FROM orders o
-            INNER JOIN order_items oi ON oi.id_order = o.id_order
-            WHERE DATE(o.created_at) BETWEEN :startDate AND :endDate
-              AND o.status <> 'CANCELLED'
-              AND o.payment_method IS NOT NULL
-            GROUP BY o.payment_method
+                COALESCE(cm.category, cm.type)  AS method,
+                COUNT(cm.id)                     AS orders_count,
+                COALESCE(SUM(cm.amount), 0)      AS total
+            FROM cash_movements cm
+            WHERE DATE(cm.created_at) BETWEEN :startDate AND :endDate
+            GROUP BY COALESCE(cm.category, cm.type)
             ORDER BY total DESC
             """, nativeQuery = true)
     List<Object[]> cashierReportByPayment(
-            @org.springframework.data.repository.query.Param("startDate") String startDate,
-            @org.springframework.data.repository.query.Param("endDate") String endDate);
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 }

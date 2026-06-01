@@ -17,6 +17,8 @@ import com.serveflow.repository.user.UserRepository;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.serveflow.util.UsernameUtils;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -30,10 +32,6 @@ public class UserService {
     private final PasswordEncoder encoder;
 
     private static final Set<UserRole> ADMIN_ONLY_ROLES = Set.of(UserRole.ADMIN);
-
-    private static String normalizeUsername(String value) {
-        return value == null ? null : value.trim().toLowerCase(Locale.ROOT);
-    }
 
     private static String normalizeEmail(String value) {
         if (value == null || value.isBlank()) return null;
@@ -63,7 +61,7 @@ public class UserService {
         if (request.password() == null || request.password().isBlank()) {
             throw new BusinessRuleException("Senha é obrigatória");
         }
-        String username = normalizeUsername(request.username());
+        String username = UsernameUtils.normalize(request.username());
         if (repository.existsByUsername(username)) {
             throw new ConflictException("Username '%s' já está em uso".formatted(username));
         }
@@ -84,7 +82,7 @@ public class UserService {
     }
 
     public User findByUsername(String username) {
-        String normalized = normalizeUsername(username);
+        String normalized = UsernameUtils.normalize(username);
         return repository.findByUsername(normalized)
                 .orElseThrow(() -> new UserNotFoundException(normalized));
     }
@@ -103,7 +101,7 @@ public class UserService {
 
         validateNotAdminTarget(existing);
 
-        String username = normalizeUsername(request.username());
+        String username = UsernameUtils.normalize(request.username());
         if (!existing.getUsername().equals(username) && repository.existsByUsername(username)) {
             throw new ConflictException("Username '%s' já está em uso".formatted(username));
         }
