@@ -1,2 +1,3 @@
--- Schema base criado por V0__init_database.sql
-SELECT 1;
+ALTER TABLE menus
+    ADD COLUMN IF NOT EXISTS day_of_week VARCHAR(15),
+    ADD COLUMN IF NOT EXISTS shift       VARCHAR(20);

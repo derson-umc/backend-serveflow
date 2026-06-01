@@ -23,8 +23,6 @@ public class AuditService {
     private final SpringAuditLogRepository  auditLogRepo;
     private final SpringErrorLogRepository  errorLogRepo;
 
-    // ── Access ───────────────────────────────────────────────────────────────
-
     @Async("auditExecutor")
     public void logAccess(Long userId, String ip, String endpoint,
                           String httpMethod, int httpStatus) {
@@ -34,8 +32,6 @@ public class AuditService {
             log.warn("Falha ao gravar access_log: {}", e.getMessage());
         }
     }
-
-    // ── Auth ─────────────────────────────────────────────────────────────────
 
     @Async("auditExecutor")
     public void logLoginSuccess(Long userId, String username, String ip) {
@@ -80,8 +76,6 @@ public class AuditService {
         }
     }
 
-    // ── Domain actions ────────────────────────────────────────────────────────
-
     @Async("auditExecutor")
     public void logAction(Long userId, String action, String entity,
                           Long entityId, String ip) {
@@ -91,8 +85,6 @@ public class AuditService {
             log.warn("Falha ao gravar audit_log {}: {}", action, e.getMessage());
         }
     }
-
-    // ── Errors ────────────────────────────────────────────────────────────────
 
     private static final int MAX_STACKTRACE_LINES = 20;
 

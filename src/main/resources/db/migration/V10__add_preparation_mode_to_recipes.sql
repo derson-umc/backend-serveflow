@@ -1,2 +1,1 @@
--- Schema base criado por V0__init_database.sql
-SELECT 1;
+ALTER TABLE product_recipes ADD COLUMN IF NOT EXISTS preparation_mode TEXT;

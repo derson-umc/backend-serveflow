@@ -1,2 +1,1 @@
--- Schema base criado por V0__init_database.sql
-SELECT 1;
+ALTER TABLE recipe_ingredients ADD COLUMN IF NOT EXISTS validity DATE;
