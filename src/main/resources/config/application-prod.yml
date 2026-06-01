@@ -1,7 +1,11 @@
 spring:
   datasource:
-
-    url: jdbc:postgresql://${POSTGRES_HOST}:6543/${POSTGRES_DB:postgres}?prepareThreshold=0&sslmode=require
+    # Pooler Supabase (porta 6543 — transaction mode).
+    # POSTGRES_HOST deve ser: aws-0-<region>.pooler.supabase.com
+    # POSTGRES_USER deve ser: postgres.<project-ref>  (tenant identifier)
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT:6543}/${POSTGRES_DB:postgres}?prepareThreshold=0&sslmode=require
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     hikari:
       maximum-pool-size: 3
       minimum-idle: 1
@@ -17,7 +21,10 @@ spring:
             non_contextual_creation: true
 
   flyway:
-    url: jdbc:postgresql://${POSTGRES_HOST}:5432/${POSTGRES_DB:postgres}?sslmode=require
+    # Conexão direta ao Supabase (porta 5432 — sem pooler).
+    # POSTGRES_FLYWAY_HOST deve ser: db.<project-ref>.supabase.co
+    # POSTGRES_FLYWAY_USER deve ser o superuser do Supabase (postgres)
+    url: jdbc:postgresql://${POSTGRES_FLYWAY_HOST:${POSTGRES_HOST}}:5432/${POSTGRES_DB:postgres}?sslmode=require
     user: ${POSTGRES_FLYWAY_USER:postgres}
     password: ${POSTGRES_FLYWAY_PASSWORD}
 
