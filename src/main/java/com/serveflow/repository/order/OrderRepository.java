@@ -66,6 +66,10 @@ public class OrderRepository {
                 e.getCreatedAt(),
                 e.getObservation(),
                 e.getPaymentMethod(),
+                e.getTableNumber(),
+                e.getCancelReason(),
+                e.getCanceledBy(),
+                e.getCanceledAt(),
                 e.getItems().stream().map(this::toItemDomain).toList(),
                 e.getVersion()
         );
@@ -79,7 +83,9 @@ public class OrderRepository {
                 e.getQuantity(),
                 e.getUnitPrice(),
                 e.getObservation(),
-                e.getAdditionals().stream().map(this::toAdditionalDomain).toList()
+                e.getAdditionals().stream().map(this::toAdditionalDomain).toList(),
+                e.getStatus(),
+                e.getCancelReason()
         );
     }
 
@@ -112,6 +118,10 @@ public class OrderRepository {
         entity.setCreatedAt(order.getCreatedAt());
         entity.setObservation(order.getObservation());
         entity.setPaymentMethod(order.getPaymentMethod());
+        entity.setTableNumber(order.getTableNumber());
+        entity.setCancelReason(order.getCancelReason());
+        entity.setCanceledBy(order.getCanceledBy());
+        entity.setCanceledAt(order.getCanceledAt());
 
         if (order.getAddress() != null) {
             entity.setAddress(toAddressEntity(order.getAddress()));
@@ -145,6 +155,8 @@ public class OrderRepository {
         entity.setQuantity(item.getQuantity());
         entity.setUnitPrice(item.getUnitPrice());
         entity.setObservation(item.getObservation());
+        entity.setStatus(item.getStatus());
+        entity.setCancelReason(item.getCancelReason());
 
         // Merge additionals without clear()+addAll() for the same reason as items
         Map<UUID, ItemAdditionalEntity> existingById = entity.getAdditionals().stream()

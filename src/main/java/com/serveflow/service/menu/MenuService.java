@@ -144,7 +144,7 @@ public class MenuService {
         OrderType orderType = OrderType.valueOf(request.type().toUpperCase());
         Address resolvedAddress = addressResolver.resolve(request.address());
 
-        Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation());
+        Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation(), request.tableNumber());
         items.forEach(order::addItem);
 
         Order saved = orderRepository.save(order);
@@ -192,12 +192,17 @@ public class MenuService {
                 order.getCreatedAt(),
                 order.getObservation(),
                 order.getPaymentMethod(),
+                order.getTableNumber(),
+                order.getCancelReason(),
+                order.getCanceledBy(),
+                order.getCanceledAt(),
                 order.getTotal(),
                 order.getItems().stream().map(item ->
                         new OrderOutput.OrderItemOutput(
                                 item.getId(), item.getProductId(), item.getProductName(),
                                 item.getQuantity(), item.getUnitPrice(), item.getObservation(),
-                                item.getTotal(), List.of())
+                                item.getTotal(), List.of(),
+                                item.getStatus().name(), item.getCancelReason())
                 ).toList()
         );
     }

@@ -21,7 +21,7 @@ import java.util.UUID;
 public class KdsController {
 
     private static final List<OrderStatus> ACTIVE_STATUSES =
-            List.of(OrderStatus.CREATED, OrderStatus.CONFIRMED, OrderStatus.IN_PREPARATION);
+            List.of(OrderStatus.RASCUNHO, OrderStatus.ENVIADO, OrderStatus.EM_PREPARO);
 
     private final OrderService orderService;
     private final KdsEventPublisher publisher;

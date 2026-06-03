@@ -58,7 +58,7 @@ public class OrderService {
         List<OrderItem> items = toItems(request.items());
         stockService.validateRecipesForOrder(items);
 
-        Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation());
+        Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation(), request.tableNumber());
         items.forEach(order::addItem);
 
         if (request.paymentMethod() != null && !request.paymentMethod().isBlank()) {
@@ -98,7 +98,7 @@ public class OrderService {
     @Transactional
     public OrderOutput startPreparation(UUID id) {
         Order order = orderRepository.findById(id);
-        if (order.getStatus() == OrderStatus.CREATED) {
+        if (order.getStatus() == OrderStatus.RASCUNHO) {
             stockService.validateRecipesForOrder(order.getItems());
             stockService.validateStockForOrder(order.getItems());
             order.confirm();
@@ -161,12 +161,12 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderOutput cancel(UUID id) {
+    public OrderOutput cancel(UUID id, String reason, String canceledBy) {
         log.debug("Cancelando pedido id={}", id);
         Order order = orderRepository.findById(id);
         log.debug("Pedido encontrado: status={}, itens={}", order.getStatus(), order.getItems().size());
-        boolean stockWasDeducted = order.getStatus() != OrderStatus.CREATED;
-        order.cancel();
+        boolean stockWasDeducted = order.getStatus() != OrderStatus.RASCUNHO;
+        order.cancel(reason, canceledBy);
         Order saved = orderRepository.save(order);
         log.debug("Pedido salvo com status CANCELADO");
         if (stockWasDeducted) {
@@ -221,6 +221,10 @@ public class OrderService {
                 order.getCreatedAt(),
                 order.getObservation(),
                 order.getPaymentMethod(),
+                order.getTableNumber(),
+                order.getCancelReason(),
+                order.getCanceledBy(),
+                order.getCanceledAt(),
                 order.getTotal(),
                 order.getItems().stream().map(this::toItemOutput).toList()
         );
@@ -238,7 +242,9 @@ public class OrderService {
                 item.getAdditionals().stream().map(a ->
                         new OrderOutput.ItemAdditionalOutput(
                                 a.getId(), a.getName(), a.getQuantity(), a.getUnitPrice(), a.getTotal())
-                ).toList()
+                ).toList(),
+                item.getStatus().name(),
+                item.getCancelReason()
         );
     }
 

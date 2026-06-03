@@ -13,9 +13,13 @@ public class OrderItem {
     private final String observation;
     private final List<ItemAdditional> additionals;
 
+    private OrderItemStatus status;
+    private String cancelReason;
+
     public OrderItem(UUID id, UUID productId, String productName, int quantity,
                      BigDecimal unitPrice, String observation,
-                     List<ItemAdditional> additionals) {
+                     List<ItemAdditional> additionals,
+                     OrderItemStatus status, String cancelReason) {
 
         this.id = Objects.requireNonNull(id, "ID do item é obrigatório.");
         this.productId = Objects.requireNonNull(productId, "ID do produto é obrigatório.");
@@ -31,12 +35,24 @@ public class OrderItem {
         this.unitPrice = unitPrice;
         this.observation = observation != null ? observation.strip() : null;
         this.additionals = new ArrayList<>(Optional.ofNullable(additionals).orElse(List.of()));
+        this.status = status != null ? status : OrderItemStatus.RASCUNHO;
+        this.cancelReason = cancelReason;
     }
 
     public OrderItem(UUID productId, String productName, int quantity,
                      BigDecimal unitPrice, String observation,
                      List<ItemAdditional> additionals) {
-        this(UUID.randomUUID(), productId, productName, quantity, unitPrice, observation, additionals);
+        this(UUID.randomUUID(), productId, productName, quantity, unitPrice, observation, additionals,
+                OrderItemStatus.RASCUNHO, null);
+    }
+
+    public void syncStatus(OrderItemStatus newStatus) {
+        this.status = newStatus;
+    }
+
+    public void cancel(OrderItemStatus cancelStatus, String reason) {
+        this.status = cancelStatus;
+        this.cancelReason = reason;
     }
 
     public BigDecimal getItemPrice() {
@@ -53,11 +69,13 @@ public class OrderItem {
         return getItemPrice().add(getAdditionalsPrice());
     }
 
-    public UUID getId()              { return id; }
-    public UUID getProductId()       { return productId; }
-    public String getProductName()   { return productName; }
-    public int getQuantity()         { return quantity; }
-    public BigDecimal getUnitPrice() { return unitPrice; }
-    public String getObservation()   { return observation; }
+    public UUID getId()                     { return id; }
+    public UUID getProductId()              { return productId; }
+    public String getProductName()          { return productName; }
+    public int getQuantity()                { return quantity; }
+    public BigDecimal getUnitPrice()        { return unitPrice; }
+    public String getObservation()          { return observation; }
     public List<ItemAdditional> getAdditionals() { return List.copyOf(additionals); }
+    public OrderItemStatus getStatus()      { return status; }
+    public String getCancelReason()         { return cancelReason; }
 }

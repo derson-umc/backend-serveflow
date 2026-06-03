@@ -5,13 +5,13 @@ import java.util.Set;
 
 public enum OrderStatus {
 
-    CREATED("Criado."),
-    CONFIRMED("Confirmado."),
-    IN_PREPARATION("Em preparação."),
-    READY("Pronto."),
-    OUT_FOR_DELIVERY("A caminho."),
-    DELIVERED("Entregue."),
-    CANCELLED("Cancelado.");
+    RASCUNHO("Rascunho."),
+    ENVIADO("Enviado."),
+    EM_PREPARO("Em preparo."),
+    PRONTO("Pronto."),
+    A_CAMINHO("A caminho."),
+    ENTREGUE("Entregue."),
+    CANCELADO("Cancelado.");
 
     private final String description;
     private Set<OrderStatus> allowedTransitions;
@@ -21,13 +21,13 @@ public enum OrderStatus {
     }
 
     static {
-        CREATED.allowedTransitions = EnumSet.of(CONFIRMED, CANCELLED);
-        CONFIRMED.allowedTransitions = EnumSet.of(IN_PREPARATION, CANCELLED);
-        IN_PREPARATION.allowedTransitions = EnumSet.of(READY, CANCELLED);
-        READY.allowedTransitions = EnumSet.of(OUT_FOR_DELIVERY, DELIVERED, CANCELLED);
-        OUT_FOR_DELIVERY.allowedTransitions = EnumSet.of(DELIVERED, CANCELLED);
-        DELIVERED.allowedTransitions = EnumSet.noneOf(OrderStatus.class);
-        CANCELLED.allowedTransitions = EnumSet.noneOf(OrderStatus.class);
+        RASCUNHO.allowedTransitions  = EnumSet.of(ENVIADO, CANCELADO);
+        ENVIADO.allowedTransitions   = EnumSet.of(EM_PREPARO, CANCELADO);
+        EM_PREPARO.allowedTransitions = EnumSet.of(PRONTO, CANCELADO);
+        PRONTO.allowedTransitions    = EnumSet.of(A_CAMINHO, ENTREGUE, CANCELADO);
+        A_CAMINHO.allowedTransitions = EnumSet.of(ENTREGUE, CANCELADO);
+        ENTREGUE.allowedTransitions  = EnumSet.noneOf(OrderStatus.class);
+        CANCELADO.allowedTransitions = EnumSet.noneOf(OrderStatus.class);
     }
 
     public boolean canTransitionTo(OrderStatus next) {
@@ -35,7 +35,7 @@ public enum OrderStatus {
     }
 
     public boolean isFinal() {
-        return this == DELIVERED || this == CANCELLED;
+        return this == ENTREGUE || this == CANCELADO;
     }
 
     public String getDescription() {

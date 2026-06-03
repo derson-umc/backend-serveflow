@@ -16,12 +16,14 @@ public record OrderInput(
         @Valid
         AddressInput address,
 
-        @NotNull(message = "Tipo do pedido é obrigatório. (DELIVERY ou LOCAL)")
+        @NotNull(message = "Tipo do pedido é obrigatório. (DELIVERY, BALCAO ou MESA)")
         String type,
 
         String observation,
 
         String paymentMethod,
+
+        String tableNumber,
 
         @NotEmpty(message = "Pedido deve conter ao menos um item.")
         @Valid

@@ -38,7 +38,7 @@ public class OrderEntity implements Persistable<UUID> {
     private OrderType type;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 30)
     private OrderStatus status;
 
     @Column(name = "created_at", updatable = false, nullable = false)
@@ -49,6 +49,18 @@ public class OrderEntity implements Persistable<UUID> {
 
     @Column(name = "payment_method", length = 20)
     private String paymentMethod;
+
+    @Column(name = "table_number", length = 30)
+    private String tableNumber;
+
+    @Column(name = "cancel_reason", length = 500)
+    private String cancelReason;
+
+    @Column(name = "canceled_by", length = 150)
+    private String canceledBy;
+
+    @Column(name = "canceled_at")
+    private LocalDateTime canceledAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> items = new ArrayList<>();
@@ -69,6 +81,6 @@ public class OrderEntity implements Persistable<UUID> {
     @PrePersist
     protected void onCreate() {
         if (this.createdAt == null) this.createdAt = LocalDateTime.now();
-        if (this.status == null) this.status = OrderStatus.CREATED;
+        if (this.status == null) this.status = OrderStatus.RASCUNHO;
     }
 }

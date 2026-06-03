@@ -1,5 +1,6 @@
 package com.serveflow.controller.order;
 
+import com.serveflow.dto.order.request.CancelOrderRequest;
 import com.serveflow.dto.order.request.OrderInput;
 import com.serveflow.dto.order.response.OrderOutput;
 import com.serveflow.model.user.User;
@@ -115,10 +116,12 @@ public class OrderController {
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<OrderOutput> cancel(
             @PathVariable UUID id,
+            @RequestBody(required = false) CancelOrderRequest request,
             @AuthenticationPrincipal User user,
             HttpServletRequest httpReq) {
 
-        OrderOutput output = orderService.cancel(id);
+        String reason = request != null ? request.reason() : null;
+        OrderOutput output = orderService.cancel(id, reason, user.getUsername());
         auditService.logAction(user.getId(), "ORDER_CANCEL", "Order",
                 null, IpResolverUtil.getClientIp(httpReq));
         return ResponseEntity.ok(output);

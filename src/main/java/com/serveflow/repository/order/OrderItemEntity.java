@@ -1,5 +1,6 @@
 package com.serveflow.repository.order;
 
+import com.serveflow.model.order.OrderItemStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.domain.Persistable;
@@ -40,6 +41,13 @@ public class OrderItemEntity implements Persistable<UUID> {
     @Column(length = 300)
     private String observation;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private OrderItemStatus status;
+
+    @Column(name = "cancel_reason", length = 300)
+    private String cancelReason;
+
     @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemAdditionalEntity> additionals = new ArrayList<>();
 
@@ -55,4 +63,9 @@ public class OrderItemEntity implements Persistable<UUID> {
     @PostPersist
     @PostLoad
     void markNotNew() { this.isNew = false; }
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.status == null) this.status = OrderItemStatus.RASCUNHO;
+    }
 }

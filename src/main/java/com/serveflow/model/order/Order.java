@@ -14,25 +14,34 @@ public class Order {
     private final OrderType type;
     private final LocalDateTime createdAt;
     private final String observation;
+    private final String tableNumber;
     private final List<OrderItem> items;
 
     private OrderStatus status;
     private String paymentMethod;
+    private String cancelReason;
+    private String canceledBy;
+    private LocalDateTime canceledAt;
     private Long version;
 
     public static Order create(String customerName, Address address,
-                               OrderType type, String observation) {
+                               OrderType type, String observation, String tableNumber) {
         validateCustomerName(customerName);
         validateDeliveryAddress(type, address);
+        validateTableNumber(type, tableNumber);
 
         return new Order(
                 UUID.randomUUID(),
                 customerName.strip(),
                 type == OrderType.DELIVERY ? address : null,
                 type,
-                OrderStatus.CREATED,
+                OrderStatus.RASCUNHO,
                 LocalDateTime.now(),
                 observation,
+                null,
+                tableNumber,
+                null,
+                null,
                 null,
                 new ArrayList<>(),
                 null
@@ -41,7 +50,9 @@ public class Order {
 
     public Order(UUID id, String customerName, Address address, OrderType type,
                  OrderStatus status, LocalDateTime createdAt, String observation,
-                 String paymentMethod, List<OrderItem> items, Long version) {
+                 String paymentMethod, String tableNumber,
+                 String cancelReason, String canceledBy, LocalDateTime canceledAt,
+                 List<OrderItem> items, Long version) {
 
         this.id = Objects.requireNonNull(id, "ID do pedido é obrigatório.");
         this.customerName = Objects.requireNonNull(customerName, "Nome do cliente é obrigatório.");
@@ -51,6 +62,10 @@ public class Order {
         this.createdAt = Objects.requireNonNull(createdAt, "Data de criação é obrigatória.");
         this.observation = observation != null ? observation.strip() : null;
         this.paymentMethod = paymentMethod;
+        this.tableNumber = tableNumber;
+        this.cancelReason = cancelReason;
+        this.canceledBy = canceledBy;
+        this.canceledAt = canceledAt;
         this.items = new ArrayList<>(Optional.ofNullable(items).orElse(List.of()));
         this.version = version;
     }
@@ -71,20 +86,45 @@ public class Order {
 
     public void confirm() {
         ensureHasItems();
-        transitionTo(OrderStatus.CONFIRMED);
+        transitionTo(OrderStatus.ENVIADO);
+        items.forEach(item -> item.syncStatus(OrderItemStatus.ENVIADO));
     }
 
-    public void startPreparation() { transitionTo(OrderStatus.IN_PREPARATION); }
-    public void markReady()         { transitionTo(OrderStatus.READY); }
+    public void startPreparation() {
+        transitionTo(OrderStatus.EM_PREPARO);
+        items.forEach(item -> item.syncStatus(OrderItemStatus.EM_PREPARO));
+    }
+
+    public void markReady() {
+        transitionTo(OrderStatus.PRONTO);
+        items.forEach(item -> item.syncStatus(OrderItemStatus.PRONTO));
+    }
 
     public void sendForDelivery() {
         if (type != OrderType.DELIVERY)
             throw new IllegalStateException("Apenas pedidos delivery podem ser enviados para entrega.");
-        transitionTo(OrderStatus.OUT_FOR_DELIVERY);
+        transitionTo(OrderStatus.A_CAMINHO);
     }
 
-    public void complete() { transitionTo(OrderStatus.DELIVERED); }
-    public void cancel()   { transitionTo(OrderStatus.CANCELLED); }
+    public void complete() { transitionTo(OrderStatus.ENTREGUE); }
+
+    public void cancel(String reason, String canceledBy) {
+        OrderItemStatus itemCancelStatus = status == OrderStatus.EM_PREPARO
+                ? OrderItemStatus.CANCELADO_EM_PREPARO
+                : OrderItemStatus.CANCELADO_ANTES_PREPARO;
+
+        items.forEach(item -> {
+            if (item.getStatus() != OrderItemStatus.CANCELADO_ANTES_PREPARO
+                    && item.getStatus() != OrderItemStatus.CANCELADO_EM_PREPARO) {
+                item.cancel(itemCancelStatus, reason);
+            }
+        });
+
+        this.cancelReason = reason;
+        this.canceledBy = canceledBy;
+        this.canceledAt = LocalDateTime.now();
+        transitionTo(OrderStatus.CANCELADO);
+    }
 
     public void registerPayment(String method) {
         if (method == null || method.isBlank())
@@ -102,16 +142,20 @@ public class Order {
     public boolean isDelivery()  { return type == OrderType.DELIVERY; }
     public int getItemCount()    { return items.size(); }
 
-    public UUID getId()              { return id; }
-    public String getCustomerName()  { return customerName; }
-    public Address getAddress()      { return address; }
-    public OrderType getType()       { return type; }
-    public OrderStatus getStatus()   { return status; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public String getObservation()   { return observation; }
-    public String getPaymentMethod() { return paymentMethod; }
-    public List<OrderItem> getItems() { return List.copyOf(items); }
-    public Long getVersion()         { return version; }
+    public UUID getId()                  { return id; }
+    public String getCustomerName()      { return customerName; }
+    public Address getAddress()          { return address; }
+    public OrderType getType()           { return type; }
+    public OrderStatus getStatus()       { return status; }
+    public LocalDateTime getCreatedAt()  { return createdAt; }
+    public String getObservation()       { return observation; }
+    public String getPaymentMethod()     { return paymentMethod; }
+    public String getTableNumber()       { return tableNumber; }
+    public String getCancelReason()      { return cancelReason; }
+    public String getCanceledBy()        { return canceledBy; }
+    public LocalDateTime getCanceledAt() { return canceledAt; }
+    public List<OrderItem> getItems()    { return List.copyOf(items); }
+    public Long getVersion()             { return version; }
 
     @Override
     public boolean equals(Object o) {
@@ -148,5 +192,10 @@ public class Order {
     private static void validateDeliveryAddress(OrderType type, Address address) {
         if (type == OrderType.DELIVERY && address == null)
             throw new IllegalArgumentException("Endereço é obrigatório para pedidos delivery.");
+    }
+
+    private static void validateTableNumber(OrderType type, String tableNumber) {
+        if (type == OrderType.MESA && (tableNumber == null || tableNumber.isBlank()))
+            throw new IllegalArgumentException("Número da mesa é obrigatório para pedidos do tipo MESA.");
     }
 }

@@ -118,7 +118,7 @@ public class CashierController {
             HttpServletRequest httpReq) {
 
         String ip = IpResolverUtil.getClientIp(httpReq);
-        OrderOutput output = orderService.cancel(id);
+        OrderOutput output = orderService.cancel(id, null, user.getUsername());
         auditService.logAction(user.getId(), "ORDER_CANCEL_CASHIER", "Order", null, ip);
         return ResponseEntity.ok(toCashierOutput(output));
     }
