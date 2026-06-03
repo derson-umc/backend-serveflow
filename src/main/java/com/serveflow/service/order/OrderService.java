@@ -208,7 +208,7 @@ public class OrderService {
                 .map(a -> new ItemAdditional(a.name(), a.quantity(), a.unitPrice()))
                 .toList();
         return new OrderItem(dto.productId(), dto.productName(), dto.quantity(),
-                dto.unitPrice(), dto.observation(), additionals);
+                dto.unitPrice(), dto.observation(), additionals, dto.productCategory());
     }
 
     private OrderOutput toOutput(Order order) {
@@ -244,7 +244,8 @@ public class OrderService {
                                 a.getId(), a.getName(), a.getQuantity(), a.getUnitPrice(), a.getTotal())
                 ).toList(),
                 item.getStatus().name(),
-                item.getCancelReason()
+                item.getCancelReason(),
+                item.getProductCategory()
         );
     }
 

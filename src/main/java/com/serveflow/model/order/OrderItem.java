@@ -12,6 +12,7 @@ public class OrderItem {
     private final BigDecimal unitPrice;
     private final String observation;
     private final List<ItemAdditional> additionals;
+    private final String productCategory;
 
     private OrderItemStatus status;
     private String cancelReason;
@@ -19,7 +20,8 @@ public class OrderItem {
     public OrderItem(UUID id, UUID productId, String productName, int quantity,
                      BigDecimal unitPrice, String observation,
                      List<ItemAdditional> additionals,
-                     OrderItemStatus status, String cancelReason) {
+                     OrderItemStatus status, String cancelReason,
+                     String productCategory) {
 
         this.id = Objects.requireNonNull(id, "ID do item é obrigatório.");
         this.productId = Objects.requireNonNull(productId, "ID do produto é obrigatório.");
@@ -37,13 +39,21 @@ public class OrderItem {
         this.additionals = new ArrayList<>(Optional.ofNullable(additionals).orElse(List.of()));
         this.status = status != null ? status : OrderItemStatus.RASCUNHO;
         this.cancelReason = cancelReason;
+        this.productCategory = productCategory;
     }
 
     public OrderItem(UUID productId, String productName, int quantity,
                      BigDecimal unitPrice, String observation,
                      List<ItemAdditional> additionals) {
         this(UUID.randomUUID(), productId, productName, quantity, unitPrice, observation, additionals,
-                OrderItemStatus.RASCUNHO, null);
+                OrderItemStatus.RASCUNHO, null, null);
+    }
+
+    public OrderItem(UUID productId, String productName, int quantity,
+                     BigDecimal unitPrice, String observation,
+                     List<ItemAdditional> additionals, String productCategory) {
+        this(UUID.randomUUID(), productId, productName, quantity, unitPrice, observation, additionals,
+                OrderItemStatus.RASCUNHO, null, productCategory);
     }
 
     public void syncStatus(OrderItemStatus newStatus) {
@@ -78,4 +88,5 @@ public class OrderItem {
     public List<ItemAdditional> getAdditionals() { return List.copyOf(additionals); }
     public OrderItemStatus getStatus()      { return status; }
     public String getCancelReason()         { return cancelReason; }
+    public String getProductCategory()      { return productCategory; }
 }

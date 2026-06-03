@@ -3,6 +3,7 @@ package com.serveflow.service.product;
 import com.serveflow.dto.product.request.ProductInput;
 import com.serveflow.dto.product.response.ProductOutput;
 import com.serveflow.model.product.Product;
+import com.serveflow.model.product.ProductCategory;
 import com.serveflow.repository.product.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,6 +76,8 @@ public class ProductService {
                 .imageUrl(dto.imageUrl())
                 .requiresTechnicalSheet(dto.requiresTechnicalSheet() != null && dto.requiresTechnicalSheet())
                 .active(dto.active() == null || dto.active())
+                .productCategory(parseCategory(dto.productCategory()))
+                .requiresHotPrep(dto.requiresHotPrep() != null && dto.requiresHotPrep())
                 .build();
     }
 
@@ -82,7 +85,15 @@ public class ProductService {
         return new ProductOutput(
                 p.getId(), p.getName(), p.getDescription(),
                 p.getCategory(), p.getBrand(), p.getPrice(), p.getPortion(),
-                p.getImageUrl(), p.isActive(), p.isRequiresTechnicalSheet(), p.getCreatedAt()
+                p.getImageUrl(), p.isActive(), p.isRequiresTechnicalSheet(), p.getCreatedAt(),
+                p.getProductCategory() != null ? p.getProductCategory().name() : null,
+                p.isRequiresHotPrep()
         );
+    }
+
+    private ProductCategory parseCategory(String value) {
+        if (value == null || value.isBlank()) return null;
+        try { return ProductCategory.valueOf(value.toUpperCase()); }
+        catch (IllegalArgumentException e) { return null; }
     }
 }

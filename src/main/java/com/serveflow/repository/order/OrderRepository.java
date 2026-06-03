@@ -85,7 +85,8 @@ public class OrderRepository {
                 e.getObservation(),
                 e.getAdditionals().stream().map(this::toAdditionalDomain).toList(),
                 e.getStatus(),
-                e.getCancelReason()
+                e.getCancelReason(),
+                e.getProductCategory()
         );
     }
 
@@ -157,6 +158,7 @@ public class OrderRepository {
         entity.setObservation(item.getObservation());
         entity.setStatus(item.getStatus());
         entity.setCancelReason(item.getCancelReason());
+        entity.setProductCategory(item.getProductCategory());
 
         // Merge additionals without clear()+addAll() for the same reason as items
         Map<UUID, ItemAdditionalEntity> existingById = entity.getAdditionals().stream()

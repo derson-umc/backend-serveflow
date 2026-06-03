@@ -202,7 +202,8 @@ public class MenuService {
                                 item.getId(), item.getProductId(), item.getProductName(),
                                 item.getQuantity(), item.getUnitPrice(), item.getObservation(),
                                 item.getTotal(), List.of(),
-                                item.getStatus().name(), item.getCancelReason())
+                                item.getStatus().name(), item.getCancelReason(),
+                                item.getProductCategory())
                 ).toList()
         );
     }

@@ -80,6 +80,8 @@ public class ProductRepository {
                 .price(e.getPrice())
                 .portion(e.getPortion())
                 .imageUrl(e.getImageUrl())
+                .productCategory(e.getProductCategory())
+                .requiresHotPrep(e.isRequiresHotPrep())
                 .active(e.isActive())
                 .requiresTechnicalSheet(e.isRequiresTechnicalSheet())
                 .createdAt(e.getCreatedAt())
@@ -97,6 +99,8 @@ public class ProductRepository {
         entity.setPrice(p.getPrice());
         entity.setPortion(p.getPortion());
         entity.setImageUrl(p.getImageUrl());
+        entity.setProductCategory(p.getProductCategory());
+        entity.setRequiresHotPrep(p.isRequiresHotPrep());
         entity.setActive(p.isActive());
         entity.setRequiresTechnicalSheet(p.isRequiresTechnicalSheet());
         entity.setCreatedAt(p.getCreatedAt());
@@ -111,6 +115,8 @@ public class ProductRepository {
         entity.setPrice(p.getPrice());
         entity.setPortion(p.getPortion());
         entity.setImageUrl(p.getImageUrl());
+        entity.setProductCategory(p.getProductCategory());
+        entity.setRequiresHotPrep(p.isRequiresHotPrep());
         entity.setActive(p.isActive());
         entity.setRequiresTechnicalSheet(p.isRequiresTechnicalSheet());
     }

@@ -56,7 +56,8 @@ public record OrderOutput(
             BigDecimal total,
             List<ItemAdditionalOutput> additionals,
             String status,
-            String cancelReason
+            String cancelReason,
+            String productCategory
     ) {}
 
     public record ItemAdditionalOutput(

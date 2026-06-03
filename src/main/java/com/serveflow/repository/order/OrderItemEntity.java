@@ -48,6 +48,9 @@ public class OrderItemEntity implements Persistable<UUID> {
     @Column(name = "cancel_reason", length = 300)
     private String cancelReason;
 
+    @Column(name = "product_category", length = 30)
+    private String productCategory;
+
     @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemAdditionalEntity> additionals = new ArrayList<>();
 
