@@ -1,0 +1,4 @@
+-- Nenhuma alteração de coluna necessária: product_category é VARCHAR(30)
+-- e o novo valor 'ADICIONAL' (8 chars) cabe sem redimensionamento.
+-- Migration apenas documenta a adição do novo enum value.
+-- A aplicação passará a aceitar ADICIONAL como categoria de produto.

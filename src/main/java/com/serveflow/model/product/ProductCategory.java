@@ -4,5 +4,6 @@ public enum ProductCategory {
     ALIMENTO,
     BEBIDA_ALCOOLICA,
     BEBIDA_NAO_ALCOOLICA,
-    ACOMPANHAMENTO
+    ACOMPANHAMENTO,
+    ADICIONAL
 }
