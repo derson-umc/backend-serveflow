@@ -57,6 +57,8 @@ class CashierControllerTest {
     @Mock
     CashierEventPublisher eventPublisher;
     @Mock
+    com.serveflow.service.kds.KdsEventPublisher kdsEventPublisher;
+    @Mock
     OrderService orderService;
 
     @InjectMocks
@@ -243,7 +245,7 @@ class CashierControllerTest {
     @DisplayName("GET /cashier/orders/pending: retorna 200 com pedidos pendentes de pagamento")
     void pendingOrders_returns200WithList() throws Exception {
         UUID id = UUID.randomUUID();
-        when(orderService.findByStatus("READY")).thenReturn(List.of(orderOutput(id, "READY")));
+        when(orderService.findByStatus("AGUARDANDO_PAGAMENTO")).thenReturn(List.of(orderOutput(id, "AGUARDANDO_PAGAMENTO")));
 
         mvc.perform(get("/cashier/orders/pending"))
                 .andExpect(status().isOk())
