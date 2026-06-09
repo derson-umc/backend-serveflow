@@ -1,5 +1,7 @@
-package com.serveflow.dto.kds.response;
+package com.serveflow.service.kds;
 
+import com.serveflow.dto.kds.response.KdsItemOutput;
+import com.serveflow.dto.kds.response.KdsOrderOutput;
 import com.serveflow.dto.order.response.OrderOutput;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +14,7 @@ public class KdsMapper {
                 o.customerName(),
                 o.type(),
                 o.status(),
+                o.comandaStatus(),
                 o.createdAt(),
                 o.items().stream()
                         .map(i -> new KdsItemOutput(

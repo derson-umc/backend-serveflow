@@ -1,4 +1,4 @@
-package com.serveflow.controller.kds;
+package com.serveflow.service.kds;
 
 import com.serveflow.dto.kds.response.KdsOrderOutput;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -18,12 +18,17 @@ public class KdsEventPublisher {
     }
 
     public void publishUpdate(KdsOrderOutput order) {
-        broker.convertAndSend(TOPIC, new KdsEvent("UPDATE", order.id(), order));
+        broker.convertAndSend(TOPIC, new KdsEvent("UPDATE", order.id(), order, null));
     }
 
+    public void publishRemove(UUID orderId, String finalStatus) {
+        broker.convertAndSend(TOPIC, new KdsEvent("REMOVE", orderId, null, finalStatus));
+    }
+
+    @Deprecated
     public void publishRemove(UUID orderId) {
-        broker.convertAndSend(TOPIC, new KdsEvent("REMOVE", orderId, null));
+        broker.convertAndSend(TOPIC, new KdsEvent("REMOVE", orderId, null, null));
     }
 
-    public record KdsEvent(String type, UUID orderId, KdsOrderOutput order) {}
+    public record KdsEvent(String type, UUID orderId, KdsOrderOutput order, String finalStatus) {}
 }

@@ -1,4 +1,4 @@
-package com.serveflow.repository.stock.StockAlert;
+package com.serveflow.repository.stock.stockalert;
 
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.serveflow.repository.stock.StockItem;
+package com.serveflow.repository.stock.stockitem;
 
 import com.serveflow.model.stock.StockItem;
 import com.serveflow.model.stock.StockItemStatus;

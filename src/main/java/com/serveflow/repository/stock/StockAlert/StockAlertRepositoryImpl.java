@@ -1,4 +1,4 @@
-package com.serveflow.repository.stock.StockAlert;
+package com.serveflow.repository.stock.stockalert;
 
 import com.serveflow.exception.stock.StockAlertNotFoundException;
 import com.serveflow.model.stock.StockAlert;

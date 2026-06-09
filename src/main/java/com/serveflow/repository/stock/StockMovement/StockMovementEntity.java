@@ -1,4 +1,4 @@
-package com.serveflow.repository.stock.StockMovement;
+package com.serveflow.repository.stock.stockmovement;
 
 import com.serveflow.model.stock.MovementType;
 import jakarta.persistence.*;
