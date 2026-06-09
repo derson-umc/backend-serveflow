@@ -1,0 +1,2 @@
+UPDATE orders SET type = 'BALCAO' WHERE type = 'LOCAL';
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS table_number VARCHAR(30);

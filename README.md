@@ -1,101 +1,103 @@
 # ServeFlow — Backend
 
-API REST para o sistema de gestão de restaurantes ServeFlow. Cobre pedidos, caixa, estoque, financeiro e autenticação com controle de acesso por perfil.
+API REST do sistema de gestão de restaurantes ServeFlow, construída com Java 21 e Spring Boot 3.
+
+---
 
 ## Tecnologias
 
-- Java 21
-- Spring Boot 3.4.3 (Web, Security, Data JPA, WebSocket)
-- PostgreSQL 16
-- Flyway
-- JWT (jjwt 0.12.3)
-- Lombok
-- Springdoc OpenAPI
+| Tecnologia | Versão | Finalidade |
+|---|---|---|
+| Java | 21 | Linguagem principal |
+| Spring Boot | 3.4.3 | Framework de aplicação |
+| Spring Security + JWT (jjwt) | 0.12.3 | Autenticação e autorização |
+| Spring Data JPA + Hibernate | — | Persistência |
+| PostgreSQL | 42.7.3 (driver) | Banco de dados relacional |
+| Flyway | — | Versionamento de migrações |
+| WebSocket (STOMP) | — | Comunicação em tempo real (KDS) |
+| Cloudinary | — | Upload de imagens em produção |
+| Lombok | 1.18.38 | Redução de boilerplate |
+| Clean Architecture + DDD + SOLID | — | Organização estrutural |
+
+---
 
 ## Pré-requisitos
 
-- Java 21+
-- Maven 3.9+
-- PostgreSQL 16+ rodando localmente ou via Docker
+- **Java 21 SDK** configurado no `JAVA_HOME`
+- **PostgreSQL** rodando localmente **ou** Docker instalado
+
+---
 
 ## Configuração
 
-Copie o arquivo de exemplo e preencha as variáveis:
+Crie o arquivo `.env` na raiz do projeto com base no `.env.example`:
 
-```bash
-cp .env.example .env
-```
+### Banco de dados
 
-Variáveis obrigatórias:
+| Variável | Descrição | Padrão |
+|---|---|---|
+| `POSTGRES_HOST` | Host do banco | `localhost` |
+| `POSTGRES_PORT` | Porta do banco | `5432` |
+| `POSTGRES_DB` | Nome do banco | `serveflow_db` |
+| `POSTGRES_USER` | Usuário da aplicação | `postgres` |
+| `POSTGRES_PASSWORD` | Senha do usuário | — |
+| `POSTGRES_FLYWAY_USER` | Usuário do Flyway (DDL — precisa de superuser) | `postgres` |
+| `POSTGRES_FLYWAY_PASSWORD` | Senha do usuário Flyway | — |
+
+### Aplicação
+
+| Variável | Descrição | Padrão |
+|---|---|---|
+| `APP_BASE_URL` | URL base da API (usado para montar URLs de imagens) | `http://localhost:8080/api` |
+| `JWT_SECRET` | Chave secreta para assinatura dos tokens (mínimo 256 bits) | — |
+| `JWT_EXPIRATION` | Expiração do access token em ms | `86400000` |
+| `ROOT_USERNAME` | Username do administrador inicial | `root` |
+| `ROOT_PASSWORD` | Senha do administrador inicial | — |
+| `CORS_ALLOWED_ORIGINS` | Origens permitidas pelo CORS | `http://localhost:5173` |
+
+### Integrações (opcionais)
 
 | Variável | Descrição |
 |---|---|
-| `POSTGRES_HOST` | Host do banco (padrão: `localhost`) |
-| `POSTGRES_PORT` | Porta do banco (padrão: `5432`) |
-| `POSTGRES_DB` | Nome do banco |
-| `POSTGRES_USER` | Usuário da aplicação |
-| `POSTGRES_PASSWORD` | Senha do usuário |
-| `JWT_SECRET` | Chave secreta para assinatura dos tokens (mínimo 256 bits) |
-| `JWT_EXPIRATION` | Expiração do access token em ms (ex: `86400000`) |
-| `ROOT_USERNAME` | Username do administrador inicial |
-| `ROOT_PASSWORD` | Senha do administrador inicial |
-| `CORS_ALLOWED_ORIGINS` | Origens permitidas (ex: `http://localhost:5173`) |
+| `VIACEP_URL` | Endpoint ViaCEP para consulta de CEP |
+| `MAIL_HOST` / `MAIL_PORT` | Servidor SMTP (reset de senha) |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` / `MAIL_FROM` | Credenciais SMTP — usar App Password do Google |
+| `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Upload de imagens em produção |
 
-Variáveis opcionais (reset de senha por e-mail):
+---
 
-| Variável | Descrição |
-|---|---|
-| `MAIL_HOST` / `MAIL_PORT` | Servidor SMTP |
-| `MAIL_USERNAME` / `MAIL_PASSWORD` | Credenciais SMTP |
+## Inicialização
 
-## Executando
+### Sem Docker (banco local)
 
 ```bash
 # Compilar
-mvn clean install -DskipTests
+./mvnw clean package -DskipTests
 
-# Rodar em desenvolvimento
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+# Executar em desenvolvimento
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-API disponível em `http://localhost:8080`.  
-Swagger UI: `http://localhost:8080/swagger-ui.html`
+### Com Docker (PostgreSQL + PgAdmin)
 
-## Perfis de configuração
+```bash
+# Subir banco e PgAdmin
+docker compose up -d
 
-| Perfil | Uso |
-|---|---|
-| `dev` | Desenvolvimento local com SQL logging detalhado |
-| `staging` | Ambiente de homologação |
-| `prod` | Produção com logging reduzido |
+# Executar a aplicação
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
 
-## Módulos da API
+PgAdmin disponível em `http://localhost:5050` (credenciais definidas no `.env`).
 
-| Módulo | Prefixo | Descrição |
-|---|---|---|
-| Autenticação | `/auth` | Login, refresh token, reset de senha |
-| Usuários | `/users` | CRUD e gerenciamento de perfis |
-| Produtos | `/products` | Cardápio e categorias |
-| Pedidos | `/orders` | Comandas e delivery |
-| Menu | `/menus` | Configuração do menu ativo |
-| Caixa | `/cashier` | Sessões e movimentações de caixa |
-| Estoque | `/stock` | Insumos, entradas, saídas e alertas |
-| Financeiro | `/financial` | Contas a pagar e a receber |
-| Dashboard | `/dashboard` | KPIs e relatórios gerenciais |
-| KDS | `/kds` | Monitor de preparo em tempo real (WebSocket) |
-| Upload | `/upload` | Imagens de produtos |
+---
 
-## Perfis de acesso (RBAC)
+A API ficará disponível em **http://localhost:8080**.  
+Swagger UI: **http://localhost:8080/swagger-ui.html**
 
-| Perfil | Permissões |
-|---|---|
-| `ADMIN` | Acesso total |
-| `GERENTE` | Gestão operacional completa |
-| `GARCOM` | Menu, pedidos e comandas |
-| `COZINHEIRO` | KDS e fichas técnicas |
-| `CAIXA` | Caixa e financeiro |
+---
 
-## Estrutura
+## Estrutura de pacotes
 
 ```
 src/main/java/com/serveflow/
@@ -107,15 +109,9 @@ src/main/java/com/serveflow/
 ├── dto/             # Entrada e saída de dados
 ├── exception/       # Exceções e handlers globais
 └── util/            # Utilitários compartilhados
-
-src/main/resources/
-├── db/migration/    # Scripts Flyway (V1–V26)
-└── config/          # Arquivos de configuração por perfil
 ```
 
-## Migrations
-
-O Flyway executa as migrations automaticamente na inicialização. Todos os scripts são idempotentes. Para adicionar mudanças no banco, crie um novo arquivo `V27__descricao.sql` — nunca edite migrations já aplicadas.
+---
 
 ## Licença
 

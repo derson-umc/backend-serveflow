@@ -1,7 +1,7 @@
 package com.serveflow.service.menu;
 
-import com.serveflow.controller.kds.KdsEventPublisher;
-import com.serveflow.dto.kds.response.KdsMapper;
+import com.serveflow.service.kds.KdsEventPublisher;
+import com.serveflow.service.kds.KdsMapper;
 import com.serveflow.dto.menu.request.MenuInput;
 import com.serveflow.dto.menu.request.PlaceOrderInput;
 import com.serveflow.dto.menu.request.RemoveMenuItemInput;
@@ -144,7 +144,7 @@ public class MenuService {
         OrderType orderType = OrderType.valueOf(request.type().toUpperCase());
         Address resolvedAddress = addressResolver.resolve(request.address());
 
-        Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation());
+        Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation(), request.tableNumber());
         items.forEach(order::addItem);
 
         Order saved = orderRepository.save(order);
@@ -189,15 +189,22 @@ public class MenuService {
                 OrderOutput.AddressOutput.from(order.getAddress()),
                 order.getType().name(),
                 order.getStatus().name(),
+                order.getComandaStatus().name(),
                 order.getCreatedAt(),
                 order.getObservation(),
                 order.getPaymentMethod(),
+                order.getTableNumber(),
+                order.getCancelReason(),
+                order.getCanceledBy(),
+                order.getCanceledAt(),
                 order.getTotal(),
                 order.getItems().stream().map(item ->
                         new OrderOutput.OrderItemOutput(
                                 item.getId(), item.getProductId(), item.getProductName(),
                                 item.getQuantity(), item.getUnitPrice(), item.getObservation(),
-                                item.getTotal(), List.of())
+                                item.getTotal(), List.of(),
+                                item.getStatus().name(), item.getCancelReason(),
+                                item.getProductCategory())
                 ).toList()
         );
     }

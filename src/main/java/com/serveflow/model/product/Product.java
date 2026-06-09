@@ -23,6 +23,10 @@ public class Product {
     private BigDecimal price;
     private String portion;
     private String imageUrl;
+    private ProductCategory productCategory;
+
+    @Builder.Default
+    private boolean requiresHotPrep = false;
 
     @Builder.Default
     private boolean active = true;
@@ -45,8 +49,10 @@ public class Product {
         if (other.brand != null)       this.brand       = other.brand;
         if (other.price != null)       this.price       = other.price;
         if (other.portion != null)     this.portion     = other.portion;
-        if (other.imageUrl != null)    this.imageUrl    = other.imageUrl;
-        this.requiresTechnicalSheet    = other.requiresTechnicalSheet;
-        this.active                    = other.active;
+        if (other.imageUrl != null)       this.imageUrl       = other.imageUrl;
+        if (other.productCategory != null) this.productCategory = other.productCategory;
+        this.requiresHotPrep            = other.requiresHotPrep;
+        this.requiresTechnicalSheet     = other.requiresTechnicalSheet;
+        this.active                     = other.active;
     }
 }

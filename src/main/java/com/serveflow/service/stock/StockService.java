@@ -12,10 +12,10 @@ import com.serveflow.exception.stock.InsufficientStockException;
 import com.serveflow.model.order.OrderItem;
 import com.serveflow.model.stock.*;
 import com.serveflow.repository.menu.MenuRepository;
-import com.serveflow.repository.stock.ProductRecipe.ProductRecipeRepository;
-import com.serveflow.repository.stock.StockAlert.StockAlertRepository;
-import com.serveflow.repository.stock.StockItem.StockItemRepository;
-import com.serveflow.repository.stock.StockMovement.StockMovementRepository;
+import com.serveflow.repository.stock.productrecipe.ProductRecipeRepository;
+import com.serveflow.repository.stock.stockalert.StockAlertRepository;
+import com.serveflow.repository.stock.stockitem.StockItemRepository;
+import com.serveflow.repository.stock.stockmovement.StockMovementRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +51,7 @@ public class StockService {
         StockItem item = StockItem.create(
                 request.name(), request.unit(),
                 request.currentQuantity(), request.minimumQuantity(),
-                request.category(), request.supplier(), request.averageCost());
+                request.category(), request.supplier());
         StockItem saved = stockItemRepository.save(item);
 
         if (request.currentQuantity().compareTo(BigDecimal.ZERO) > 0) {
@@ -69,7 +69,7 @@ public class StockService {
         StockItem item = stockItemRepository.findById(id);
         item.updateDetails(
                 request.name(), request.unit(), request.minimumQuantity(),
-                request.category(), request.supplier(), request.averageCost());
+                request.category(), request.supplier());
         return toOutput(stockItemRepository.save(item));
     }
 
@@ -105,8 +105,6 @@ public class StockService {
                 : "Entrada de estoque";
         if (request.supplier() != null && !request.supplier().isBlank())
             reason += " | Fornecedor: " + request.supplier();
-        if (request.unitCost() != null)
-            reason += " | Custo unitário: R$ " + request.unitCost().toPlainString();
 
         movementRepository.save(StockMovement.createEntry(
                 id, item.getName(), request.quantity(), before, after, reason, null));
@@ -313,6 +311,26 @@ public class StockService {
         }
     }
 
+    @Transactional
+    public void recordLossForOrder(UUID orderId, List<OrderItem> items, String cancelReason) {
+        for (OrderItem item : items) {
+            recipeRepository.findByProductId(item.getProductId()).ifPresent(recipe -> {
+                for (RecipeIngredient ingredient : recipe.getIngredients()) {
+                    BigDecimal qty     = ingredient.getRequiredQuantity(item.getQuantity());
+                    StockItem stockItem = stockItemRepository.findById(ingredient.getStockItemId());
+                    BigDecimal current  = stockItem.getCurrentQuantity();
+                    String reason = String.format(
+                            "PERDA | Pedido: %s | Produto: %s | Insumo: %s | Qtd: %s %s | Motivo: %s",
+                            orderId, item.getProductName(), stockItem.getName(),
+                            qty.toPlainString(), stockItem.getUnit(), cancelReason);
+                    movementRepository.save(StockMovement.createLoss(
+                            stockItem.getId(), stockItem.getName(),
+                            qty, current.add(qty), current, reason));
+                }
+            });
+        }
+    }
+
 
     private void triggerLowStockActions(StockItem stockItem) {
         if (!alertRepository.existsActiveByStockItemId(stockItem.getId())) {
@@ -349,7 +367,7 @@ public class StockService {
                 item.getId(), item.getName(), item.getUnit(),
                 item.getCurrentQuantity(), item.getMinimumQuantity(),
                 item.isBelowMinimum(),
-                item.getCategory(), item.getSupplier(), item.getAverageCost(),
+                item.getCategory(), item.getSupplier(),
                 item.getStatus().name(), item.getCreatedAt()
         );
     }

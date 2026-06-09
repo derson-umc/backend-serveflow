@@ -21,6 +21,9 @@ public record PlaceOrderInput(
         @Size(max = 500, message = "Observação deve ter no máximo 500 caracteres.")
         String observation,
 
+        @Size(max = 30, message = "Número da mesa deve ter no máximo 30 caracteres.")
+        String tableNumber,
+
         @NotEmpty(message = "Selecione ao menos um item do menu.")
         @Valid
         List<MenuItemSelectionInput> selections

@@ -17,6 +17,15 @@ public class EnsureValidDelivery implements ConstraintValidator<MustHaveValidAdd
             return false;
         }
 
+        if ("MESA".equalsIgnoreCase(dto.type())
+                && (dto.tableNumber() == null || dto.tableNumber().isBlank())) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate("Número da mesa é obrigatório para pedidos do tipo MESA.")
+                    .addPropertyNode("tableNumber")
+                    .addConstraintViolation();
+            return false;
+        }
+
         return true;
     }
 }

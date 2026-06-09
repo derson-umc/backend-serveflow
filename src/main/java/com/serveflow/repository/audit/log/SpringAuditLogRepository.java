@@ -1,5 +1,6 @@
-package com.serveflow.repository.audit;
+package com.serveflow.repository.audit.log;
 
+import com.serveflow.repository.audit.AuditLogEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
