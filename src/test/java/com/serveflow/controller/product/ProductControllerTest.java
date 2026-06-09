@@ -86,6 +86,8 @@ class ProductControllerTest {
                 "350g",
                 null,
                 null,
+                null,
+                null,
                 null
         );
     }
@@ -102,7 +104,9 @@ class ProductControllerTest {
                 null,
                 true,
                 false,
-                LocalDateTime.of(2026, 1, 1, 12, 0)
+                LocalDateTime.of(2026, 1, 1, 12, 0),
+                null,
+                false
         );
     }
 
@@ -130,7 +134,7 @@ class ProductControllerTest {
     @Test
     @DisplayName("POST /products: retorna 400 quando campos obrigatórios estão ausentes")
     void create_returns400WhenRequiredFieldsMissing() throws Exception {
-        ProductInput invalid = new ProductInput(null, null, null, null, null, null, null, null, null);
+        ProductInput invalid = new ProductInput(null, null, null, null, null, null, null, null, null, null, null);
 
         mvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
