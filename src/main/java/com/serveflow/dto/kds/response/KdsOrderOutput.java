@@ -9,6 +9,7 @@ public record KdsOrderOutput(
         String customerName,
         String type,
         String status,
+        String comandaStatus,
         LocalDateTime createdAt,
         List<KdsItemOutput> items
 ) {}

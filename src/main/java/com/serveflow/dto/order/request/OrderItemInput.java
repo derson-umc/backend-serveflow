@@ -28,6 +28,8 @@ public record OrderItemInput(
 
         String observation,
 
+        String productCategory,
+
         @Valid
         List<ItemAdditionalInput> additionals
 ) {}

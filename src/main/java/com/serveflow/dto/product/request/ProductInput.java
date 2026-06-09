@@ -36,5 +36,9 @@ public record ProductInput(
 
         Boolean requiresTechnicalSheet,
 
-        Boolean active
+        Boolean active,
+
+        String productCategory,
+
+        Boolean requiresHotPrep
 ) {}

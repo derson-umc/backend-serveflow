@@ -1,6 +1,6 @@
 package com.serveflow.service.cashier;
 
-import com.serveflow.controller.cashier.CashierEventPublisher;
+import com.serveflow.service.cashier.CashierEventPublisher;
 import com.serveflow.dto.cashier.request.CashMovementInput;
 import com.serveflow.dto.cashier.response.CashMovementOutput;
 import com.serveflow.events.OrderCompletedEvent;

@@ -27,8 +27,5 @@ public record StockItemInput(
 
         String category,
 
-        String supplier,
-
-        @DecimalMin(value = "0.0", message = "Custo médio não pode ser negativo.")
-        BigDecimal averageCost
+        String supplier
 ) {}

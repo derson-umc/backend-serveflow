@@ -1,4 +1,4 @@
-package com.serveflow.repository.stock.StockAlert;
+package com.serveflow.repository.stock.stockalert;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

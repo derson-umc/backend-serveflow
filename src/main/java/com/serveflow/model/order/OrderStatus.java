@@ -5,13 +5,14 @@ import java.util.Set;
 
 public enum OrderStatus {
 
-    CREATED("Criado."),
-    CONFIRMED("Confirmado."),
-    IN_PREPARATION("Em preparação."),
-    READY("Pronto."),
-    OUT_FOR_DELIVERY("A caminho."),
-    DELIVERED("Entregue."),
-    CANCELLED("Cancelado.");
+    PENDENTE("Pendente."),
+    ENVIADO("Enviado."),
+    EM_PREPARO("Em preparo."),
+    PRONTO("Pronto."),
+    AGUARDANDO_PAGAMENTO("Aguardando pagamento."),
+    A_CAMINHO("A caminho."),
+    ENTREGUE("Entregue."),
+    CANCELADO("Cancelado.");
 
     private final String description;
     private Set<OrderStatus> allowedTransitions;
@@ -21,13 +22,14 @@ public enum OrderStatus {
     }
 
     static {
-        CREATED.allowedTransitions = EnumSet.of(CONFIRMED, CANCELLED);
-        CONFIRMED.allowedTransitions = EnumSet.of(IN_PREPARATION, CANCELLED);
-        IN_PREPARATION.allowedTransitions = EnumSet.of(READY, CANCELLED);
-        READY.allowedTransitions = EnumSet.of(OUT_FOR_DELIVERY, DELIVERED, CANCELLED);
-        OUT_FOR_DELIVERY.allowedTransitions = EnumSet.of(DELIVERED, CANCELLED);
-        DELIVERED.allowedTransitions = EnumSet.noneOf(OrderStatus.class);
-        CANCELLED.allowedTransitions = EnumSet.noneOf(OrderStatus.class);
+        PENDENTE.allowedTransitions   = EnumSet.of(ENVIADO, CANCELADO);
+        ENVIADO.allowedTransitions    = EnumSet.of(EM_PREPARO, AGUARDANDO_PAGAMENTO, CANCELADO);
+        EM_PREPARO.allowedTransitions = EnumSet.of(PRONTO, AGUARDANDO_PAGAMENTO, CANCELADO);
+        PRONTO.allowedTransitions               = EnumSet.of(AGUARDANDO_PAGAMENTO, A_CAMINHO, ENTREGUE, CANCELADO);
+        AGUARDANDO_PAGAMENTO.allowedTransitions = EnumSet.of(ENTREGUE, CANCELADO);
+        A_CAMINHO.allowedTransitions            = EnumSet.of(AGUARDANDO_PAGAMENTO, ENTREGUE, CANCELADO);
+        ENTREGUE.allowedTransitions             = EnumSet.noneOf(OrderStatus.class);
+        CANCELADO.allowedTransitions            = EnumSet.noneOf(OrderStatus.class);
     }
 
     public boolean canTransitionTo(OrderStatus next) {
@@ -35,7 +37,11 @@ public enum OrderStatus {
     }
 
     public boolean isFinal() {
-        return this == DELIVERED || this == CANCELLED;
+        return this == ENTREGUE || this == CANCELADO;
+    }
+
+    public boolean isPendingPayment() {
+        return this == AGUARDANDO_PAGAMENTO;
     }
 
     public String getDescription() {

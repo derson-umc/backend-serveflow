@@ -5,6 +5,7 @@ import com.serveflow.dto.financial.request.AccountReceivableInput;
 import com.serveflow.dto.financial.request.SettlementInput;
 import com.serveflow.dto.financial.response.*;
 import com.serveflow.model.user.User;
+import com.serveflow.repository.cashier.SpringCashMovementRepository;
 import com.serveflow.service.audit.AuditService;
 import com.serveflow.service.financial.FinancialService;
 import com.serveflow.util.IpResolverUtil;
@@ -16,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,8 +27,37 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FinancialController {
 
-    private final FinancialService financialService;
-    private final AuditService     auditService;
+    private final FinancialService              financialService;
+    private final AuditService                  auditService;
+    private final SpringCashMovementRepository  movementRepository;
+
+    public record PaymentSummary(String method, int ordersCount, BigDecimal total) {}
+    public record CashierReport(LocalDate startDate, LocalDate endDate,
+                                List<PaymentSummary> byPaymentMethod, BigDecimal grossTotal) {}
+
+    @GetMapping("/cashier-report")
+    public ResponseEntity<CashierReport> cashierReport(
+            @RequestParam(defaultValue = "") String startDate,
+            @RequestParam(defaultValue = "") String endDate) {
+
+        LocalDate start = startDate.isBlank() ? LocalDate.now() : LocalDate.parse(startDate);
+        LocalDate end   = endDate.isBlank()   ? LocalDate.now() : LocalDate.parse(endDate);
+
+        List<Object[]> rows = movementRepository.reportByPaymentMethod(start, end);
+
+        List<PaymentSummary> payments = rows.stream()
+                .map(row -> new PaymentSummary(
+                        row[0] != null ? row[0].toString() : "SEM_METODO",
+                        row[1] != null ? ((Number) row[1]).intValue() : 0,
+                        row[2] != null ? new BigDecimal(row[2].toString()) : BigDecimal.ZERO))
+                .toList();
+
+        BigDecimal grossTotal = payments.stream()
+                .map(PaymentSummary::total)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return ResponseEntity.ok(new CashierReport(start, end, payments, grossTotal));
+    }
 
     @GetMapping("/cash-flow")
     public ResponseEntity<CashFlowOutput> cashFlow() {

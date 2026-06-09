@@ -30,6 +30,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -71,8 +73,9 @@ class OrderControllerTest {
 
     private OrderOutput orderOutput(UUID id, String status) {
         return new OrderOutput(
-                id, "Cliente Teste", null, "LOCAL", status,
-                LocalDateTime.of(2026, 1, 1, 12, 0), null, null, new BigDecimal("29.90"), List.of()
+                id, "Cliente Teste", null, "BALCAO", status,
+                LocalDateTime.of(2026, 1, 1, 12, 0), null, null, null, null, null, null,
+                new BigDecimal("29.90"), List.of()
         );
     }
 
@@ -218,20 +221,20 @@ class OrderControllerTest {
     @DisplayName("PATCH /orders/{id}/cancel: retorna 200 com pedido cancelado")
     void cancel_returns200() throws Exception {
         UUID id = UUID.randomUUID();
-        when(orderService.cancel(id)).thenReturn(orderOutput(id, "CANCELLED"));
+        when(orderService.cancel(eq(id), any(), any())).thenReturn(orderOutput(id, "CANCELADO"));
 
         mvc.perform(patch("/orders/{id}/cancel", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("CANCELLED"));
+                .andExpect(jsonPath("$.status").value("CANCELADO"));
 
-        verify(orderService).cancel(id);
+        verify(orderService).cancel(eq(id), any(), any());
     }
 
     @Test
     @DisplayName("PATCH /orders/{id}/cancel: retorna 404 quando pedido não existe")
     void cancel_returns404WhenNotFound() throws Exception {
         UUID id = UUID.randomUUID();
-        when(orderService.cancel(id)).thenThrow(new OrderNotFoundException(id));
+        when(orderService.cancel(eq(id), any(), any())).thenThrow(new OrderNotFoundException(id));
 
         mvc.perform(patch("/orders/{id}/cancel", id))
                 .andExpect(status().isNotFound())

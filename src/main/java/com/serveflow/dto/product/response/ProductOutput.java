@@ -15,5 +15,7 @@ public record ProductOutput(
         String imageUrl,
         boolean active,
         boolean requiresTechnicalSheet,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        String productCategory,
+        boolean requiresHotPrep
 ) {}

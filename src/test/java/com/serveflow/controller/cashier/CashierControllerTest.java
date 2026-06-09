@@ -93,8 +93,9 @@ class CashierControllerTest {
     }
 
     private OrderOutput orderOutput(UUID id, String status) {
-        return new OrderOutput(id, "Cliente Teste", null, "LOCAL", status,
-                LocalDateTime.of(2026, 1, 1, 12, 0), null, null, new BigDecimal("29.90"), List.of());
+        return new OrderOutput(id, "Cliente Teste", null, "BALCAO", status,
+                LocalDateTime.of(2026, 1, 1, 12, 0), null, null, null, null, null, null,
+                new BigDecimal("29.90"), List.of());
     }
 
     private String json(Object obj) throws Exception {
@@ -252,20 +253,20 @@ class CashierControllerTest {
     @DisplayName("POST /cashier/orders/{id}/cancel: retorna 200 com pedido cancelado")
     void cancelOrder_returns200() throws Exception {
         UUID id = UUID.randomUUID();
-        when(orderService.cancel(id)).thenReturn(orderOutput(id, "CANCELLED"));
+        when(orderService.cancel(eq(id), any(), any())).thenReturn(orderOutput(id, "CANCELADO"));
 
         mvc.perform(post("/cashier/orders/{id}/cancel", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("CANCELLED"));
+                .andExpect(jsonPath("$.status").value("CANCELADO"));
 
-        verify(orderService).cancel(id);
+        verify(orderService).cancel(eq(id), any(), any());
     }
 
     @Test
     @DisplayName("POST /cashier/orders/{id}/cancel: retorna 404 quando pedido não existe")
     void cancelOrder_returns404_whenNotFound() throws Exception {
         UUID id = UUID.randomUUID();
-        when(orderService.cancel(id)).thenThrow(new OrderNotFoundException(id));
+        when(orderService.cancel(eq(id), any(), any())).thenThrow(new OrderNotFoundException(id));
 
         mvc.perform(post("/cashier/orders/{id}/cancel", id))
                 .andExpect(status().isNotFound())

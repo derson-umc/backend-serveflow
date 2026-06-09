@@ -1,6 +1,6 @@
-package com.serveflow.repository.stock.RecipeIngredient;
+package com.serveflow.repository.stock.recipeingredient;
 
-import com.serveflow.repository.stock.ProductRecipe.ProductRecipeEntity;
+import com.serveflow.repository.stock.productrecipe.ProductRecipeEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

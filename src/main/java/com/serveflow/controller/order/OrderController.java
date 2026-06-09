@@ -1,6 +1,8 @@
 package com.serveflow.controller.order;
 
+import com.serveflow.dto.order.request.CancelOrderRequest;
 import com.serveflow.dto.order.request.OrderInput;
+import com.serveflow.dto.order.request.OrderItemInput;
 import com.serveflow.dto.order.response.OrderOutput;
 import com.serveflow.model.user.User;
 import com.serveflow.service.audit.AuditService;
@@ -50,6 +52,59 @@ public class OrderController {
     @GetMapping("/status/{status}")
     public ResponseEntity<List<OrderOutput>> findByStatus(@PathVariable String status) {
         return ResponseEntity.ok(orderService.findByStatus(status));
+    }
+
+    @PatchMapping("/{id}/request-payment")
+    public ResponseEntity<OrderOutput> requestPayment(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest httpReq) {
+
+        OrderOutput output = orderService.requestPayment(id);
+        auditService.logAction(user.getId(), "ORDER_REQUEST_PAYMENT", "Order",
+                null, IpResolverUtil.getClientIp(httpReq));
+        return ResponseEntity.ok(output);
+    }
+
+    @PatchMapping("/{id}/items/{itemId}/cancel")
+    public ResponseEntity<OrderOutput> cancelItem(
+            @PathVariable UUID id,
+            @PathVariable UUID itemId,
+            @RequestBody(required = false) CancelOrderRequest request,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest httpReq) {
+
+        String reason = request != null ? request.reason() : null;
+        OrderOutput output = orderService.cancelItem(id, itemId, reason);
+        auditService.logAction(user.getId(), "ORDER_ITEM_CANCEL", "Order",
+                null, IpResolverUtil.getClientIp(httpReq));
+        return ResponseEntity.ok(output);
+    }
+
+    @PostMapping("/{id}/items/add")
+    public ResponseEntity<OrderOutput> addItems(
+            @PathVariable UUID id,
+            @Valid @RequestBody List<OrderItemInput> items,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest httpReq) {
+
+        OrderOutput output = orderService.appendItems(id, items);
+        auditService.logAction(user.getId(), "ORDER_ADD_ITEMS", "Order",
+                null, IpResolverUtil.getClientIp(httpReq));
+        return ResponseEntity.ok(output);
+    }
+
+    @PatchMapping("/{id}/items")
+    public ResponseEntity<OrderOutput> updateItems(
+            @PathVariable UUID id,
+            @Valid @RequestBody List<OrderItemInput> items,
+            @AuthenticationPrincipal User user,
+            HttpServletRequest httpReq) {
+
+        OrderOutput output = orderService.updateItems(id, items);
+        auditService.logAction(user.getId(), "ORDER_UPDATE_ITEMS", "Order",
+                null, IpResolverUtil.getClientIp(httpReq));
+        return ResponseEntity.ok(output);
     }
 
     @PatchMapping("/{id}/confirm")
@@ -115,10 +170,12 @@ public class OrderController {
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<OrderOutput> cancel(
             @PathVariable UUID id,
+            @RequestBody(required = false) CancelOrderRequest request,
             @AuthenticationPrincipal User user,
             HttpServletRequest httpReq) {
 
-        OrderOutput output = orderService.cancel(id);
+        String reason = request != null ? request.reason() : null;
+        OrderOutput output = orderService.cancel(id, reason, user.getUsername());
         auditService.logAction(user.getId(), "ORDER_CANCEL", "Order",
                 null, IpResolverUtil.getClientIp(httpReq));
         return ResponseEntity.ok(output);

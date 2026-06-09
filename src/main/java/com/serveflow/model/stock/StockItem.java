@@ -16,15 +16,13 @@ public class StockItem {
     private BigDecimal minimumQuantity;
     private String category;
     private String supplier;
-    private BigDecimal averageCost;
     private StockItemStatus status;
     private final LocalDateTime createdAt;
     private Long version;
 
     public StockItem(UUID id, String name, String unit, BigDecimal currentQuantity,
                      BigDecimal minimumQuantity, String category, String supplier,
-                     BigDecimal averageCost, StockItemStatus status,
-                     LocalDateTime createdAt, Long version) {
+                     StockItemStatus status, LocalDateTime createdAt, Long version) {
         this.id = Objects.requireNonNull(id, "ID do insumo é obrigatório.");
         setName(name);
         setUnit(unit);
@@ -32,17 +30,15 @@ public class StockItem {
         this.minimumQuantity = Objects.requireNonNull(minimumQuantity, "Quantidade mínima é obrigatória.");
         this.category = category;
         this.supplier = supplier;
-        this.averageCost = averageCost;
         this.status = status != null ? status : StockItemStatus.ACTIVE;
         this.createdAt = Objects.requireNonNull(createdAt, "Data de criação é obrigatória.");
         this.version = version;
     }
 
     public static StockItem create(String name, String unit, BigDecimal currentQuantity,
-                                   BigDecimal minimumQuantity, String category,
-                                   String supplier, BigDecimal averageCost) {
+                                   BigDecimal minimumQuantity, String category, String supplier) {
         return new StockItem(UUID.randomUUID(), name, unit, currentQuantity, minimumQuantity,
-                category, supplier, averageCost, StockItemStatus.ACTIVE, LocalDateTime.now(), null);
+                category, supplier, StockItemStatus.ACTIVE, LocalDateTime.now(), null);
     }
 
     public void deduct(BigDecimal quantity) {
@@ -76,13 +72,12 @@ public class StockItem {
     }
 
     public void updateDetails(String name, String unit, BigDecimal minimumQuantity,
-                              String category, String supplier, BigDecimal averageCost) {
+                              String category, String supplier) {
         setName(name);
         setUnit(unit);
         this.minimumQuantity = Objects.requireNonNull(minimumQuantity);
         this.category = category;
         this.supplier = supplier;
-        this.averageCost = averageCost;
     }
 
     public void deactivate() {
@@ -100,7 +95,6 @@ public class StockItem {
     public BigDecimal getMinimumQuantity() { return minimumQuantity; }
     public String getCategory()            { return category; }
     public String getSupplier()            { return supplier; }
-    public BigDecimal getAverageCost()     { return averageCost; }
     public StockItemStatus getStatus()     { return status; }
     public LocalDateTime getCreatedAt()    { return createdAt; }
     public Long getVersion()               { return version; }
