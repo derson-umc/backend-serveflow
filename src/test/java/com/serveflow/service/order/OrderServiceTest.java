@@ -10,6 +10,7 @@ import com.serveflow.integration.AddressResolver;
 import com.serveflow.model.address.Address;
 import com.serveflow.model.order.Order;
 import com.serveflow.model.order.OrderItem;
+import com.serveflow.model.order.OrderItemStatus;
 import com.serveflow.model.order.OrderStatus;
 import com.serveflow.model.order.OrderType;
 import com.serveflow.repository.menu.MenuRepository;
@@ -286,16 +287,22 @@ class OrderServiceTest {
 
     private Order buildOrder(UUID id, OrderStatus status, OrderType type) {
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem(UUID.randomUUID(), "Produto Teste", 2,
-                new BigDecimal("15.00"), null, List.of()));
-        return new Order(id, "Cliente Teste", null, type, status,
-                LocalDateTime.now(), null, null, null, null, null, null, items, null);
+        items.add(new OrderItem(UUID.randomUUID(), UUID.randomUUID(), "Produto Teste", 2,
+                new BigDecimal("15.00"), null, List.of(), OrderItemStatus.ENVIADO, null, null));
+        return Order.builder()
+                .id(id)
+                .customerName("Cliente Teste")
+                .type(type)
+                .status(status)
+                .createdAt(LocalDateTime.now())
+                .items(items)
+                .build();
     }
 
     private OrderInput balcaoOrderInput(String paymentMethod) {
         List<OrderItemInput> items = List.of(
                 new OrderItemInput(UUID.randomUUID(), "Produto", 1,
-                        new BigDecimal("20.00"), null, List.of()));
+                        new BigDecimal("20.00"), null, null, List.of()));
         return new OrderInput("Cliente", null, "BALCAO", null, paymentMethod, null, items);
     }
 }
