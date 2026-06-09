@@ -123,11 +123,10 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("authenticate trata null username como vazio (UserNotFound).")
+    @DisplayName("authenticate trata null username como credenciais inválidas (BusinessRuleException).")
     void authenticate_usernameNulo() {
-        when(userRepository.findByUsername("")).thenReturn(Optional.empty());
-
         assertThatThrownBy(() -> authService.authenticate(null, "senha"))
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Credenciais");
     }
 }

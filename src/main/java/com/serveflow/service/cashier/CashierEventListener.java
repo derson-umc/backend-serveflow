@@ -52,7 +52,7 @@ public class CashierEventListener {
     private String buildDescription(OrderCompletedEvent event) {
         String tipo = switch (event.orderType()) {
             case "DELIVERY"  -> "Delivery";
-            case "MESA"      -> "Mesa";
+            case "MESA"      -> "Local";
             case "BALCAO"    -> "Balcão";
             default          -> event.orderType();
         };

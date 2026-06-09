@@ -44,6 +44,8 @@ class ProductServiceTest {
                 "350g",
                 null,
                 null,
+                null,
+                null,
                 null
         );
     }
@@ -199,26 +201,56 @@ class ProductServiceTest {
 
 
     @Test
-    @DisplayName("deactivate: delega ao repositório sem retornar nada")
+    @DisplayName("deactivate: delega ao repositório quando produto está ativo")
     void deactivate_delegatesToRepository() {
         UUID id = UUID.randomUUID();
+        Product active = savedProduct(id);
+        when(repository.findById(id)).thenReturn(active);
         doNothing().when(repository).deactivate(id);
 
         service.deactivate(id);
 
+        verify(repository).findById(id);
         verify(repository).deactivate(id);
     }
 
     @Test
-    @DisplayName("deactivate: propaga ProductNotFound quando repositório lança a exceção")
+    @DisplayName("deactivate: chama hardDelete quando produto já está inativo")
+    void deactivate_callsHardDelete_whenProductInactive() {
+        UUID id = UUID.randomUUID();
+        Product inactive = Product.builder()
+                .id(id)
+                .name("Produto Inativo")
+                .description("desc")
+                .category("cat")
+                .brand("brand")
+                .price(new BigDecimal("10.00"))
+                .portion("100g")
+                .active(false)
+                .createdAt(LocalDateTime.of(2026, 1, 1, 12, 0))
+                .version(1L)
+                .build();
+        when(repository.findById(id)).thenReturn(inactive);
+        doNothing().when(repository).hardDelete(id);
+
+        service.deactivate(id);
+
+        verify(repository).findById(id);
+        verify(repository).hardDelete(id);
+        verify(repository, org.mockito.Mockito.never()).deactivate(id);
+    }
+
+    @Test
+    @DisplayName("deactivate: propaga ProductNotFound quando repositório lança a exceção no findById")
     void deactivate_propagatesProductNotFound_whenRepositoryThrows() {
         UUID id = UUID.randomUUID();
-        org.mockito.Mockito.doThrow(new ProductNotFoundException(id)).when(repository).deactivate(id);
+        when(repository.findById(id)).thenThrow(new ProductNotFoundException(id));
 
         assertThatThrownBy(() -> service.deactivate(id))
                 .isInstanceOf(ProductNotFoundException.class)
                 .hasMessageContaining(id.toString());
 
-        verify(repository).deactivate(id);
+        verify(repository).findById(id);
+        verify(repository, org.mockito.Mockito.never()).deactivate(id);
     }
 }
