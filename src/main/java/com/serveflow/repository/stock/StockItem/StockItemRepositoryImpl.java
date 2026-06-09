@@ -1,4 +1,4 @@
-package com.serveflow.repository.stock.StockItem;
+package com.serveflow.repository.stock.stockitem;
 
 import com.serveflow.exception.stock.StockItemNotFoundException;
 import com.serveflow.model.stock.StockItem;
@@ -64,7 +64,7 @@ public class StockItemRepositoryImpl implements StockItemRepository {
         return new StockItem(
                 e.getIdStockItem(), e.getName(), e.getUnit(),
                 e.getCurrentQuantity(), e.getMinimumQuantity(),
-                e.getCategory(), e.getSupplier(), e.getAverageCost(),
+                e.getCategory(), e.getSupplier(),
                 e.getStatus() != null ? e.getStatus() : StockItemStatus.ACTIVE,
                 e.getCreatedAt(), e.getVersion());
     }
@@ -79,7 +79,7 @@ public class StockItemRepositoryImpl implements StockItemRepository {
         e.setMinimumQuantity(item.getMinimumQuantity());
         e.setCategory(item.getCategory());
         e.setSupplier(item.getSupplier());
-        e.setAverageCost(item.getAverageCost());
+
         e.setStatus(item.getStatus());
         e.setCreatedAt(item.getCreatedAt());
         return e;
@@ -92,7 +92,7 @@ public class StockItemRepositoryImpl implements StockItemRepository {
         e.setMinimumQuantity(item.getMinimumQuantity());
         e.setCategory(item.getCategory());
         e.setSupplier(item.getSupplier());
-        e.setAverageCost(item.getAverageCost());
+
         e.setStatus(item.getStatus());
         return e;
     }

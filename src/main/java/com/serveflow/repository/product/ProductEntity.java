@@ -1,7 +1,10 @@
 package com.serveflow.repository.product;
 
+import com.serveflow.model.product.ProductCategory;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -48,6 +51,13 @@ public class ProductEntity implements Persistable<UUID> {
 
     @Column(name = "image_url", length = 2048)
     private String imageUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "product_category", length = 30)
+    private ProductCategory productCategory;
+
+    @Column(name = "requires_hot_prep", nullable = false)
+    private boolean requiresHotPrep = false;
 
     @Column(nullable = false)
     private boolean active;

@@ -1,4 +1,4 @@
-package com.serveflow.repository.stock.StockItem;
+package com.serveflow.repository.stock.stockitem;
 
 import com.serveflow.model.stock.StockItemStatus;
 import jakarta.persistence.*;
@@ -41,9 +41,6 @@ public class StockItemEntity implements Persistable<UUID> {
 
     @Column(length = 200)
     private String supplier;
-
-    @Column(name = "average_cost", precision = 10, scale = 4)
-    private BigDecimal averageCost;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

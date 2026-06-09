@@ -12,14 +12,15 @@ import java.util.UUID;
 
 public interface SpringOrderRepository extends JpaRepository<OrderEntity, UUID> {
 
-    List<OrderEntity> findByStatus(OrderStatus status);
+    @Query("SELECT DISTINCT o FROM OrderEntity o LEFT JOIN FETCH o.items WHERE o.status = :status")
+    List<OrderEntity> findByStatus(@Param("status") OrderStatus status);
 
     @Query(value = """
             SELECT COALESCE(SUM(oi.quantity * oi.unit_price), 0)
             FROM orders o
             INNER JOIN order_items oi ON oi.id_order = o.id_order
             WHERE DATE(o.created_at) = CURRENT_DATE
-              AND o.status <> 'CANCELLED'
+              AND o.status <> 'CANCELADO'
             """, nativeQuery = true)
     BigDecimal revenueToday();
 
@@ -27,7 +28,7 @@ public interface SpringOrderRepository extends JpaRepository<OrderEntity, UUID> 
             SELECT COUNT(o.id_order)
             FROM orders o
             WHERE DATE(o.created_at) = CURRENT_DATE
-              AND o.status <> 'CANCELLED'
+              AND o.status <> 'CANCELADO'
             """, nativeQuery = true)
     long ordersToday();
 
@@ -35,7 +36,7 @@ public interface SpringOrderRepository extends JpaRepository<OrderEntity, UUID> 
             SELECT COUNT(DISTINCT o.customer_name)
             FROM orders o
             WHERE DATE(o.created_at) = CURRENT_DATE
-              AND o.status <> 'CANCELLED'
+              AND o.status <> 'CANCELADO'
             """, nativeQuery = true)
     long customersToday();
 
@@ -45,7 +46,7 @@ public interface SpringOrderRepository extends JpaRepository<OrderEntity, UUID> 
             FROM orders o
             INNER JOIN order_items oi ON oi.id_order = o.id_order
             WHERE o.created_at >= CURRENT_DATE - INTERVAL '6 days'
-              AND o.status <> 'CANCELLED'
+              AND o.status <> 'CANCELADO'
             GROUP BY DATE(o.created_at)
             ORDER BY sale_date ASC
             """, nativeQuery = true)
@@ -57,7 +58,7 @@ public interface SpringOrderRepository extends JpaRepository<OrderEntity, UUID> 
             FROM order_items oi
             INNER JOIN orders o ON o.id_order = oi.id_order
             WHERE o.created_at >= CURRENT_DATE - INTERVAL '29 days'
-              AND o.status <> 'CANCELLED'
+              AND o.status <> 'CANCELADO'
             GROUP BY oi.product_name
             ORDER BY quantity DESC
             LIMIT 5
@@ -65,13 +66,55 @@ public interface SpringOrderRepository extends JpaRepository<OrderEntity, UUID> 
     List<Object[]> topProducts();
 
     @Query(value = """
+            SELECT oi.product_name                                        AS name,
+                   SUM(oi.quantity)                                       AS quantity,
+                   COALESCE(SUM(oi.quantity * oi.unit_price), 0)         AS revenue
+            FROM order_items oi
+            INNER JOIN orders o ON o.id_order = oi.id_order
+            WHERE DATE(o.created_at) >= :startDate
+              AND o.status <> 'CANCELADO'
+            GROUP BY oi.product_name
+            ORDER BY quantity DESC
+            LIMIT 8
+            """, nativeQuery = true)
+    List<Object[]> topProductsByPeriod(@Param("startDate") LocalDate startDate);
+
+    @Query(value = """
+            SELECT COALESCE(SUM(oi.quantity * oi.unit_price), 0)
+            FROM orders o
+            INNER JOIN order_items oi ON oi.id_order = o.id_order
+            WHERE DATE(o.created_at) = CURRENT_DATE - 1
+              AND o.status <> 'CANCELADO'
+            """, nativeQuery = true)
+    BigDecimal revenueYesterday();
+
+    @Query(value = """
+            SELECT COUNT(o.id_order)
+            FROM orders o
+            WHERE DATE(o.created_at) = CURRENT_DATE - 1
+              AND o.status <> 'CANCELADO'
+            """, nativeQuery = true)
+    long ordersYesterday();
+
+    @Query(value = """
+            SELECT COUNT(DISTINCT o.customer_name)
+            FROM orders o
+            WHERE DATE(o.created_at) = CURRENT_DATE - 1
+              AND o.status <> 'CANCELADO'
+            """, nativeQuery = true)
+    long customersYesterday();
+
+    @Query(value = """
             SELECT
-                COALESCE(cm.category, cm.type)  AS method,
+                cm.category                      AS method,
                 COUNT(cm.id)                     AS orders_count,
                 COALESCE(SUM(cm.amount), 0)      AS total
             FROM cash_movements cm
-            WHERE DATE(cm.created_at) BETWEEN :startDate AND :endDate
-            GROUP BY COALESCE(cm.category, cm.type)
+            WHERE cm.type = 'INCOME'
+              AND cm.category IS NOT NULL
+              AND cm.category NOT IN ('INCOME', 'EXPENSE')
+              AND cm.created_at::date BETWEEN :startDate::date AND :endDate::date
+            GROUP BY cm.category
             ORDER BY total DESC
             """, nativeQuery = true)
     List<Object[]> cashierReportByPayment(

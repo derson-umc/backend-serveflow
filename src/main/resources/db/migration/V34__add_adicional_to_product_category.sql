@@ -1,0 +1,1 @@
+-- A aplicação passará a aceitar ADICIONAL como categoria de produto.

@@ -13,9 +13,14 @@ public record OrderOutput(
         AddressOutput address,
         String type,
         String status,
+        String comandaStatus,
         LocalDateTime createdAt,
         String observation,
         String paymentMethod,
+        String tableNumber,
+        String cancelReason,
+        String canceledBy,
+        LocalDateTime canceledAt,
         BigDecimal totalValue,
         List<OrderItemOutput> items
 ) {
@@ -50,7 +55,10 @@ public record OrderOutput(
             BigDecimal unitPrice,
             String observation,
             BigDecimal total,
-            List<ItemAdditionalOutput> additionals
+            List<ItemAdditionalOutput> additionals,
+            String status,
+            String cancelReason,
+            String productCategory
     ) {}
 
     public record ItemAdditionalOutput(

@@ -1,7 +1,7 @@
-package com.serveflow.repository.stock.ProductRecipe;
+package com.serveflow.repository.stock.productrecipe;
 
 import com.serveflow.model.stock.ProductType;
-import com.serveflow.repository.stock.RecipeIngredient.RecipeIngredientEntity;
+import com.serveflow.repository.stock.recipeingredient.RecipeIngredientEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.domain.Persistable;

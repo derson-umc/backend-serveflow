@@ -1,4 +1,4 @@
-package com.serveflow.repository.stock.StockMovement;
+package com.serveflow.repository.stock.stockmovement;
 
 import java.math.BigDecimal;
 

@@ -1,8 +1,8 @@
-package com.serveflow.service.audit;
+package com.serveflow.service.audit.log;
 
-import com.serveflow.repository.audit.SpringAccessLogRepository;
-import com.serveflow.repository.audit.SpringAuditLogRepository;
-import com.serveflow.repository.audit.SpringErrorLogRepository;
+import com.serveflow.repository.audit.log.SpringAccessLogRepository;
+import com.serveflow.repository.audit.log.SpringAuditLogRepository;
+import com.serveflow.repository.audit.log.SpringErrorLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
