@@ -103,7 +103,7 @@ class CashierEventListenerTest {
         }
 
         @Test
-        @DisplayName("descrição contém 'Mesa' para pedido MESA")
+        @DisplayName("descrição contém 'Local' para pedido MESA")
         void onOrderCompleted_descriptionContainsMesa() {
             UUID sessionId = UUID.randomUUID();
             when(cashierService.getCurrentSessionId()).thenReturn(Optional.of(sessionId));
@@ -113,7 +113,7 @@ class CashierEventListenerTest {
 
             listener.onOrderCompleted(event(UUID.randomUUID(), "CARTAO", "MESA"));
 
-            assertThat(captor.getValue().description()).contains("Mesa");
+            assertThat(captor.getValue().description()).contains("Local");
         }
 
         @Test
