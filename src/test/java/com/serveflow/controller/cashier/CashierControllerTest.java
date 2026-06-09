@@ -17,6 +17,7 @@ import com.serveflow.model.financial.TransactionType;
 import com.serveflow.model.user.User;
 import com.serveflow.model.user.UserRole;
 import com.serveflow.service.audit.AuditService;
+import com.serveflow.service.cashier.CashierEventPublisher;
 import com.serveflow.service.cashier.CashierService;
 import com.serveflow.service.order.OrderService;
 import org.junit.jupiter.api.AfterEach;
