@@ -17,7 +17,7 @@ API REST do sistema de gestão de restaurantes ServeFlow, construída com Java 2
 | WebSocket (STOMP) | — | Comunicação em tempo real (KDS) |
 | Cloudinary | — | Upload de imagens em produção |
 | Lombok | 1.18.38 | Redução de boilerplate |
-| Clean Architecture + DDD + SOLID | — | Organização estrutural |
+| Clean Architecture + DDD | — | Organização estrutural |
 
 ---
 
@@ -41,8 +41,7 @@ Crie o arquivo `.env` na raiz do projeto com base no `.env.example`:
 | `POSTGRES_DB` | Nome do banco | `serveflow_db` |
 | `POSTGRES_USER` | Usuário da aplicação | `postgres` |
 | `POSTGRES_PASSWORD` | Senha do usuário | — |
-| `POSTGRES_FLYWAY_USER` | Usuário do Flyway (DDL — precisa de superuser) | `postgres` |
-| `POSTGRES_FLYWAY_PASSWORD` | Senha do usuário Flyway | — |
+
 
 ### Aplicação
 

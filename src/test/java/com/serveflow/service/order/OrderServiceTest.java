@@ -10,6 +10,7 @@ import com.serveflow.integration.AddressResolver;
 import com.serveflow.model.address.Address;
 import com.serveflow.model.order.Order;
 import com.serveflow.model.order.OrderItem;
+import com.serveflow.model.order.OrderItemStatus;
 import com.serveflow.model.order.OrderStatus;
 import com.serveflow.model.order.OrderType;
 import com.serveflow.repository.menu.MenuRepository;
@@ -184,7 +185,7 @@ class OrderServiceTest {
     class Cancel {
 
         @Test
-        @DisplayName("cancela pedido PENDENTE sem restaurar estoque.")
+        @DisplayName("cancela pedido PENDENTE sem registrar perda de estoque.")
         void cancel_semRestaurarEstoque_whenStatusPENDENTE() {
             Order order = buildOrder(orderId, OrderStatus.PENDENTE, OrderType.BALCAO);
             when(orderRepository.findById(orderId)).thenReturn(order);
@@ -194,48 +195,47 @@ class OrderServiceTest {
 
             service.cancel(orderId, null, "operador");
 
-            verify(stockService, never()).restoreForOrder(any(), any());
+            verify(stockService, never()).recordLossForOrder(any(), any(), any());
         }
 
         @Test
-        @DisplayName("cancela pedido ENVIADO e restaura estoque.")
+        @DisplayName("cancela pedido ENVIADO sem registrar perda de estoque.")
         void cancel_restauraEstoque_whenStatusENVIADO() {
             Order order = buildOrder(orderId, OrderStatus.ENVIADO, OrderType.BALCAO);
             when(orderRepository.findById(orderId)).thenReturn(order);
             Order saved = buildOrder(orderId, OrderStatus.CANCELADO, OrderType.BALCAO);
             when(orderRepository.save(order)).thenReturn(saved);
             when(menuRepository.findByActiveOrderId(any())).thenReturn(Optional.empty());
-            doNothing().when(stockService).restoreForOrder(any(), any());
 
             service.cancel(orderId, "Pedido duplicado", "operador");
 
-            verify(stockService).restoreForOrder(any(), any());
+            verify(stockService, never()).recordLossForOrder(any(), any(), any());
         }
 
         @Test
-        @DisplayName("cancela pedido EM_PREPARO e restaura estoque.")
+        @DisplayName("cancela pedido EM_PREPARO e registra perda de estoque.")
         void cancel_restauraEstoque_whenStatusEM_PREPARO() {
             Order order = buildOrder(orderId, OrderStatus.EM_PREPARO, OrderType.BALCAO);
             when(orderRepository.findById(orderId)).thenReturn(order);
             Order saved = buildOrder(orderId, OrderStatus.CANCELADO, OrderType.BALCAO);
             when(orderRepository.save(order)).thenReturn(saved);
             when(menuRepository.findByActiveOrderId(any())).thenReturn(Optional.empty());
-            doNothing().when(stockService).restoreForOrder(any(), any());
+            doNothing().when(stockService).recordLossForOrder(any(), any(), any());
 
             service.cancel(orderId, "Cliente desistiu", "gerente");
 
-            verify(stockService).restoreForOrder(any(), any());
+            verify(stockService).recordLossForOrder(any(), any(), any());
         }
 
         @Test
-        @DisplayName("falha no restore de estoque propaga exceção.")
+        @DisplayName("falha no recordLoss propaga exceção para pedido EM_PREPARO.")
         void cancel_propagaExcecao_whenRestoreFalha() {
-            Order order = buildOrder(orderId, OrderStatus.ENVIADO, OrderType.BALCAO);
+            Order order = buildOrder(orderId, OrderStatus.EM_PREPARO, OrderType.BALCAO);
             when(orderRepository.findById(orderId)).thenReturn(order);
             Order saved = buildOrder(orderId, OrderStatus.CANCELADO, OrderType.BALCAO);
             when(orderRepository.save(order)).thenReturn(saved);
             doThrow(new RuntimeException("Estoque inconsistente")).when(stockService)
-                    .restoreForOrder(any(), any());
+                    .recordLossForOrder(any(), any(), any());
 
             assertThatThrownBy(() -> service.cancel(orderId, null, "operador"))
                     .isInstanceOf(RuntimeException.class)
@@ -286,16 +286,22 @@ class OrderServiceTest {
 
     private Order buildOrder(UUID id, OrderStatus status, OrderType type) {
         List<OrderItem> items = new ArrayList<>();
-        items.add(new OrderItem(UUID.randomUUID(), "Produto Teste", 2,
-                new BigDecimal("15.00"), null, List.of()));
-        return new Order(id, "Cliente Teste", null, type, status,
-                LocalDateTime.now(), null, null, null, null, null, null, items, null);
+        items.add(new OrderItem(UUID.randomUUID(), UUID.randomUUID(), "Produto Teste", 2,
+                new BigDecimal("15.00"), null, List.of(), OrderItemStatus.ENVIADO, null, null));
+        return Order.builder()
+                .id(id)
+                .customerName("Cliente Teste")
+                .type(type)
+                .status(status)
+                .createdAt(LocalDateTime.now())
+                .items(items)
+                .build();
     }
 
     private OrderInput balcaoOrderInput(String paymentMethod) {
         List<OrderItemInput> items = List.of(
                 new OrderItemInput(UUID.randomUUID(), "Produto", 1,
-                        new BigDecimal("20.00"), null, List.of()));
+                        new BigDecimal("20.00"), null, null, List.of()));
         return new OrderInput("Cliente", null, "BALCAO", null, paymentMethod, null, items);
     }
 }

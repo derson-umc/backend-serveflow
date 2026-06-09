@@ -73,7 +73,7 @@ class StockControllerTest {
     private StockItemOutput itemOutput(UUID id) {
         return new StockItemOutput(id, "Farinha", "kg",
                 new BigDecimal("10.0"), new BigDecimal("2.0"), false,
-                "Secos", "Fornecedor X", new BigDecimal("5.00"),
+                "Secos", "Fornecedor X",
                 "ACTIVE", LocalDateTime.of(2026, 1, 1, 12, 0));
     }
 
@@ -90,7 +90,7 @@ class StockControllerTest {
 
     private StockItemInput validItemInput() {
         return new StockItemInput("Farinha", "kg", new BigDecimal("10.0"),
-                new BigDecimal("2.0"), "Secos", "Fornecedor X", new BigDecimal("5.00"));
+                new BigDecimal("2.0"), "Secos", "Fornecedor X");
     }
 
     private String json(Object obj) throws Exception {
@@ -128,7 +128,7 @@ class StockControllerTest {
     @Test
     @DisplayName("POST /stock/items: retorna 400 quando campos obrigatórios ausentes")
     void createItem_returns400_whenInvalid() throws Exception {
-        StockItemInput invalid = new StockItemInput(null, null, null, null, null, null, null);
+        StockItemInput invalid = new StockItemInput(null, null, null, null, null, null);
 
         mvc.perform(post("/stock/items")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -208,7 +208,7 @@ class StockControllerTest {
         UUID id = UUID.randomUUID();
         StockItemOutput inactive = new StockItemOutput(id, "Farinha", "kg",
                 new BigDecimal("10.0"), new BigDecimal("2.0"), false,
-                "Secos", "Fornecedor X", new BigDecimal("5.00"),
+                "Secos", "Fornecedor X",
                 "INACTIVE", LocalDateTime.of(2026, 1, 1, 12, 0));
         when(stockService.toggleStatus(id)).thenReturn(inactive);
 
@@ -225,7 +225,7 @@ class StockControllerTest {
         UUID id = UUID.randomUUID();
         when(stockService.addStock(eq(id), any(StockEntryInput.class))).thenReturn(itemOutput(id));
 
-        StockEntryInput input = new StockEntryInput(new BigDecimal("5.0"), "Compra", null, null);
+        StockEntryInput input = new StockEntryInput(new BigDecimal("5.0"), "Compra", null);
 
         mvc.perform(post("/stock/items/{id}/entry", id)
                         .contentType(MediaType.APPLICATION_JSON)

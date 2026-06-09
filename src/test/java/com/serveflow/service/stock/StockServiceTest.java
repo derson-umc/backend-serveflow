@@ -50,13 +50,13 @@ class StockServiceTest {
 
     private StockItem stockItem(UUID id, BigDecimal quantity, BigDecimal minimum) {
         return new StockItem(id, "Farinha", "kg", quantity, minimum,
-                "Secos", "Fornecedor X", new BigDecimal("5.00"),
+                "Secos", "Fornecedor X",
                 StockItemStatus.ACTIVE, LocalDateTime.of(2026, 1, 1, 12, 0), null);
     }
 
     private StockItem stockItem(UUID id, BigDecimal quantity, BigDecimal minimum, StockItemStatus status) {
         return new StockItem(id, "Farinha", "kg", quantity, minimum,
-                "Secos", "Fornecedor X", new BigDecimal("5.00"),
+                "Secos", "Fornecedor X",
                 status, LocalDateTime.of(2026, 1, 1, 12, 0), null);
     }
 
@@ -75,7 +75,7 @@ class StockServiceTest {
 
     private StockItemInput itemInput() {
         return new StockItemInput("Farinha", "kg", new BigDecimal("10.0"),
-                new BigDecimal("2.0"), "Secos", "Fornecedor X", new BigDecimal("5.00"));
+                new BigDecimal("2.0"), "Secos", "Fornecedor X");
     }
 
     @Nested
@@ -103,9 +103,9 @@ class StockServiceTest {
         void createItem_persistsWithoutMovement_whenQuantityIsZero() {
             UUID id = UUID.randomUUID();
             StockItemInput input = new StockItemInput("Farinha", "kg", BigDecimal.ZERO,
-                    new BigDecimal("2.0"), "Secos", null, null);
+                    new BigDecimal("2.0"), "Secos", null);
             StockItem saved = new StockItem(id, "Farinha", "kg", BigDecimal.ZERO,
-                    new BigDecimal("2.0"), "Secos", null, null,
+                    new BigDecimal("2.0"), "Secos", null,
                     StockItemStatus.ACTIVE, LocalDateTime.of(2026, 1, 1, 12, 0), null);
             when(stockItemRepository.save(any(StockItem.class))).thenReturn(saved);
 
@@ -244,7 +244,7 @@ class StockServiceTest {
             when(stockItemRepository.findByIdForUpdate(id)).thenReturn(item);
             when(stockItemRepository.save(item)).thenReturn(updated);
 
-            StockEntryInput input = new StockEntryInput(new BigDecimal("5.0"), "Compra mensal", null, null);
+            StockEntryInput input = new StockEntryInput(new BigDecimal("5.0"), "Compra mensal", null);
             StockItemOutput result = service.addStock(id, input);
 
             assertThat(result.currentQuantity()).isEqualByComparingTo("15.0");
