@@ -1,3 +1,5 @@
 package com.serveflow.dto.order.request;
 
-public record CancelOrderRequest(String reason) {}
+public record CancelOrderRequest(String reason) {
+
+}

@@ -63,6 +63,14 @@ public class ProductRepository {
     }
 
     @Transactional
+    public void hardDelete(UUID id) {
+        if (!springRepository.existsById(id)) {
+            throw new ProductNotFoundException(id);
+        }
+        springRepository.deleteById(id);
+    }
+
+    @Transactional
     public Product toggleActive(UUID id) {
         ProductEntity entity = springRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));

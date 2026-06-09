@@ -1,5 +1,6 @@
 package com.serveflow.repository.order;
 
+import com.serveflow.model.order.ComandaStatus;
 import com.serveflow.model.order.OrderStatus;
 import com.serveflow.model.order.OrderType;
 import jakarta.persistence.*;
@@ -41,6 +42,10 @@ public class OrderEntity implements Persistable<UUID> {
     @Column(nullable = false, length = 30)
     private OrderStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "comanda_status", nullable = false, length = 20)
+    private ComandaStatus comandaStatus;
+
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
@@ -81,6 +86,7 @@ public class OrderEntity implements Persistable<UUID> {
     @PrePersist
     protected void onCreate() {
         if (this.createdAt == null) this.createdAt = LocalDateTime.now();
-        if (this.status == null) this.status = OrderStatus.RASCUNHO;
+        if (this.status == null) this.status = OrderStatus.PENDENTE;
+        if (this.comandaStatus == null) this.comandaStatus = ComandaStatus.ABERTA;
     }
 }

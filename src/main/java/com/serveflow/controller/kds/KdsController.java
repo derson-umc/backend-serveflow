@@ -1,7 +1,8 @@
 package com.serveflow.controller.kds;
 
 import com.serveflow.dto.kds.response.KdsOrderOutput;
-import com.serveflow.dto.kds.response.KdsMapper;
+import com.serveflow.service.kds.KdsEventPublisher;
+import com.serveflow.service.kds.KdsMapper;
 import com.serveflow.model.order.OrderStatus;
 import com.serveflow.service.order.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,7 +22,7 @@ import java.util.UUID;
 public class KdsController {
 
     private static final List<OrderStatus> ACTIVE_STATUSES =
-            List.of(OrderStatus.RASCUNHO, OrderStatus.ENVIADO, OrderStatus.EM_PREPARO);
+            List.of(OrderStatus.PENDENTE, OrderStatus.ENVIADO, OrderStatus.EM_PREPARO, OrderStatus.PRONTO);
 
     private final OrderService orderService;
     private final KdsEventPublisher publisher;
@@ -48,6 +49,13 @@ public class KdsController {
         return ResponseEntity.ok(orders);
     }
 
+    @Operation(summary = "Confirma o recebimento do pedido (PENDENTE → ENVIADO)")
+    @PatchMapping("/orders/{id}/confirm")
+    public ResponseEntity<KdsOrderOutput> confirm(@PathVariable UUID id) {
+        var output = mapper.toOutput(orderService.confirm(id));
+        return ResponseEntity.ok(output);
+    }
+
     @Operation(summary = "Avança o pedido para EM PREPARO")
     @PatchMapping("/orders/{id}/prepare")
     public ResponseEntity<KdsOrderOutput> prepare(@PathVariable UUID id) {
@@ -63,7 +71,7 @@ public class KdsController {
     public ResponseEntity<KdsOrderOutput> ready(@PathVariable UUID id) {
 
         var output = mapper.toOutput(orderService.markReady(id));
-        publisher.publishRemove(id);
+        publisher.publishRemove(id, output.status());
 
         return ResponseEntity.ok(output);
     }
@@ -73,7 +81,7 @@ public class KdsController {
     public ResponseEntity<KdsOrderOutput> complete(@PathVariable UUID id) {
 
         var output = mapper.toOutput(orderService.complete(id));
-        publisher.publishRemove(id);
+        publisher.publishRemove(id, output.status());
 
         return ResponseEntity.ok(output);
     }

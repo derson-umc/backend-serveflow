@@ -1,6 +1,7 @@
 package com.serveflow.controller.dashboard;
 
-import com.serveflow.repository.order.SpringOrderRepository;
+import com.serveflow.repository.dashboard.DashboardReadRepository;
+import com.serveflow.service.dashboard.GetDashboardMetricsUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,31 +19,29 @@ import java.util.List;
 @RequestMapping("/dashboard")
 public class DashboardController {
 
-    private final SpringOrderRepository orderRepository;
+    private final GetDashboardMetricsUseCase metricsUseCase;
+    private final DashboardReadRepository    readRepository;
 
-    public DashboardController(SpringOrderRepository orderRepository) {
-        this.orderRepository = orderRepository;
+    public DashboardController(GetDashboardMetricsUseCase metricsUseCase,
+                               DashboardReadRepository readRepository) {
+        this.metricsUseCase = metricsUseCase;
+        this.readRepository = readRepository;
     }
 
-    @Operation(summary = "KPIs principais do dia")
+    @Operation(summary = "KPIs principais do dia com comparação vs ontem")
     @GetMapping("/metrics")
     public ResponseEntity<DashboardMetricsOutput> metrics() {
-        BigDecimal revenue = orderRepository.revenueToday();
-        if (revenue == null) revenue = BigDecimal.ZERO;
-
-        long orders    = orderRepository.ordersToday();
-        long customers = orderRepository.customersToday();
-
-        BigDecimal profit = revenue.multiply(new BigDecimal("0.30"));
-
-        return ResponseEntity.ok(new DashboardMetricsOutput(revenue, (int) orders, (int) customers, profit));
+        GetDashboardMetricsUseCase.Output out = metricsUseCase.execute();
+        return ResponseEntity.ok(new DashboardMetricsOutput(
+                out.revenueToday(),     out.ordersToday(),     out.customersToday(),     out.ticketMedio(),
+                out.revenueYesterday(), out.ordersYesterday(), out.customersYesterday(), out.ticketMedioYesterday()
+        ));
     }
 
-    @Operation(summary = "Vendas por dia (últimos 7 dias)")
+    @Operation(summary = "Vendas por dia — últimos 7 dias")
     @GetMapping("/sales-by-day")
     public ResponseEntity<List<DailySales>> salesByDay() {
-        List<Object[]> rows = orderRepository.salesByDay();
-        List<DailySales> result = rows.stream()
+        List<DailySales> result = readRepository.salesByDay().stream()
                 .map(row -> new DailySales(
                         LocalDate.parse(row[0].toString(), DateTimeFormatter.ISO_LOCAL_DATE),
                         row[1] != null ? new BigDecimal(row[1].toString()) : BigDecimal.ZERO))
@@ -50,14 +49,17 @@ public class DashboardController {
         return ResponseEntity.ok(result);
     }
 
-    @Operation(summary = "Produtos mais vendidos (últimos 30 dias)")
+    @Operation(summary = "Produtos mais vendidos — com filtro de período e receita")
     @GetMapping("/top-products")
-    public ResponseEntity<List<TopProduct>> topProducts() {
-        List<Object[]> rows = orderRepository.topProducts();
-        List<TopProduct> result = rows.stream()
+    public ResponseEntity<List<TopProduct>> topProducts(
+            @RequestParam(defaultValue = "30") int days) {
+
+        LocalDate startDate = LocalDate.now().minusDays(Math.max(days - 1, 0));
+        List<TopProduct> result = readRepository.topProductsByPeriod(startDate).stream()
                 .map(row -> new TopProduct(
                         row[0] != null ? row[0].toString() : "—",
-                        row[1] != null ? ((Number) row[1]).intValue() : 0))
+                        row[1] != null ? ((Number) row[1]).intValue() : 0,
+                        row[2] != null ? new BigDecimal(row[2].toString()) : BigDecimal.ZERO))
                 .toList();
         return ResponseEntity.ok(result);
     }
@@ -71,9 +73,7 @@ public class DashboardController {
         LocalDate start = startDate.isBlank() ? LocalDate.now() : LocalDate.parse(startDate);
         LocalDate end   = endDate.isBlank()   ? LocalDate.now() : LocalDate.parse(endDate);
 
-        List<Object[]> rows = orderRepository.cashierReportByPayment(start, end);
-
-        List<PaymentSummary> payments = rows.stream()
+        List<PaymentSummary> payments = readRepository.cashierReportByPayment(start, end).stream()
                 .map(row -> new PaymentSummary(
                         row[0] != null ? row[0].toString() : "SEM_PAGAMENTO",
                         row[1] != null ? ((Number) row[1]).intValue() : 0,
@@ -89,14 +89,18 @@ public class DashboardController {
 
     public record DashboardMetricsOutput(
             BigDecimal revenueToday,
-            int ordersToday,
-            int customersToday,
-            BigDecimal netProfit
+            int        ordersToday,
+            int        customersToday,
+            BigDecimal ticketMedio,
+            BigDecimal revenueYesterday,
+            int        ordersYesterday,
+            int        customersYesterday,
+            BigDecimal ticketMedioYesterday
     ) {}
 
     public record DailySales(LocalDate date, BigDecimal total) {}
 
-    public record TopProduct(String name, int quantity) {}
+    public record TopProduct(String name, int quantity, BigDecimal revenue) {}
 
     public record PaymentSummary(String method, int ordersCount, BigDecimal total) {}
 

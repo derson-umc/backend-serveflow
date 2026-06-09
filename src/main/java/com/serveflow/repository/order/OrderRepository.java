@@ -57,22 +57,23 @@ public class OrderRepository {
     }
 
     private Order toDomain(OrderEntity e) {
-        return new Order(
-                e.getIdOrder(),
-                e.getCustomerName(),
-                e.getAddress() != null ? toAddressDomain(e.getAddress()) : null,
-                e.getType(),
-                e.getStatus(),
-                e.getCreatedAt(),
-                e.getObservation(),
-                e.getPaymentMethod(),
-                e.getTableNumber(),
-                e.getCancelReason(),
-                e.getCanceledBy(),
-                e.getCanceledAt(),
-                e.getItems().stream().map(this::toItemDomain).toList(),
-                e.getVersion()
-        );
+        return Order.builder()
+                .id(e.getIdOrder())
+                .customerName(e.getCustomerName())
+                .address(e.getAddress() != null ? toAddressDomain(e.getAddress()) : null)
+                .type(e.getType())
+                .status(e.getStatus())
+                .comandaStatus(e.getComandaStatus())
+                .createdAt(e.getCreatedAt())
+                .observation(e.getObservation())
+                .paymentMethod(e.getPaymentMethod())
+                .tableNumber(e.getTableNumber())
+                .cancelReason(e.getCancelReason())
+                .canceledBy(e.getCanceledBy())
+                .canceledAt(e.getCanceledAt())
+                .items(e.getItems().stream().map(this::toItemDomain).toList())
+                .version(e.getVersion())
+                .build();
     }
 
     private OrderItem toItemDomain(OrderItemEntity e) {
@@ -116,6 +117,7 @@ public class OrderRepository {
         entity.setCustomerName(order.getCustomerName());
         entity.setType(order.getType());
         entity.setStatus(order.getStatus());
+        entity.setComandaStatus(order.getComandaStatus());
         entity.setCreatedAt(order.getCreatedAt());
         entity.setObservation(order.getObservation());
         entity.setPaymentMethod(order.getPaymentMethod());
@@ -128,8 +130,6 @@ public class OrderRepository {
             entity.setAddress(toAddressEntity(order.getAddress()));
         }
 
-        // Merge items without clear()+addAll() to avoid Hibernate orphanRemoval
-        // delete-then-reinsert cycle that can cause FK constraint violations.
         Map<UUID, OrderItemEntity> existingById = entity.getItems().stream()
                 .collect(Collectors.toMap(OrderItemEntity::getIdOrderItem, Function.identity()));
 
@@ -160,7 +160,6 @@ public class OrderRepository {
         entity.setCancelReason(item.getCancelReason());
         entity.setProductCategory(item.getProductCategory());
 
-        // Merge additionals without clear()+addAll() for the same reason as items
         Map<UUID, ItemAdditionalEntity> existingById = entity.getAdditionals().stream()
                 .collect(Collectors.toMap(ItemAdditionalEntity::getIdItemAdditional, Function.identity()));
 

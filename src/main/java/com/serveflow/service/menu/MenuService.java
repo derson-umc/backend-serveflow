@@ -1,7 +1,7 @@
 package com.serveflow.service.menu;
 
-import com.serveflow.controller.kds.KdsEventPublisher;
-import com.serveflow.dto.kds.response.KdsMapper;
+import com.serveflow.service.kds.KdsEventPublisher;
+import com.serveflow.service.kds.KdsMapper;
 import com.serveflow.dto.menu.request.MenuInput;
 import com.serveflow.dto.menu.request.PlaceOrderInput;
 import com.serveflow.dto.menu.request.RemoveMenuItemInput;
@@ -189,6 +189,7 @@ public class MenuService {
                 OrderOutput.AddressOutput.from(order.getAddress()),
                 order.getType().name(),
                 order.getStatus().name(),
+                order.getComandaStatus().name(),
                 order.getCreatedAt(),
                 order.getObservation(),
                 order.getPaymentMethod(),

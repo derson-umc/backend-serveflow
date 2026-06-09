@@ -1,5 +1,7 @@
 package com.serveflow.controller.cashier;
 
+import com.serveflow.service.cashier.CashierEventPublisher;
+import com.serveflow.service.kds.KdsEventPublisher;
 import com.serveflow.dto.cashier.request.CashMovementInput;
 import com.serveflow.dto.cashier.request.CloseSessionInput;
 import com.serveflow.dto.cashier.request.OpenSessionInput;
@@ -30,11 +32,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CashierController {
 
-    private static final List<String> PENDING_PAYMENT_STATUSES = List.of("READY");
+    private static final List<String> PENDING_PAYMENT_STATUSES = List.of("AGUARDANDO_PAGAMENTO");
 
     private final CashierService        cashierService;
     private final AuditService          auditService;
     private final CashierEventPublisher eventPublisher;
+    private final KdsEventPublisher     kdsEventPublisher;
     private final OrderService          orderService;
 
     @GetMapping("/session/current")
@@ -133,6 +136,7 @@ public class CashierController {
         String ip = IpResolverUtil.getClientIp(httpReq);
         OrderOutput output = orderService.settleFromCashier(id, request.paymentMethod());
         auditService.logAction(user.getId(), "ORDER_SETTLE", "Order", null, ip);
+        kdsEventPublisher.publishRemove(output.id(), output.status());
         return ResponseEntity.ok(toCashierOutput(output));
     }
 

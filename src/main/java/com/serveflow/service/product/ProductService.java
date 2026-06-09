@@ -56,7 +56,12 @@ public class ProductService {
 
     @Transactional
     public void deactivate(UUID id) {
-        repository.deactivate(id);
+        Product product = repository.findById(id);
+        if (product.isActive()) {
+            repository.deactivate(id);
+        } else {
+            repository.hardDelete(id);
+        }
     }
 
     @Transactional

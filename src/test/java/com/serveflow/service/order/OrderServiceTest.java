@@ -1,6 +1,6 @@
 package com.serveflow.service.order;
 
-import com.serveflow.controller.kds.KdsEventPublisher;
+import com.serveflow.service.kds.KdsEventPublisher;
 import com.serveflow.dto.order.request.OrderInput;
 import com.serveflow.events.OrderCompletedEvent;
 import com.serveflow.dto.order.request.OrderItemInput;
@@ -70,13 +70,13 @@ class OrderServiceTest {
             OrderInput input = balcaoOrderInput(null);
             when(addressResolver.resolve(any())).thenReturn(null);
             doNothing().when(stockService).validateRecipesForOrder(any());
-            Order created = buildOrder(orderId, OrderStatus.RASCUNHO, OrderType.BALCAO);
+            Order created = buildOrder(orderId, OrderStatus.PENDENTE, OrderType.BALCAO);
             when(orderRepository.save(any(Order.class))).thenReturn(created);
 
             OrderOutput result = service.create(input);
 
             assertThat(result.id()).isEqualTo(orderId);
-            assertThat(result.status()).isEqualTo("RASCUNHO");
+            assertThat(result.status()).isEqualTo("PENDENTE");
             verify(orderRepository).save(any(Order.class));
             verify(stockService).validateRecipesForOrder(any());
         }
@@ -87,7 +87,7 @@ class OrderServiceTest {
             OrderInput input = balcaoOrderInput("PIX");
             when(addressResolver.resolve(any())).thenReturn(null);
             doNothing().when(stockService).validateRecipesForOrder(any());
-            Order created = buildOrder(orderId, OrderStatus.RASCUNHO, OrderType.BALCAO);
+            Order created = buildOrder(orderId, OrderStatus.PENDENTE, OrderType.BALCAO);
             created.registerPayment("PIX");
             when(orderRepository.save(any(Order.class))).thenReturn(created);
 
@@ -102,7 +102,7 @@ class OrderServiceTest {
             OrderInput input = balcaoOrderInput(null);
             when(addressResolver.resolve(any())).thenReturn(null);
             doNothing().when(stockService).validateRecipesForOrder(any());
-            Order created = buildOrder(orderId, OrderStatus.RASCUNHO, OrderType.BALCAO);
+            Order created = buildOrder(orderId, OrderStatus.PENDENTE, OrderType.BALCAO);
             when(orderRepository.save(any(Order.class))).thenReturn(created);
 
             // publishKdsSafely silencia exceções; a criação deve concluir normalmente mesmo sem KdsMapper
@@ -117,15 +117,15 @@ class OrderServiceTest {
     class FindByStatus {
 
         @Test
-        @DisplayName("retorna pedidos com status RASCUNHO.")
-        void findByStatus_retornaPedidos_paraRASCUNHO() {
-            Order order = buildOrder(orderId, OrderStatus.RASCUNHO, OrderType.BALCAO);
-            when(orderRepository.findByStatus(OrderStatus.RASCUNHO)).thenReturn(List.of(order));
+        @DisplayName("retorna pedidos com status PENDENTE.")
+        void findByStatus_retornaPedidos_paraPENDENTE() {
+            Order order = buildOrder(orderId, OrderStatus.PENDENTE, OrderType.BALCAO);
+            when(orderRepository.findByStatus(OrderStatus.PENDENTE)).thenReturn(List.of(order));
 
-            List<OrderOutput> result = service.findByStatus("RASCUNHO");
+            List<OrderOutput> result = service.findByStatus("PENDENTE");
 
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).status()).isEqualTo("RASCUNHO");
+            assertThat(result.get(0).status()).isEqualTo("PENDENTE");
         }
 
         @Test
@@ -151,9 +151,9 @@ class OrderServiceTest {
     class Confirm {
 
         @Test
-        @DisplayName("confirma pedido RASCUNHO, valida estoque e deduz insumos.")
+        @DisplayName("confirma pedido PENDENTE, valida estoque e deduz insumos.")
         void confirm_confirma_eDeduEstoque() {
-            Order order = buildOrder(orderId, OrderStatus.RASCUNHO, OrderType.BALCAO);
+            Order order = buildOrder(orderId, OrderStatus.PENDENTE, OrderType.BALCAO);
             when(orderRepository.findById(orderId)).thenReturn(order);
             doNothing().when(stockService).validateStockForOrder(any());
             Order saved = buildOrder(orderId, OrderStatus.ENVIADO, OrderType.BALCAO);
@@ -184,9 +184,9 @@ class OrderServiceTest {
     class Cancel {
 
         @Test
-        @DisplayName("cancela pedido RASCUNHO sem restaurar estoque.")
-        void cancel_semRestaurarEstoque_whenStatusRASCUNHO() {
-            Order order = buildOrder(orderId, OrderStatus.RASCUNHO, OrderType.BALCAO);
+        @DisplayName("cancela pedido PENDENTE sem restaurar estoque.")
+        void cancel_semRestaurarEstoque_whenStatusPENDENTE() {
+            Order order = buildOrder(orderId, OrderStatus.PENDENTE, OrderType.BALCAO);
             when(orderRepository.findById(orderId)).thenReturn(order);
             Order saved = buildOrder(orderId, OrderStatus.CANCELADO, OrderType.BALCAO);
             when(orderRepository.save(order)).thenReturn(saved);

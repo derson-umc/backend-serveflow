@@ -13,6 +13,7 @@ public record OrderOutput(
         AddressOutput address,
         String type,
         String status,
+        String comandaStatus,
         LocalDateTime createdAt,
         String observation,
         String paymentMethod,

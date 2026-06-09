@@ -37,7 +37,7 @@ public class OrderItem {
         this.unitPrice = unitPrice;
         this.observation = observation != null ? observation.strip() : null;
         this.additionals = new ArrayList<>(Optional.ofNullable(additionals).orElse(List.of()));
-        this.status = status != null ? status : OrderItemStatus.RASCUNHO;
+        this.status = status != null ? status : OrderItemStatus.PENDENTE;
         this.cancelReason = cancelReason;
         this.productCategory = productCategory;
     }
@@ -46,14 +46,14 @@ public class OrderItem {
                      BigDecimal unitPrice, String observation,
                      List<ItemAdditional> additionals) {
         this(UUID.randomUUID(), productId, productName, quantity, unitPrice, observation, additionals,
-                OrderItemStatus.RASCUNHO, null, null);
+                OrderItemStatus.PENDENTE, null, null);
     }
 
     public OrderItem(UUID productId, String productName, int quantity,
                      BigDecimal unitPrice, String observation,
                      List<ItemAdditional> additionals, String productCategory) {
         this(UUID.randomUUID(), productId, productName, quantity, unitPrice, observation, additionals,
-                OrderItemStatus.RASCUNHO, null, productCategory);
+                OrderItemStatus.PENDENTE, null, productCategory);
     }
 
     public void syncStatus(OrderItemStatus newStatus) {

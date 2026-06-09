@@ -5,10 +5,11 @@ import java.util.Set;
 
 public enum OrderStatus {
 
-    RASCUNHO("Rascunho."),
+    PENDENTE("Pendente."),
     ENVIADO("Enviado."),
     EM_PREPARO("Em preparo."),
     PRONTO("Pronto."),
+    AGUARDANDO_PAGAMENTO("Aguardando pagamento."),
     A_CAMINHO("A caminho."),
     ENTREGUE("Entregue."),
     CANCELADO("Cancelado.");
@@ -21,13 +22,14 @@ public enum OrderStatus {
     }
 
     static {
-        RASCUNHO.allowedTransitions  = EnumSet.of(ENVIADO, CANCELADO);
-        ENVIADO.allowedTransitions   = EnumSet.of(EM_PREPARO, CANCELADO);
-        EM_PREPARO.allowedTransitions = EnumSet.of(PRONTO, CANCELADO);
-        PRONTO.allowedTransitions    = EnumSet.of(A_CAMINHO, ENTREGUE, CANCELADO);
-        A_CAMINHO.allowedTransitions = EnumSet.of(ENTREGUE, CANCELADO);
-        ENTREGUE.allowedTransitions  = EnumSet.noneOf(OrderStatus.class);
-        CANCELADO.allowedTransitions = EnumSet.noneOf(OrderStatus.class);
+        PENDENTE.allowedTransitions   = EnumSet.of(ENVIADO, CANCELADO);
+        ENVIADO.allowedTransitions    = EnumSet.of(EM_PREPARO, AGUARDANDO_PAGAMENTO, CANCELADO);
+        EM_PREPARO.allowedTransitions = EnumSet.of(PRONTO, AGUARDANDO_PAGAMENTO, CANCELADO);
+        PRONTO.allowedTransitions               = EnumSet.of(AGUARDANDO_PAGAMENTO, A_CAMINHO, ENTREGUE, CANCELADO);
+        AGUARDANDO_PAGAMENTO.allowedTransitions = EnumSet.of(ENTREGUE, CANCELADO);
+        A_CAMINHO.allowedTransitions            = EnumSet.of(AGUARDANDO_PAGAMENTO, ENTREGUE, CANCELADO);
+        ENTREGUE.allowedTransitions             = EnumSet.noneOf(OrderStatus.class);
+        CANCELADO.allowedTransitions            = EnumSet.noneOf(OrderStatus.class);
     }
 
     public boolean canTransitionTo(OrderStatus next) {
@@ -36,6 +38,10 @@ public enum OrderStatus {
 
     public boolean isFinal() {
         return this == ENTREGUE || this == CANCELADO;
+    }
+
+    public boolean isPendingPayment() {
+        return this == AGUARDANDO_PAGAMENTO;
     }
 
     public String getDescription() {

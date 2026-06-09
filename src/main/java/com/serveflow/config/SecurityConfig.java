@@ -65,7 +65,7 @@ public class SecurityConfig {
                         "/auth/verify-reset-token", "/auth/reset-password"
                 ).permitAll();
 
-                auth.requestMatchers("/ws/**").authenticated();
+                auth.requestMatchers("/ws", "/ws/**").permitAll();
 
                 if (swaggerEnabled) {
                     auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll();
@@ -73,7 +73,9 @@ public class SecurityConfig {
                     auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").hasRole("ADMIN");
                 }
 
-                auth.requestMatchers(HttpMethod.GET,  "/uploads/**").permitAll();
+                auth.requestMatchers(HttpMethod.GET, "/images/**").permitAll();
+                auth.requestMatchers(HttpMethod.GET, "/uploads/images/**").permitAll();
+
                 auth.requestMatchers(HttpMethod.POST, "/uploads/image")
                         .hasAnyRole("ADMIN", "GERENTE", "COZINHEIRO");
 
@@ -112,6 +114,9 @@ public class SecurityConfig {
 
                 auth.requestMatchers(HttpMethod.GET,   "/orders/**").authenticated();
                 auth.requestMatchers(HttpMethod.POST,  "/orders/**")
+                        .hasAnyRole("ADMIN", "GERENTE", "GARCON");
+
+                auth.requestMatchers(HttpMethod.PATCH, "/orders/*/request-payment")
                         .hasAnyRole("ADMIN", "GERENTE", "GARCON");
                 auth.requestMatchers(HttpMethod.PATCH, "/orders/**")
                         .hasAnyRole("ADMIN", "GERENTE", "GARCON", "COZINHEIRO", "CAIXA");

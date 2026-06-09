@@ -1,4 +1,3 @@
--- Increase column size before renaming values
 ALTER TABLE orders ALTER COLUMN status TYPE VARCHAR(30);
 
 UPDATE orders SET status = 'RASCUNHO'  WHERE status = 'CREATED';

@@ -2,6 +2,7 @@ package com.serveflow.repository.order;
 
 import com.serveflow.model.order.OrderItemStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 import lombok.*;
 import org.springframework.data.domain.Persistable;
 
@@ -52,6 +53,7 @@ public class OrderItemEntity implements Persistable<UUID> {
     private String productCategory;
 
     @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 30)
     private List<ItemAdditionalEntity> additionals = new ArrayList<>();
 
     @Transient
@@ -69,6 +71,6 @@ public class OrderItemEntity implements Persistable<UUID> {
 
     @PrePersist
     protected void onCreate() {
-        if (this.status == null) this.status = OrderItemStatus.RASCUNHO;
+        if (this.status == null) this.status = OrderItemStatus.PENDENTE;
     }
 }
