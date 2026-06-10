@@ -109,20 +109,20 @@ class CashierControllerTest {
     @DisplayName("GET /cashier/session/current: retorna 200 com sessão quando existe sessão aberta")
     void currentSession_returns200_whenSessionExists() throws Exception {
         UUID id = UUID.randomUUID();
-        when(cashierService.getCurrentSession()).thenReturn(Optional.of(sessionOutput(id, "OPEN")));
+        when(cashierService.getCurrentSession(anyString())).thenReturn(Optional.of(sessionOutput(id, "OPEN")));
 
         mvc.perform(get("/cashier/session/current"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id.toString()))
                 .andExpect(jsonPath("$.status").value("OPEN"));
 
-        verify(cashierService).getCurrentSession();
+        verify(cashierService).getCurrentSession(anyString());
     }
 
     @Test
     @DisplayName("GET /cashier/session/current: retorna 204 quando não há sessão aberta")
     void currentSession_returns204_whenNoSession() throws Exception {
-        when(cashierService.getCurrentSession()).thenReturn(Optional.empty());
+        when(cashierService.getCurrentSession(anyString())).thenReturn(Optional.empty());
 
         mvc.perform(get("/cashier/session/current"))
                 .andExpect(status().isNoContent());
@@ -197,14 +197,14 @@ class CashierControllerTest {
     void listSessions_returns200WithList() throws Exception {
         UUID id1 = UUID.randomUUID();
         UUID id2 = UUID.randomUUID();
-        when(cashierService.listSessions())
+        when(cashierService.listSessions(anyString()))
                 .thenReturn(List.of(sessionOutput(id1, "CLOSED"), sessionOutput(id2, "OPEN")));
 
         mvc.perform(get("/cashier/sessions"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
 
-        verify(cashierService).listSessions();
+        verify(cashierService).listSessions(anyString());
     }
 
     @Test
@@ -280,7 +280,7 @@ class CashierControllerTest {
     @DisplayName("POST /cashier/orders/{id}/settle: retorna 200 com pedido liquidado")
     void settleOrder_returns200() throws Exception {
         UUID id = UUID.randomUUID();
-        when(orderService.settleFromCashier(id, "PIX")).thenReturn(orderOutput(id, "COMPLETED"));
+        when(orderService.settleFromCashier(eq(id), eq("PIX"), anyString())).thenReturn(orderOutput(id, "COMPLETED"));
 
         SettleOrderInput input = new SettleOrderInput("PIX");
 
@@ -290,6 +290,6 @@ class CashierControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("COMPLETED"));
 
-        verify(orderService).settleFromCashier(id, "PIX");
+        verify(orderService).settleFromCashier(eq(id), eq("PIX"), anyString());
     }
 }

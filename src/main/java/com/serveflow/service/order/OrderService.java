@@ -220,13 +220,14 @@ public class OrderService {
                 saved.getCustomerName(),
                 saved.getType().name(),
                 saved.getPaymentMethod(),
-                saved.getTotal()
+                saved.getTotal(),
+                null
         ));
         return output;
     }
 
     @Transactional
-    public OrderOutput settleFromCashier(UUID id, String paymentMethod) {
+    public OrderOutput settleFromCashier(UUID id, String paymentMethod, String settledBy) {
         Order order = orderRepository.findById(id);
         order.registerPayment(paymentMethod);
         order.complete();
@@ -240,7 +241,8 @@ public class OrderService {
                 saved.getCustomerName(),
                 saved.getType().name(),
                 saved.getPaymentMethod(),
-                saved.getTotal()
+                saved.getTotal(),
+                settledBy
         ));
         return output;
     }

@@ -277,7 +277,7 @@ class OrderServiceTest {
             when(orderRepository.save(order)).thenReturn(saved);
             when(menuRepository.findByActiveOrderId(any())).thenReturn(Optional.empty());
 
-            OrderOutput result = service.settleFromCashier(orderId, "DINHEIRO");
+            OrderOutput result = service.settleFromCashier(orderId, "DINHEIRO", "caixa");
 
             assertThat(result.paymentMethod()).isEqualTo("DINHEIRO");
             verify(eventPublisher).publishEvent(any(OrderCompletedEvent.class));
