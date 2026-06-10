@@ -10,6 +10,7 @@ import com.serveflow.dto.user.request.UserInput;
 import com.serveflow.dto.user.response.UserOutput;
 import com.serveflow.exception.user.BusinessRuleException;
 import com.serveflow.exception.user.ConflictException;
+import com.serveflow.exception.user.ForbiddenOperationException;
 import com.serveflow.exception.user.UserNotFoundException;
 import com.serveflow.model.user.User;
 import com.serveflow.model.user.UserRole;
@@ -154,7 +155,7 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(id));
 
         if (user.getRole() == UserRole.ADMIN || user.getRole() == UserRole.GERENTE) {
-            throw new BusinessRuleException("Usuário com perfil " + user.getRole().name() + " não pode ser excluído.");
+            throw new ForbiddenOperationException("Exclusão de usuário com perfil privilegiado não é permitida.");
         }
 
         repository.deleteById(id);
