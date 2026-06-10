@@ -16,6 +16,7 @@ import com.serveflow.exception.stock.StockAlertNotFoundException;
 import com.serveflow.exception.stock.StockItemNotFoundException;
 import com.serveflow.exception.user.BusinessRuleException;
 import com.serveflow.exception.user.ConflictException;
+import com.serveflow.exception.user.ForbiddenOperationException;
 import com.serveflow.exception.user.UserNotFoundException;
 import com.serveflow.service.audit.AuditService;
 import lombok.RequiredArgsConstructor;
@@ -109,6 +110,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InconsistentAmountException.class)
     public ResponseEntity<Map<String, Object>> handleInconsistentAmount(InconsistentAmountException ex) {
         return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<Map<String, Object>> handleForbiddenOperation(ForbiddenOperationException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
     @ExceptionHandler(BusinessRuleException.class)

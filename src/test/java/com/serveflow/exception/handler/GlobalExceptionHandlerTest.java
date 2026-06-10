@@ -16,6 +16,7 @@ import com.serveflow.exception.stock.StockAlertNotFoundException;
 import com.serveflow.exception.stock.StockItemNotFoundException;
 import com.serveflow.exception.user.BusinessRuleException;
 import com.serveflow.exception.user.ConflictException;
+import com.serveflow.exception.user.ForbiddenOperationException;
 import com.serveflow.exception.user.UserNotFoundException;
 import com.serveflow.service.audit.AuditService;
 import org.junit.jupiter.api.DisplayName;
@@ -200,6 +201,19 @@ class GlobalExceptionHandlerTest {
             ResponseEntity<Map<String, Object>> response =
                     handler.handleBusinessRule(new BusinessRuleException("regra de negocio"));
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    @Nested
+    @DisplayName("403 Forbidden handlers")
+    class Forbidden {
+
+        @Test
+        @DisplayName("ForbiddenOperationException retorna 403")
+        void forbiddenOperation_returns403() {
+            ResponseEntity<Map<String, Object>> response =
+                    handler.handleForbiddenOperation(new ForbiddenOperationException("operação proibida"));
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         }
     }
 

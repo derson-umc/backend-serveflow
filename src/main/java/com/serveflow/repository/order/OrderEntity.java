@@ -67,6 +67,9 @@ public class OrderEntity implements Persistable<UUID> {
     @Column(name = "canceled_at")
     private LocalDateTime canceledAt;
 
+    @Column(name = "created_by", length = 150)
+    private String createdBy;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> items = new ArrayList<>();
 

@@ -6,6 +6,7 @@ import com.serveflow.dto.user.request.UserInput;
 import com.serveflow.dto.user.response.UserOutput;
 import com.serveflow.exception.user.BusinessRuleException;
 import com.serveflow.exception.user.ConflictException;
+import com.serveflow.exception.user.ForbiddenOperationException;
 import com.serveflow.exception.user.UserNotFoundException;
 import com.serveflow.model.user.User;
 import com.serveflow.model.user.UserRole;
@@ -242,12 +243,24 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("delete bloqueia admin e gerente")
-    void delete_blocked() {
+    @DisplayName("delete bloqueia ADMIN com 403")
+    void delete_blocksAdmin() {
         User admin = new User(1L, "admin", null, "x", UserRole.ADMIN, "Admin");
         when(repo.findById(1L)).thenReturn(Optional.of(admin));
 
         assertThatThrownBy(() -> service.delete(1L))
-                .isInstanceOf(BusinessRuleException.class);
+                .isInstanceOf(ForbiddenOperationException.class)
+                .hasMessageContaining("perfil privilegiado");
+    }
+
+    @Test
+    @DisplayName("delete bloqueia GERENTE com 403")
+    void delete_blocksGerente() {
+        User gerente = new User(2L, "gerente", null, "x", UserRole.GERENTE, "Gerente");
+        when(repo.findById(2L)).thenReturn(Optional.of(gerente));
+
+        assertThatThrownBy(() -> service.delete(2L))
+                .isInstanceOf(ForbiddenOperationException.class)
+                .hasMessageContaining("perfil privilegiado");
     }
 }
