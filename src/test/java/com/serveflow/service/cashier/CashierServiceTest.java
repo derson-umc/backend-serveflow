@@ -57,7 +57,7 @@ class CashierServiceTest {
         @Test
         @DisplayName("cria sessão quando não existe sessão aberta.")
         void openSession_criaSessao_whenNenhumaSessaoAberta() {
-            when(sessionRepository.existsByStatus(CashSessionStatus.OPEN)).thenReturn(false);
+            when(sessionRepository.existsByStatusAndOpenedBy(CashSessionStatus.OPEN, "operador")).thenReturn(false);
             CashSessionEntity saved = sessionEntity(sessionId, CashSessionStatus.OPEN);
             when(sessionRepository.save(any(CashSessionEntity.class))).thenReturn(saved);
 
@@ -72,7 +72,7 @@ class CashierServiceTest {
         @Test
         @DisplayName("lança OpenSessionAlreadyExistsException quando já existe sessão aberta.")
         void openSession_lancaExcecao_whenSessaoJaAberta() {
-            when(sessionRepository.existsByStatus(CashSessionStatus.OPEN)).thenReturn(true);
+            when(sessionRepository.existsByStatusAndOpenedBy(CashSessionStatus.OPEN, "operador")).thenReturn(true);
 
             assertThatThrownBy(() -> service.openSession(
                     new OpenSessionInput(BigDecimal.TEN, null), "operador"))
@@ -84,7 +84,7 @@ class CashierServiceTest {
         @Test
         @DisplayName("persiste saldo inicial e operador corretamente.")
         void openSession_persisteSaldoEOperador() {
-            when(sessionRepository.existsByStatus(CashSessionStatus.OPEN)).thenReturn(false);
+            when(sessionRepository.existsByStatusAndOpenedBy(CashSessionStatus.OPEN, "caixa01")).thenReturn(false);
             CashSessionEntity saved = sessionEntity(sessionId, CashSessionStatus.OPEN);
             saved.setInitialBalance(new BigDecimal("500.00"));
             saved.setOpenedBy("caixa01");
@@ -150,20 +150,20 @@ class CashierServiceTest {
         @Test
         @DisplayName("retorna Optional.empty() quando não há sessão aberta.")
         void getCurrentSession_retornaVazio_whenNenhumaSessaoAberta() {
-            when(sessionRepository.findFirstByStatusOrderByOpenedAtDesc(CashSessionStatus.OPEN))
+            when(sessionRepository.findFirstByStatusAndOpenedByOrderByOpenedAtDesc(CashSessionStatus.OPEN, "admin"))
                     .thenReturn(Optional.empty());
 
-            assertThat(service.getCurrentSession()).isEmpty();
+            assertThat(service.getCurrentSession("admin")).isEmpty();
         }
 
         @Test
         @DisplayName("retorna output da sessão aberta quando existir.")
         void getCurrentSession_retornaSessao_whenSessaoAberta() {
             CashSessionEntity entity = sessionEntity(sessionId, CashSessionStatus.OPEN);
-            when(sessionRepository.findFirstByStatusOrderByOpenedAtDesc(CashSessionStatus.OPEN))
+            when(sessionRepository.findFirstByStatusAndOpenedByOrderByOpenedAtDesc(CashSessionStatus.OPEN, "admin"))
                     .thenReturn(Optional.of(entity));
 
-            Optional<CashSessionOutput> result = service.getCurrentSession();
+            Optional<CashSessionOutput> result = service.getCurrentSession("admin");
 
             assertThat(result).isPresent();
             assertThat(result.get().status()).isEqualTo("OPEN");
@@ -273,9 +273,9 @@ class CashierServiceTest {
         @Test
         @DisplayName("retorna lista vazia quando não há sessões.")
         void listSessions_retornaVazio_whenNenhumaSessao() {
-            when(sessionRepository.findAllByOrderByOpenedAtDesc()).thenReturn(List.of());
+            when(sessionRepository.findAllByOpenedByOrderByOpenedAtDesc("admin")).thenReturn(List.of());
 
-            assertThat(service.listSessions()).isEmpty();
+            assertThat(service.listSessions("admin")).isEmpty();
         }
 
         @Test
@@ -284,9 +284,9 @@ class CashierServiceTest {
             List<CashSessionEntity> entities = List.of(
                     sessionEntity(UUID.randomUUID(), CashSessionStatus.CLOSED),
                     sessionEntity(UUID.randomUUID(), CashSessionStatus.OPEN));
-            when(sessionRepository.findAllByOrderByOpenedAtDesc()).thenReturn(entities);
+            when(sessionRepository.findAllByOpenedByOrderByOpenedAtDesc("admin")).thenReturn(entities);
 
-            List<CashSessionOutput> result = service.listSessions();
+            List<CashSessionOutput> result = service.listSessions("admin");
 
             assertThat(result).hasSize(2);
         }

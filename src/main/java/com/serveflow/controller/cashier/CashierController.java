@@ -41,8 +41,8 @@ public class CashierController {
     private final OrderService          orderService;
 
     @GetMapping("/session/current")
-    public ResponseEntity<CashSessionOutput> currentSession() {
-        return cashierService.getCurrentSession()
+    public ResponseEntity<CashSessionOutput> currentSession(@AuthenticationPrincipal User user) {
+        return cashierService.getCurrentSession(user.getUsername())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.noContent().build());
     }
@@ -79,8 +79,8 @@ public class CashierController {
     }
 
     @GetMapping("/sessions")
-    public ResponseEntity<List<CashSessionOutput>> listSessions() {
-        return ResponseEntity.ok(cashierService.listSessions());
+    public ResponseEntity<List<CashSessionOutput>> listSessions(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(cashierService.listSessions(user.getUsername()));
     }
 
     @PostMapping("/session/{sessionId}/movement")
@@ -107,7 +107,7 @@ public class CashierController {
     @GetMapping("/orders/pending")
     public ResponseEntity<List<CashierOrderOutput>> pendingOrders() {
         List<CashierOrderOutput> orders = PENDING_PAYMENT_STATUSES.stream()
-                .flatMap(status -> orderService.findByStatus(status).stream())
+                .flatMap(status -> orderService.findByStatus(status, null, true).stream())
                 .map(this::toCashierOutput)
                 .sorted((a, b) -> a.createdAt().compareTo(b.createdAt()))
                 .toList();
@@ -134,7 +134,7 @@ public class CashierController {
             HttpServletRequest httpReq) {
 
         String ip = IpResolverUtil.getClientIp(httpReq);
-        OrderOutput output = orderService.settleFromCashier(id, request.paymentMethod());
+        OrderOutput output = orderService.settleFromCashier(id, request.paymentMethod(), user.getUsername());
         auditService.logAction(user.getId(), "ORDER_SETTLE", "Order", null, ip);
         kdsEventPublisher.publishRemove(output.id(), output.status());
         return ResponseEntity.ok(toCashierOutput(output));

@@ -119,7 +119,7 @@ public class MenuService {
     }
 
     @Transactional
-    public OrderOutput placeOrder(UUID menuId, PlaceOrderInput request) {
+    public OrderOutput placeOrder(UUID menuId, PlaceOrderInput request, String createdBy) {
         Menu menu = menuRepository.findById(menuId);
 
         if (menu.isLocked()) {
@@ -144,7 +144,7 @@ public class MenuService {
         OrderType orderType = OrderType.valueOf(request.type().toUpperCase());
         Address resolvedAddress = addressResolver.resolve(request.address());
 
-        Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation(), request.tableNumber());
+        Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation(), request.tableNumber(), createdBy);
         items.forEach(order::addItem);
 
         Order saved = orderRepository.save(order);
@@ -197,6 +197,7 @@ public class MenuService {
                 order.getCancelReason(),
                 order.getCanceledBy(),
                 order.getCanceledAt(),
+                order.getCreatedBy(),
                 order.getTotal(),
                 order.getItems().stream().map(item ->
                         new OrderOutput.OrderItemOutput(

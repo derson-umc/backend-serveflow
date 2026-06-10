@@ -74,7 +74,7 @@ class OrderServiceTest {
             Order created = buildOrder(orderId, OrderStatus.PENDENTE, OrderType.BALCAO);
             when(orderRepository.save(any(Order.class))).thenReturn(created);
 
-            OrderOutput result = service.create(input);
+            OrderOutput result = service.create(input, "garcon");
 
             assertThat(result.id()).isEqualTo(orderId);
             assertThat(result.status()).isEqualTo("PENDENTE");
@@ -92,7 +92,7 @@ class OrderServiceTest {
             created.registerPayment("PIX");
             when(orderRepository.save(any(Order.class))).thenReturn(created);
 
-            OrderOutput result = service.create(input);
+            OrderOutput result = service.create(input, "garcon");
 
             assertThat(result.paymentMethod()).isEqualTo("PIX");
         }
@@ -107,7 +107,7 @@ class OrderServiceTest {
             when(orderRepository.save(any(Order.class))).thenReturn(created);
 
             // publishKdsSafely silencia exceções; a criação deve concluir normalmente mesmo sem KdsMapper
-            OrderOutput result = service.create(input);
+            OrderOutput result = service.create(input, "garcon");
 
             assertThat(result).isNotNull();
         }
@@ -123,7 +123,7 @@ class OrderServiceTest {
             Order order = buildOrder(orderId, OrderStatus.PENDENTE, OrderType.BALCAO);
             when(orderRepository.findByStatus(OrderStatus.PENDENTE)).thenReturn(List.of(order));
 
-            List<OrderOutput> result = service.findByStatus("PENDENTE");
+            List<OrderOutput> result = service.findByStatus("PENDENTE", "admin", true);
 
             assertThat(result).hasSize(1);
             assertThat(result.get(0).status()).isEqualTo("PENDENTE");
@@ -134,7 +134,7 @@ class OrderServiceTest {
         void findByStatus_retornaVazio_whenNenhumPedidoComStatus() {
             when(orderRepository.findByStatus(OrderStatus.EM_PREPARO)).thenReturn(List.of());
 
-            List<OrderOutput> result = service.findByStatus("EM_PREPARO");
+            List<OrderOutput> result = service.findByStatus("EM_PREPARO", "admin", true);
 
             assertThat(result).isEmpty();
         }
@@ -142,7 +142,7 @@ class OrderServiceTest {
         @Test
         @DisplayName("lança IllegalArgumentException para status inválido.")
         void findByStatus_lancaExcecao_paraStatusInvalido() {
-            assertThatThrownBy(() -> service.findByStatus("STATUS_INVALIDO"))
+            assertThatThrownBy(() -> service.findByStatus("STATUS_INVALIDO", "admin", true))
                     .isInstanceOf(IllegalArgumentException.class);
         }
     }
@@ -277,7 +277,7 @@ class OrderServiceTest {
             when(orderRepository.save(order)).thenReturn(saved);
             when(menuRepository.findByActiveOrderId(any())).thenReturn(Optional.empty());
 
-            OrderOutput result = service.settleFromCashier(orderId, "DINHEIRO");
+            OrderOutput result = service.settleFromCashier(orderId, "DINHEIRO", "caixa");
 
             assertThat(result.paymentMethod()).isEqualTo("DINHEIRO");
             verify(eventPublisher).publishEvent(any(OrderCompletedEvent.class));

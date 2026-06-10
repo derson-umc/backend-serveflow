@@ -35,7 +35,7 @@ public class CashierService {
 
     @Transactional
     public CashSessionOutput openSession(OpenSessionInput request, String username) {
-        if (sessionRepository.existsByStatus(CashSessionStatus.OPEN)) {
+        if (sessionRepository.existsByStatusAndOpenedBy(CashSessionStatus.OPEN, username)) {
             throw new OpenSessionAlreadyExistsException();
         }
         CashSession session = CashSession.open(request.initialBalance(), request.observation(), username);
@@ -53,9 +53,14 @@ public class CashierService {
         return toOutput(sessionRepository.save(entity));
     }
 
-    public Optional<CashSessionOutput> getCurrentSession() {
-        return sessionRepository.findFirstByStatusOrderByOpenedAtDesc(CashSessionStatus.OPEN)
+    public Optional<CashSessionOutput> getCurrentSession(String username) {
+        return sessionRepository.findFirstByStatusAndOpenedByOrderByOpenedAtDesc(CashSessionStatus.OPEN, username)
                 .map(this::toOutput);
+    }
+
+    public Optional<UUID> getCurrentSessionId(String username) {
+        return sessionRepository.findFirstByStatusAndOpenedByOrderByOpenedAtDesc(CashSessionStatus.OPEN, username)
+                .map(CashSessionEntity::getId);
     }
 
     public Optional<UUID> getCurrentSessionId() {
@@ -63,8 +68,8 @@ public class CashierService {
                 .map(CashSessionEntity::getId);
     }
 
-    public List<CashSessionOutput> listSessions() {
-        return sessionRepository.findAllByOrderByOpenedAtDesc().stream()
+    public List<CashSessionOutput> listSessions(String username) {
+        return sessionRepository.findAllByOpenedByOrderByOpenedAtDesc(username).stream()
                 .map(this::toOutput).toList();
     }
 

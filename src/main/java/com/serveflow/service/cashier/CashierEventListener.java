@@ -24,7 +24,9 @@ public class CashierEventListener {
     @Async
     @EventListener
     public void onOrderCompleted(OrderCompletedEvent event) {
-        UUID sessionId = cashierService.getCurrentSessionId().orElse(null);
+        UUID sessionId = event.settledBy() != null
+                ? cashierService.getCurrentSessionId(event.settledBy()).orElse(null)
+                : cashierService.getCurrentSessionId().orElse(null);
         if (sessionId == null) {
             log.info("OrderCompleted ignorado — caixa fechado. orderId={}", event.orderId());
             return;

@@ -52,7 +52,7 @@ class OrderTest {
         @Test
         @DisplayName("cria pedido BALCAO com status PENDENTE e comanda ABERTA")
         void create_balcao_defaultStatus() {
-            Order order = Order.create("João", null, OrderType.BALCAO, null, null);
+            Order order = Order.create("João", null, OrderType.BALCAO, null, null, null);
 
             assertThat(order.getCustomerName()).isEqualTo("João");
             assertThat(order.getStatus()).isEqualTo(OrderStatus.PENDENTE);
@@ -65,7 +65,7 @@ class OrderTest {
         @Test
         @DisplayName("strip em customerName e observation")
         void create_stripsCustomerNameAndObservation() {
-            Order order = Order.create("  Maria  ", null, OrderType.BALCAO, "  obs  ", null);
+            Order order = Order.create("  Maria  ", null, OrderType.BALCAO, "  obs  ", null, null);
             assertThat(order.getCustomerName()).isEqualTo("Maria");
             assertThat(order.getObservation()).isEqualTo("obs");
         }
@@ -73,7 +73,7 @@ class OrderTest {
         @Test
         @DisplayName("lança IllegalArgumentException quando nome está em branco")
         void create_throwsWhenNameBlank() {
-            assertThatThrownBy(() -> Order.create("   ", null, OrderType.BALCAO, null, null))
+            assertThatThrownBy(() -> Order.create("   ", null, OrderType.BALCAO, null, null, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Nome do cliente");
         }
@@ -81,7 +81,7 @@ class OrderTest {
         @Test
         @DisplayName("lança IllegalArgumentException quando DELIVERY sem endereço")
         void create_throwsWhenDeliveryWithoutAddress() {
-            assertThatThrownBy(() -> Order.create("X", null, OrderType.DELIVERY, null, null))
+            assertThatThrownBy(() -> Order.create("X", null, OrderType.DELIVERY, null, null, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Endereço");
         }
@@ -89,7 +89,7 @@ class OrderTest {
         @Test
         @DisplayName("lança IllegalArgumentException quando MESA sem tableNumber")
         void create_throwsWhenMesaWithoutTable() {
-            assertThatThrownBy(() -> Order.create("X", null, OrderType.MESA, null, null))
+            assertThatThrownBy(() -> Order.create("X", null, OrderType.MESA, null, null, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("mesa");
         }
@@ -97,7 +97,7 @@ class OrderTest {
         @Test
         @DisplayName("cria pedido MESA com tableNumber correto")
         void create_mesa_withTableNumber() {
-            Order order = Order.create("X", null, OrderType.MESA, null, "5");
+            Order order = Order.create("X", null, OrderType.MESA, null, "5", null);
             assertThat(order.getTableNumber()).isEqualTo("5");
         }
     }

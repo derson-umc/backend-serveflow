@@ -15,6 +15,12 @@ public interface SpringOrderRepository extends JpaRepository<OrderEntity, UUID> 
     @Query("SELECT DISTINCT o FROM OrderEntity o LEFT JOIN FETCH o.items WHERE o.status = :status")
     List<OrderEntity> findByStatus(@Param("status") OrderStatus status);
 
+    @Query("SELECT DISTINCT o FROM OrderEntity o LEFT JOIN FETCH o.items WHERE o.status = :status AND o.createdBy = :createdBy")
+    List<OrderEntity> findByStatusAndCreatedBy(@Param("status") OrderStatus status, @Param("createdBy") String createdBy);
+
+    @Query("SELECT DISTINCT o FROM OrderEntity o LEFT JOIN FETCH o.items WHERE o.createdBy = :createdBy")
+    List<OrderEntity> findAllByCreatedBy(@Param("createdBy") String createdBy);
+
     @Query(value = """
             SELECT COALESCE(SUM(oi.quantity * oi.unit_price), 0)
             FROM orders o

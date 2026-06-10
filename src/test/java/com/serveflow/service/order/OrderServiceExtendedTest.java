@@ -112,7 +112,7 @@ class OrderServiceExtendedTest {
             Order o2 = buildOrder(UUID.randomUUID(), OrderStatus.ENVIADO, OrderType.MESA);
             when(orderRepository.findAll()).thenReturn(List.of(o1, o2));
 
-            List<OrderOutput> result = service.findAll();
+            List<OrderOutput> result = service.findAll("admin", true);
 
             assertThat(result).hasSize(2);
         }
@@ -122,7 +122,7 @@ class OrderServiceExtendedTest {
         void findAll_returnsEmpty() {
             when(orderRepository.findAll()).thenReturn(List.of());
 
-            List<OrderOutput> result = service.findAll();
+            List<OrderOutput> result = service.findAll("admin", true);
 
             assertThat(result).isEmpty();
         }

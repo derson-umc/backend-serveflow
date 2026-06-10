@@ -17,6 +17,7 @@ public class Order {
     private final String tableNumber;
     private final List<OrderItem> items;
 
+    private final String createdBy;
     private OrderStatus status;
     private ComandaStatus comandaStatus;
     private String paymentMethod;
@@ -32,6 +33,7 @@ public class Order {
         this.status        = Objects.requireNonNull(builder.status,       "Status do pedido é obrigatório.");
         this.createdAt     = Objects.requireNonNull(builder.createdAt,    "Data de criação é obrigatória.");
         this.address       = builder.address;
+        this.createdBy     = builder.createdBy;
         this.comandaStatus = builder.comandaStatus != null ? builder.comandaStatus : ComandaStatus.ABERTA;
         this.observation   = builder.observation != null ? builder.observation.strip() : null;
         this.paymentMethod = builder.paymentMethod;
@@ -44,7 +46,8 @@ public class Order {
     }
 
     public static Order create(String customerName, Address address,
-                               OrderType type, String observation, String tableNumber) {
+                               OrderType type, String observation, String tableNumber,
+                               String createdBy) {
         validateCustomerName(customerName);
         validateDeliveryAddress(type, address);
         validateTableNumber(type, tableNumber);
@@ -59,6 +62,7 @@ public class Order {
                 .createdAt(LocalDateTime.now())
                 .observation(observation)
                 .tableNumber(tableNumber)
+                .createdBy(createdBy)
                 .items(new ArrayList<>())
                 .build();
     }
@@ -81,6 +85,7 @@ public class Order {
         private String cancelReason;
         private String canceledBy;
         private LocalDateTime canceledAt;
+        private String createdBy;
         private List<OrderItem> items;
         private Long version;
 
@@ -99,6 +104,7 @@ public class Order {
         public Builder cancelReason(String val)         { this.cancelReason  = val; return this; }
         public Builder canceledBy(String val)           { this.canceledBy    = val; return this; }
         public Builder canceledAt(LocalDateTime val)    { this.canceledAt    = val; return this; }
+        public Builder createdBy(String val)            { this.createdBy     = val; return this; }
         public Builder items(List<OrderItem> val)       { this.items         = val; return this; }
         public Builder version(Long val)                { this.version       = val; return this; }
 
@@ -232,6 +238,7 @@ public class Order {
     public String getCancelReason()         { return cancelReason; }
     public String getCanceledBy()           { return canceledBy; }
     public LocalDateTime getCanceledAt()    { return canceledAt; }
+    public String getCreatedBy()            { return createdBy; }
     public List<OrderItem> getItems()       { return List.copyOf(items); }
     public Long getVersion()                { return version; }
 

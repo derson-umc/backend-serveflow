@@ -74,7 +74,7 @@ class OrderControllerExtendedTest {
         return new OrderOutput(
                 id, "Cliente Teste", null, "BALCAO", status, "ABERTA",
                 LocalDateTime.of(2026, 1, 1, 12, 0), null, null, null, null, null, null,
-                new BigDecimal("29.90"), List.of());
+                null, new BigDecimal("29.90"), List.of());
     }
 
     private String json(Object obj) throws Exception {
@@ -90,7 +90,7 @@ class OrderControllerExtendedTest {
         void create_returns201() throws Exception {
             UUID id = UUID.randomUUID();
             OrderOutput out = orderOutput(id, "PENDENTE");
-            when(orderService.create(any(OrderInput.class))).thenReturn(out);
+            when(orderService.create(any(OrderInput.class), any())).thenReturn(out);
 
             OrderItemInput item = new OrderItemInput(UUID.randomUUID(), "Produto", 1,
                     new BigDecimal("15.00"), null, "LANCHE", List.of());
@@ -102,7 +102,7 @@ class OrderControllerExtendedTest {
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.id").value(id.toString()));
 
-            verify(orderService).create(any(OrderInput.class));
+            verify(orderService).create(any(OrderInput.class), any());
         }
     }
 

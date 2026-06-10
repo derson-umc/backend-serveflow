@@ -33,15 +33,16 @@ public class OrderController {
             @AuthenticationPrincipal User user,
             HttpServletRequest httpReq) {
 
-        OrderOutput output = orderService.create(request);
+        OrderOutput output = orderService.create(request, user.getUsername());
         auditService.logAction(user.getId(), "ORDER_CREATE", "Order",
                 null, IpResolverUtil.getClientIp(httpReq));
         return ResponseEntity.status(HttpStatus.CREATED).body(output);
     }
 
     @GetMapping
-    public ResponseEntity<List<OrderOutput>> findAll() {
-        return ResponseEntity.ok(orderService.findAll());
+    public ResponseEntity<List<OrderOutput>> findAll(@AuthenticationPrincipal User user) {
+        boolean isPrivileged = user.getRole().isAdmin() || user.getRole().isGerente();
+        return ResponseEntity.ok(orderService.findAll(user.getUsername(), isPrivileged));
     }
 
     @GetMapping("/{id}")
@@ -50,8 +51,11 @@ public class OrderController {
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<OrderOutput>> findByStatus(@PathVariable String status) {
-        return ResponseEntity.ok(orderService.findByStatus(status));
+    public ResponseEntity<List<OrderOutput>> findByStatus(
+            @PathVariable String status,
+            @AuthenticationPrincipal User user) {
+        boolean isPrivileged = user.getRole().isAdmin() || user.getRole().isGerente();
+        return ResponseEntity.ok(orderService.findByStatus(status, user.getUsername(), isPrivileged));
     }
 
     @PatchMapping("/{id}/request-payment")
