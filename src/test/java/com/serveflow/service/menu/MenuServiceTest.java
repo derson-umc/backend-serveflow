@@ -307,7 +307,7 @@ class MenuServiceTest {
                     "Cliente", "BALCAO", null, null, null,
                     List.of(new MenuItemSelectionInput(menuItemId, 1, null)));
 
-            OrderOutput result = service.placeOrder(menuId, input);
+            OrderOutput result = service.placeOrder(menuId, input, "garcon");
 
             assertThat(result.id()).isEqualTo(orderId);
             verify(orderRepository).save(any(Order.class));
@@ -325,7 +325,7 @@ class MenuServiceTest {
                     "Cliente", "BALCAO", null, null, null,
                     List.of(new MenuItemSelectionInput(menuItemId, 1, null)));
 
-            assertThatThrownBy(() -> service.placeOrder(menuId, input))
+            assertThatThrownBy(() -> service.placeOrder(menuId, input, "garcon"))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("travado");
         }
@@ -343,7 +343,7 @@ class MenuServiceTest {
                     "Cliente", "BALCAO", null, null, null,
                     List.of(new MenuItemSelectionInput(menuItemId, 1, null)));
 
-            assertThatThrownBy(() -> service.placeOrder(menuId, input))
+            assertThatThrownBy(() -> service.placeOrder(menuId, input, "garcon"))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("disponível");
         }

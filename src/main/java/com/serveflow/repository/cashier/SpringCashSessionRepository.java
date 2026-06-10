@@ -11,7 +11,13 @@ public interface SpringCashSessionRepository extends JpaRepository<CashSessionEn
 
     Optional<CashSessionEntity> findFirstByStatusOrderByOpenedAtDesc(CashSessionStatus status);
 
+    Optional<CashSessionEntity> findFirstByStatusAndOpenedByOrderByOpenedAtDesc(CashSessionStatus status, String openedBy);
+
     boolean existsByStatus(CashSessionStatus status);
 
+    boolean existsByStatusAndOpenedBy(CashSessionStatus status, String openedBy);
+
     List<CashSessionEntity> findAllByOrderByOpenedAtDesc();
+
+    List<CashSessionEntity> findAllByOpenedByOrderByOpenedAtDesc(String openedBy);
 }

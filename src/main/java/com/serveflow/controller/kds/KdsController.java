@@ -8,7 +8,9 @@ import com.serveflow.service.order.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.serveflow.model.user.User;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
@@ -38,10 +40,10 @@ public class KdsController {
 
     @Operation(summary = "Lista pedidos ativos para a cozinha")
     @GetMapping("/orders")
-    public ResponseEntity<List<KdsOrderOutput>> openOrders() {
-
+    public ResponseEntity<List<KdsOrderOutput>> openOrders(@AuthenticationPrincipal User user) {
+        boolean isPrivileged = user.getRole().isAdmin() || user.getRole().isGerente();
         var orders = ACTIVE_STATUSES.stream()
-                .flatMap(status -> orderService.findByStatus(status.name()).stream())
+                .flatMap(status -> orderService.findByStatus(status.name(), user.getUsername(), isPrivileged).stream())
                 .map(mapper::toOutput)
                 .sorted(Comparator.comparing(KdsOrderOutput::createdAt))
                 .toList();

@@ -56,6 +56,14 @@ public class OrderRepository {
         return springRepository.findByStatus(status).stream().map(this::toDomain).toList();
     }
 
+    public List<Order> findByStatus(OrderStatus status, String createdBy) {
+        return springRepository.findByStatusAndCreatedBy(status, createdBy).stream().map(this::toDomain).toList();
+    }
+
+    public List<Order> findAll(String createdBy) {
+        return springRepository.findAllByCreatedBy(createdBy).stream().map(this::toDomain).toList();
+    }
+
     private Order toDomain(OrderEntity e) {
         return Order.builder()
                 .id(e.getIdOrder())
@@ -71,6 +79,7 @@ public class OrderRepository {
                 .cancelReason(e.getCancelReason())
                 .canceledBy(e.getCanceledBy())
                 .canceledAt(e.getCanceledAt())
+                .createdBy(e.getCreatedBy())
                 .items(e.getItems().stream().map(this::toItemDomain).toList())
                 .version(e.getVersion())
                 .build();
@@ -125,6 +134,7 @@ public class OrderRepository {
         entity.setCancelReason(order.getCancelReason());
         entity.setCanceledBy(order.getCanceledBy());
         entity.setCanceledAt(order.getCanceledAt());
+        entity.setCreatedBy(order.getCreatedBy());
 
         if (order.getAddress() != null) {
             entity.setAddress(toAddressEntity(order.getAddress()));

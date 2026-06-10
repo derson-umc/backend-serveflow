@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -75,7 +76,7 @@ class OrderControllerTest {
         return new OrderOutput(
                 id, "Cliente Teste", null, "BALCAO", status, "ABERTA",
                 LocalDateTime.of(2026, 1, 1, 12, 0), null, null, null, null, null, null,
-                new BigDecimal("29.90"), List.of()
+                null, new BigDecimal("29.90"), List.of()
         );
     }
 
@@ -84,19 +85,19 @@ class OrderControllerTest {
     void findAll_returns200WithList() throws Exception {
         UUID id1 = UUID.randomUUID();
         UUID id2 = UUID.randomUUID();
-        when(orderService.findAll()).thenReturn(List.of(orderOutput(id1, "CREATED"), orderOutput(id2, "CONFIRMED")));
+        when(orderService.findAll(any(), anyBoolean())).thenReturn(List.of(orderOutput(id1, "CREATED"), orderOutput(id2, "CONFIRMED")));
 
         mvc.perform(get("/orders"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
 
-        verify(orderService).findAll();
+        verify(orderService).findAll(any(), anyBoolean());
     }
 
     @Test
     @DisplayName("GET /orders: retorna 200 com lista vazia quando não há pedidos")
     void findAll_returns200WithEmptyList() throws Exception {
-        when(orderService.findAll()).thenReturn(List.of());
+        when(orderService.findAll(any(), anyBoolean())).thenReturn(List.of());
 
         mvc.perform(get("/orders"))
                 .andExpect(status().isOk())
@@ -132,14 +133,14 @@ class OrderControllerTest {
     @DisplayName("GET /orders/status/{status}: retorna 200 com pedidos filtrados")
     void findByStatus_returns200WithFilteredList() throws Exception {
         UUID id = UUID.randomUUID();
-        when(orderService.findByStatus("CREATED")).thenReturn(List.of(orderOutput(id, "CREATED")));
+        when(orderService.findByStatus(eq("CREATED"), any(), anyBoolean())).thenReturn(List.of(orderOutput(id, "CREATED")));
 
         mvc.perform(get("/orders/status/{status}", "CREATED"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].status").value("CREATED"));
 
-        verify(orderService).findByStatus("CREATED");
+        verify(orderService).findByStatus(eq("CREATED"), any(), anyBoolean());
     }
 
     @Test

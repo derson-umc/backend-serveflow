@@ -33,7 +33,7 @@ class CashierEventListenerTest {
 
     private OrderCompletedEvent event(UUID orderId, String paymentMethod, String orderType) {
         return new OrderCompletedEvent(orderId, "Cliente Teste", orderType, paymentMethod,
-                new BigDecimal("50.00"));
+                new BigDecimal("50.00"), null);
     }
 
     private CashMovementOutput movementOutput(UUID sessionId) {

@@ -8,5 +8,6 @@ public record OrderCompletedEvent(
         String  customerName,
         String  orderType,
         String  paymentMethod,
-        BigDecimal total
+        BigDecimal total,
+        String  settledBy
 ) {}

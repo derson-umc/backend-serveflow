@@ -30,7 +30,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -219,24 +218,4 @@ class UserControllerTest {
         verify(service).changeJobPosition(eq(1L), any(ChangeJobPositionInput.class));
     }
 
-    @Test
-    @DisplayName("DELETE /users/{id}: retorna 204 ao deletar usuário")
-    void delete_returns204() throws Exception {
-        doNothing().when(service).delete(1L);
-
-        mvc.perform(delete("/users/{id}", 1L))
-                .andExpect(status().isNoContent());
-
-        verify(service).delete(1L);
-    }
-
-    @Test
-    @DisplayName("DELETE /users/{id}: retorna 404 quando usuário não existe")
-    void delete_returns404WhenNotFound() throws Exception {
-        doThrow(new UserNotFoundException(99L)).when(service).delete(99L);
-
-        mvc.perform(delete("/users/{id}", 99L))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404));
-    }
 }

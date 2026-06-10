@@ -7,10 +7,12 @@ import com.serveflow.dto.menu.request.UpdateAvailabilityInput;
 import com.serveflow.dto.menu.response.ActiveMenuOutput;
 import com.serveflow.dto.menu.response.MenuOutput;
 import com.serveflow.dto.order.response.OrderOutput;
+import com.serveflow.model.user.User;
 import com.serveflow.service.menu.MenuService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,8 +51,9 @@ public class MenuController {
     @PostMapping("/{menuId}/orders")
     public ResponseEntity<OrderOutput> placeOrder(
             @PathVariable UUID menuId,
-            @Valid @RequestBody PlaceOrderInput request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(menuService.placeOrder(menuId, request));
+            @Valid @RequestBody PlaceOrderInput request,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(menuService.placeOrder(menuId, request, user.getUsername()));
     }
 
     @PatchMapping("/{id}/unlock")
