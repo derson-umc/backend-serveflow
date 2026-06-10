@@ -107,7 +107,7 @@ public class CashierController {
     @GetMapping("/orders/pending")
     public ResponseEntity<List<CashierOrderOutput>> pendingOrders() {
         List<CashierOrderOutput> orders = PENDING_PAYMENT_STATUSES.stream()
-                .flatMap(status -> orderService.findByStatus(status).stream())
+                .flatMap(status -> orderService.findByStatus(status, null, true).stream())
                 .map(this::toCashierOutput)
                 .sorted((a, b) -> a.createdAt().compareTo(b.createdAt()))
                 .toList();

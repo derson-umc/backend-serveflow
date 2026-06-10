@@ -54,14 +54,14 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderOutput create(OrderInput request) {
+    public OrderOutput create(OrderInput request, String createdBy) {
         Address resolvedAddress = addressResolver.resolve(request.address());
         OrderType orderType = OrderType.valueOf(request.type().toUpperCase());
 
         List<OrderItem> items = toItems(request.items());
         stockService.validateRecipesForOrder(items);
 
-        Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation(), request.tableNumber());
+        Order order = Order.create(request.customerName(), resolvedAddress, orderType, request.observation(), request.tableNumber(), createdBy);
         items.forEach(order::addItem);
 
         if (request.paymentMethod() != null && !request.paymentMethod().isBlank()) {
@@ -80,13 +80,19 @@ public class OrderService {
         return toOutput(orderRepository.findById(id));
     }
 
-    public List<OrderOutput> findAll() {
-        return orderRepository.findAll().stream().map(this::toOutput).toList();
+    public List<OrderOutput> findAll(String username, boolean isPrivileged) {
+        List<Order> orders = isPrivileged
+                ? orderRepository.findAll()
+                : orderRepository.findAll(username);
+        return orders.stream().map(this::toOutput).toList();
     }
 
-    public List<OrderOutput> findByStatus(String status) {
+    public List<OrderOutput> findByStatus(String status, String username, boolean isPrivileged) {
         OrderStatus orderStatus = OrderStatus.valueOf(status.toUpperCase());
-        return orderRepository.findByStatus(orderStatus).stream().map(this::toOutput).toList();
+        List<Order> orders = isPrivileged
+                ? orderRepository.findByStatus(orderStatus)
+                : orderRepository.findByStatus(orderStatus, username);
+        return orders.stream().map(this::toOutput).toList();
     }
 
     @Transactional
@@ -317,6 +323,7 @@ public class OrderService {
                 order.getCancelReason(),
                 order.getCanceledBy(),
                 order.getCanceledAt(),
+                order.getCreatedBy(),
                 order.getTotal(),
                 order.getItems().stream().map(this::toItemOutput).toList()
         );

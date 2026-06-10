@@ -31,6 +31,7 @@ class KdsMapperTest {
                 null,
                 null,
                 null,
+                null,
                 new BigDecimal("50.00"),
                 items
         );

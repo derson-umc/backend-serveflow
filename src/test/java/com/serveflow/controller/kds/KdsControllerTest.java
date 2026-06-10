@@ -7,10 +7,13 @@ import com.serveflow.dto.kds.response.KdsOrderOutput;
 import com.serveflow.dto.order.response.OrderOutput;
 import com.serveflow.exception.handler.GlobalExceptionHandler;
 import com.serveflow.exception.order.OrderNotFoundException;
+import com.serveflow.model.user.User;
+import com.serveflow.model.user.UserRole;
 import com.serveflow.service.audit.AuditService;
 import com.serveflow.service.kds.KdsEventPublisher;
 import com.serveflow.service.kds.KdsMapper;
 import com.serveflow.service.order.OrderService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,6 +22,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -28,6 +34,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -52,16 +59,25 @@ class KdsControllerTest {
 
     @BeforeEach
     void setUp() {
+        User mockUser = new User(1L, "admin", "admin@test.com", "pass", UserRole.ADMIN, "Administrador");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(mockUser, null, mockUser.getAuthorities()));
         mvc = MockMvcBuilders
                 .standaloneSetup(controller)
+                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .setControllerAdvice(new GlobalExceptionHandler(auditService))
                 .build();
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     private OrderOutput orderOutput(UUID id, String status) {
         return new OrderOutput(id, "Cliente", null, "BALCAO", status, "ABERTA",
                 LocalDateTime.now(), null, null, null, null, null, null,
-                new BigDecimal("20.00"), List.of());
+                null, new BigDecimal("20.00"), List.of());
     }
 
     private KdsOrderOutput kdsOutput(UUID id, String status) {
@@ -80,7 +96,7 @@ class KdsControllerTest {
             OrderOutput out = orderOutput(id, "PENDENTE");
             KdsOrderOutput kdsOut = kdsOutput(id, "PENDENTE");
 
-            when(orderService.findByStatus(any())).thenReturn(List.of(out));
+            when(orderService.findByStatus(any(), any(), anyBoolean())).thenReturn(List.of(out));
             when(mapper.toOutput(any(OrderOutput.class))).thenReturn(kdsOut);
 
             mvc.perform(get("/kds/orders"))
@@ -88,13 +104,13 @@ class KdsControllerTest {
                     .andExpect(jsonPath("$").isArray());
 
             // 4 active statuses → findByStatus called 4 times
-            verify(orderService, times(4)).findByStatus(any());
+            verify(orderService, times(4)).findByStatus(any(), any(), anyBoolean());
         }
 
         @Test
         @DisplayName("retorna 200 com lista vazia quando não há pedidos ativos")
         void openOrders_returnsEmpty() throws Exception {
-            when(orderService.findByStatus(any())).thenReturn(List.of());
+            when(orderService.findByStatus(any(), any(), anyBoolean())).thenReturn(List.of());
 
             mvc.perform(get("/kds/orders"))
                     .andExpect(status().isOk())

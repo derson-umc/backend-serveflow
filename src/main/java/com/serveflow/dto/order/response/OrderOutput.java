@@ -21,6 +21,7 @@ public record OrderOutput(
         String cancelReason,
         String canceledBy,
         LocalDateTime canceledAt,
+        String createdBy,
         BigDecimal totalValue,
         List<OrderItemOutput> items
 ) {

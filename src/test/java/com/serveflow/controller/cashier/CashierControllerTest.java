@@ -98,7 +98,7 @@ class CashierControllerTest {
     private OrderOutput orderOutput(UUID id, String status) {
         return new OrderOutput(id, "Cliente Teste", null, "BALCAO", status,
                 null, LocalDateTime.of(2026, 1, 1, 12, 0), null, null, null, null, null, null,
-                new BigDecimal("29.90"), List.of());
+                null, new BigDecimal("29.90"), List.of());
     }
 
     private String json(Object obj) throws Exception {
@@ -245,7 +245,7 @@ class CashierControllerTest {
     @DisplayName("GET /cashier/orders/pending: retorna 200 com pedidos pendentes de pagamento")
     void pendingOrders_returns200WithList() throws Exception {
         UUID id = UUID.randomUUID();
-        when(orderService.findByStatus("AGUARDANDO_PAGAMENTO")).thenReturn(List.of(orderOutput(id, "AGUARDANDO_PAGAMENTO")));
+        when(orderService.findByStatus(eq("AGUARDANDO_PAGAMENTO"), any(), anyBoolean())).thenReturn(List.of(orderOutput(id, "AGUARDANDO_PAGAMENTO")));
 
         mvc.perform(get("/cashier/orders/pending"))
                 .andExpect(status().isOk())
