@@ -88,7 +88,7 @@ public class MenuService {
         if (!time.isBefore(LocalTime.of(12, 0)) && time.isBefore(LocalTime.of(18, 0))) {
             return Optional.of(MenuShift.AFTERNOON);
         }
-        if (!time.isBefore(LocalTime.of(18, 0)) && time.isBefore(LocalTime.of(24, 0))) {
+        if (!time.isBefore(LocalTime.of(18, 0))) {
             return Optional.of(MenuShift.EVENING);
         }
         return Optional.empty();
