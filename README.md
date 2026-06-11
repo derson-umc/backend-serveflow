@@ -49,7 +49,7 @@ Crie o arquivo `.env` na raiz do projeto com base no `.env.example`:
 |---|---|---|
 | `APP_BASE_URL` | URL base da API (usado para montar URLs de imagens) | `http://localhost:8080/api` |
 | `JWT_SECRET` | Chave secreta para assinatura dos tokens (mínimo 256 bits) | — |
-| `JWT_EXPIRATION` | Expiração do access token em ms | `86400000` |
+| `JWT_EXPIRATION` | Expiração do access token em ms | `28800000` (8h) |
 | `ROOT_USERNAME` | Username do administrador inicial | `root` |
 | `ROOT_PASSWORD` | Senha do administrador inicial | — |
 | `CORS_ALLOWED_ORIGINS` | Origens permitidas pelo CORS | `http://localhost:5173` |
@@ -100,14 +100,91 @@ Swagger UI: **http://localhost:8080/swagger-ui.html**
 
 ```
 src/main/java/com/serveflow/
-├── config/          # Segurança, CORS, JWT, WebSocket
-├── controller/      # Endpoints por módulo
-├── service/         # Regras de negócio
-├── repository/      # Acesso a dados (JPA + queries nativas)
-├── model/           # Entidades de domínio
-├── dto/             # Entrada e saída de dados
-├── exception/       # Exceções e handlers globais
-└── util/            # Utilitários compartilhados
+├── config/                        # Segurança, CORS, JWT, WebSocket, Swagger
+│
+├── controller/                    # Endpoints REST por módulo
+│   ├── cashier/
+│   ├── dashboard/
+│   ├── financial/
+│   ├── kds/
+│   ├── menu/
+│   ├── order/
+│   ├── product/
+│   ├── stock/
+│   ├── upload/
+│   └── user/
+│
+├── service/                       # Regras de negócio por módulo
+│   ├── audit/log/
+│   ├── auth/
+│   ├── cashier/
+│   ├── dashboard/
+│   ├── financial/
+│   ├── kds/
+│   ├── menu/
+│   ├── order/
+│   ├── product/
+│   ├── stock/
+│   ├── upload/
+│   └── user/
+│
+├── repository/                    # Acesso a dados (JPA + queries nativas)
+│   ├── audit/log/
+│   ├── auth/
+│   ├── cashier/
+│   ├── dashboard/
+│   ├── financial/
+│   ├── menu/
+│   ├── order/
+│   ├── product/
+│   ├── stock/
+│   │   ├── productrecipe/
+│   │   ├── recipeingredient/
+│   │   ├── stockalert/
+│   │   ├── stockitem/
+│   │   └── stockmovement/
+│   └── user/
+│
+├── model/                         # Entidades de domínio (JPA)
+│   ├── address/
+│   ├── auth/
+│   ├── cashier/
+│   ├── financial/
+│   ├── menu/
+│   ├── order/
+│   ├── product/
+│   ├── stock/
+│   └── user/
+│
+├── dto/                           # Objetos de entrada e saída por módulo
+│   ├── cashier/{request,response}/
+│   ├── financial/{request,response}/
+│   ├── kds/response/
+│   ├── menu/{request,response}/
+│   ├── order/{request,response}/
+│   ├── product/{request,response}/
+│   ├── stock/{request,response}/
+│   └── user/{request,response}/
+│
+├── events/                        # Eventos de domínio (ex: OrderStatusEvent)
+│
+├── query/                         # Queries de leitura otimizadas
+│   └── dashboard/
+│
+├── integration/                   # Integrações externas (ViaCEP, e-mail, Cloudinary)
+│
+├── exception/                     # Exceções de domínio e handler global
+│   ├── auth/
+│   ├── cashier/
+│   ├── financial/
+│   ├── handler/
+│   ├── menu/
+│   ├── order/
+│   ├── product/
+│   ├── stock/
+│   └── user/
+│
+└── util/                          # Utilitários compartilhados
 ```
 
 ---
