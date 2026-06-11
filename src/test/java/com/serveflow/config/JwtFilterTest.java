@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -147,6 +147,75 @@ class JwtFilterTest {
 
             verify(filterChain).doFilter(request, response);
             assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("shouldLog — não registra auditoria em rotas excluídas")
+    class ShouldLog {
+
+        @Test
+        @DisplayName("não chama auditService para URIs /actuator/**")
+        void actuatorUri_skipsAudit() throws Exception {
+            User user = mockUser();
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/actuator/health");
+            request.addHeader("Authorization", "Bearer valid-token");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            when(jwtService.extractUsername("valid-token")).thenReturn("admin");
+            when(userRepository.findByUsername("admin")).thenReturn(Optional.of(user));
+
+            filter.doFilterInternal(request, response, filterChain);
+
+            verify(auditService, never()).logAccess(any(), any(), any(), any(), anyInt());
+        }
+
+        @Test
+        @DisplayName("não chama auditService para URIs /swagger-ui/**")
+        void swaggerUri_skipsAudit() throws Exception {
+            User user = mockUser();
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", "/swagger-ui/index.html");
+            request.addHeader("Authorization", "Bearer valid-token");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            when(jwtService.extractUsername("valid-token")).thenReturn("admin");
+            when(userRepository.findByUsername("admin")).thenReturn(Optional.of(user));
+
+            filter.doFilterInternal(request, response, filterChain);
+
+            verify(auditService, never()).logAccess(any(), any(), any(), any(), anyInt());
+        }
+
+        @Test
+        @DisplayName("não chama auditService para método OPTIONS")
+        void optionsMethod_skipsAudit() throws Exception {
+            User user = mockUser();
+            MockHttpServletRequest request = new MockHttpServletRequest("OPTIONS", "/orders");
+            request.addHeader("Authorization", "Bearer valid-token");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            when(jwtService.extractUsername("valid-token")).thenReturn("admin");
+            when(userRepository.findByUsername("admin")).thenReturn(Optional.of(user));
+
+            filter.doFilterInternal(request, response, filterChain);
+
+            verify(auditService, never()).logAccess(any(), any(), any(), any(), anyInt());
+        }
+
+        @Test
+        @DisplayName("chama auditService para URIs de negócio autenticadas")
+        void businessUri_callsAudit() throws Exception {
+            User user = mockUser();
+            MockHttpServletRequest request = new MockHttpServletRequest("POST", "/orders");
+            request.addHeader("Authorization", "Bearer valid-token");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            when(jwtService.extractUsername("valid-token")).thenReturn("admin");
+            when(userRepository.findByUsername("admin")).thenReturn(Optional.of(user));
+
+            filter.doFilterInternal(request, response, filterChain);
+
+            verify(auditService).logAccess(eq(1L), any(), eq("/orders"), eq("POST"), anyInt());
         }
     }
 
