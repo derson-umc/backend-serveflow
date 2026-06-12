@@ -51,12 +51,12 @@ public interface SpringOrderRepository extends JpaRepository<OrderEntity, UUID> 
                    COALESCE(SUM(oi.quantity * oi.unit_price), 0) AS total
             FROM orders o
             INNER JOIN order_items oi ON oi.id_order = o.id_order
-            WHERE o.created_at >= CURRENT_DATE - INTERVAL '6 days'
+            WHERE DATE(o.created_at) >= :startDate
               AND o.status <> 'CANCELADO'
             GROUP BY DATE(o.created_at)
             ORDER BY sale_date ASC
             """, nativeQuery = true)
-    List<Object[]> salesByDay();
+    List<Object[]> salesByDay(@Param("startDate") LocalDate startDate);
 
     @Query(value = """
             SELECT oi.product_name          AS name,
@@ -74,9 +74,11 @@ public interface SpringOrderRepository extends JpaRepository<OrderEntity, UUID> 
     @Query(value = """
             SELECT oi.product_name                                        AS name,
                    SUM(oi.quantity)                                       AS quantity,
-                   COALESCE(SUM(oi.quantity * oi.unit_price), 0)         AS revenue
+                   COALESCE(SUM(oi.quantity * oi.unit_price), 0)         AS revenue,
+                   MAX(p.image_url)                                       AS image_url
             FROM order_items oi
-            INNER JOIN orders o ON o.id_order = oi.id_order
+            INNER JOIN orders o        ON o.id_order    = oi.id_order
+            LEFT  JOIN products p      ON p.id_product  = oi.product_id
             WHERE DATE(o.created_at) >= :startDate
               AND o.status <> 'CANCELADO'
             GROUP BY oi.product_name
@@ -109,6 +111,39 @@ public interface SpringOrderRepository extends JpaRepository<OrderEntity, UUID> 
               AND o.status <> 'CANCELADO'
             """, nativeQuery = true)
     long customersYesterday();
+
+    @Query(value = """
+            SELECT COALESCE(SUM(oi.quantity * oi.unit_price), 0)
+            FROM orders o
+            INNER JOIN order_items oi ON oi.id_order = o.id_order
+            WHERE DATE(o.created_at) = CURRENT_DATE - INTERVAL '7 days'
+              AND o.status <> 'CANCELADO'
+            """, nativeQuery = true)
+    BigDecimal revenueSameDayLastWeek();
+
+    @Query(value = """
+            SELECT COUNT(o.id_order)
+            FROM orders o
+            WHERE DATE(o.created_at) = CURRENT_DATE - INTERVAL '7 days'
+              AND o.status <> 'CANCELADO'
+            """, nativeQuery = true)
+    long ordersSameDayLastWeek();
+
+    @Query(value = """
+            SELECT COUNT(DISTINCT o.customer_name)
+            FROM orders o
+            WHERE DATE(o.created_at) = CURRENT_DATE - INTERVAL '7 days'
+              AND o.status <> 'CANCELADO'
+            """, nativeQuery = true)
+    long customersSameDayLastWeek();
+
+    @Query(value = """
+            SELECT COUNT(o.id_order)
+            FROM orders o
+            WHERE DATE(o.created_at) = CURRENT_DATE
+              AND o.status NOT IN ('ENTREGUE', 'CANCELADO')
+            """, nativeQuery = true)
+    long openOrdersToday();
 
     @Query(value = """
             SELECT

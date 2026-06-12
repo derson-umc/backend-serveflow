@@ -59,7 +59,9 @@ class DashboardControllerTest {
         void metrics_returns200() throws Exception {
             GetDashboardMetricsUseCase.Output output = new GetDashboardMetricsUseCase.Output(
                     new BigDecimal("500.00"), 10, 8, new BigDecimal("62.50"),
-                    new BigDecimal("300.00"), 6, 5, new BigDecimal("60.00")
+                    new BigDecimal("300.00"), 6, 5, new BigDecimal("60.00"),
+                    new BigDecimal("400.00"), 8, 6, new BigDecimal("66.66"),
+                    2
             );
             when(metricsUseCase.execute()).thenReturn(output);
 
@@ -83,7 +85,7 @@ class DashboardControllerTest {
             Object[] row = { today, "200.00" };
             List<Object[]> rows = new java.util.ArrayList<>();
             rows.add(row);
-            when(readRepository.salesByDay()).thenReturn(rows);
+            when(readRepository.salesByDay(any(LocalDate.class))).thenReturn(rows);
 
             mvc.perform(get("/dashboard/sales-by-day"))
                     .andExpect(status().isOk())
@@ -93,7 +95,7 @@ class DashboardControllerTest {
         @Test
         @DisplayName("retorna lista vazia quando não há dados")
         void salesByDay_emptyList_returns200() throws Exception {
-            when(readRepository.salesByDay()).thenReturn(List.of());
+            when(readRepository.salesByDay(any(LocalDate.class))).thenReturn(List.of());
 
             mvc.perform(get("/dashboard/sales-by-day"))
                     .andExpect(status().isOk())
@@ -109,7 +111,7 @@ class DashboardControllerTest {
         @Test
         @DisplayName("retorna top produtos com 200 e parâmetro padrão de 30 dias")
         void topProducts_returnsDefaultPeriod() throws Exception {
-            Object[] row = { "X-Burguer", 15, "750.00" };
+            Object[] row = { "X-Burguer", 15, "750.00", null };
             List<Object[]> rows = new java.util.ArrayList<>();
             rows.add(row);
             when(readRepository.topProductsByPeriod(any(LocalDate.class)))

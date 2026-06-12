@@ -32,9 +32,21 @@ public class GetDashboardMetricsUseCase {
                 ? revenueYesterday.divide(BigDecimal.valueOf(ordersYesterday), 2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
+        BigDecimal revenueSameDayLastWeek   = repo.revenueSameDayLastWeek();
+        long       ordersSameDayLastWeek    = repo.ordersSameDayLastWeek();
+        long       customersSameDayLastWeek = repo.customersSameDayLastWeek();
+
+        BigDecimal ticketMedioSameDayLastWeek = ordersSameDayLastWeek > 0
+                ? revenueSameDayLastWeek.divide(BigDecimal.valueOf(ordersSameDayLastWeek), 2, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
+
+        long openOrdersToday = repo.openOrdersToday();
+
         return new Output(
                 revenueToday,     (int) ordersToday,    (int) customersToday,    ticketMedio,
-                revenueYesterday, (int) ordersYesterday, (int) customersYesterday, ticketMedioYesterday
+                revenueYesterday, (int) ordersYesterday, (int) customersYesterday, ticketMedioYesterday,
+                revenueSameDayLastWeek, (int) ordersSameDayLastWeek, (int) customersSameDayLastWeek, ticketMedioSameDayLastWeek,
+                (int) openOrdersToday
         );
     }
 
@@ -46,6 +58,11 @@ public class GetDashboardMetricsUseCase {
             BigDecimal revenueYesterday,
             int        ordersYesterday,
             int        customersYesterday,
-            BigDecimal ticketMedioYesterday
+            BigDecimal ticketMedioYesterday,
+            BigDecimal revenueSameDayLastWeek,
+            int        ordersSameDayLastWeek,
+            int        customersSameDayLastWeek,
+            BigDecimal ticketMedioSameDayLastWeek,
+            int        openOrdersToday
     ) {}
 }
