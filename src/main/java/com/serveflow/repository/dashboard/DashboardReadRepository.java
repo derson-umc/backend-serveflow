@@ -13,8 +13,13 @@ public interface DashboardReadRepository {
     long ordersYesterday();
     long customersToday();
     long customersYesterday();
-    List<Object[]> salesByDay();
+    List<Object[]> salesByDay(LocalDate startDate);
     List<Object[]> topProductsByPeriod(LocalDate startDate);
     List<Object[]> cashierReportByPayment(LocalDate startDate, LocalDate endDate);
+
+    BigDecimal revenueSameDayLastWeek();
+    long ordersSameDayLastWeek();
+    long customersSameDayLastWeek();
+    long openOrdersToday();
 
 }

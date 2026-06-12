@@ -47,8 +47,8 @@ public class JpaDashboardReadRepository implements DashboardReadRepository {
     }
 
     @Override
-    public List<Object[]> salesByDay() {
-        return orderRepo.salesByDay();
+    public List<Object[]> salesByDay(LocalDate startDate) {
+        return orderRepo.salesByDay(startDate);
     }
 
     @Override
@@ -59,6 +59,26 @@ public class JpaDashboardReadRepository implements DashboardReadRepository {
     @Override
     public List<Object[]> cashierReportByPayment(LocalDate startDate, LocalDate endDate) {
         return orderRepo.cashierReportByPayment(startDate, endDate);
+    }
+
+    @Override
+    public BigDecimal revenueSameDayLastWeek() {
+        return safe(orderRepo.revenueSameDayLastWeek());
+    }
+
+    @Override
+    public long ordersSameDayLastWeek() {
+        return orderRepo.ordersSameDayLastWeek();
+    }
+
+    @Override
+    public long customersSameDayLastWeek() {
+        return orderRepo.customersSameDayLastWeek();
+    }
+
+    @Override
+    public long openOrdersToday() {
+        return orderRepo.openOrdersToday();
     }
 
     private static BigDecimal safe(BigDecimal v) {
