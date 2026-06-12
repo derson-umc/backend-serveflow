@@ -28,20 +28,24 @@ public class DashboardController {
         this.readRepository = readRepository;
     }
 
-    @Operation(summary = "KPIs principais do dia com comparação vs ontem")
+    @Operation(summary = "KPIs do dia com comparação vs ontem e vs mesmo dia semana passada")
     @GetMapping("/metrics")
     public ResponseEntity<DashboardMetricsOutput> metrics() {
         GetDashboardMetricsUseCase.Output out = metricsUseCase.execute();
         return ResponseEntity.ok(new DashboardMetricsOutput(
                 out.revenueToday(),     out.ordersToday(),     out.customersToday(),     out.ticketMedio(),
-                out.revenueYesterday(), out.ordersYesterday(), out.customersYesterday(), out.ticketMedioYesterday()
+                out.revenueYesterday(), out.ordersYesterday(), out.customersYesterday(), out.ticketMedioYesterday(),
+                out.revenueSameDayLastWeek(), out.ordersSameDayLastWeek(), out.customersSameDayLastWeek(), out.ticketMedioSameDayLastWeek(),
+                out.openOrdersToday()
         ));
     }
 
-    @Operation(summary = "Vendas por dia — últimos 7 dias")
+    @Operation(summary = "Vendas por dia com período dinâmico")
     @GetMapping("/sales-by-day")
-    public ResponseEntity<List<DailySales>> salesByDay() {
-        List<DailySales> result = readRepository.salesByDay().stream()
+    public ResponseEntity<List<DailySales>> salesByDay(
+            @RequestParam(defaultValue = "7") int days) {
+        LocalDate startDate = LocalDate.now().minusDays((long) days * 2 - 1);
+        List<DailySales> result = readRepository.salesByDay(startDate).stream()
                 .map(row -> new DailySales(
                         LocalDate.parse(row[0].toString(), DateTimeFormatter.ISO_LOCAL_DATE),
                         row[1] != null ? new BigDecimal(row[1].toString()) : BigDecimal.ZERO))
@@ -59,7 +63,8 @@ public class DashboardController {
                 .map(row -> new TopProduct(
                         row[0] != null ? row[0].toString() : "—",
                         row[1] != null ? ((Number) row[1]).intValue() : 0,
-                        row[2] != null ? new BigDecimal(row[2].toString()) : BigDecimal.ZERO))
+                        row[2] != null ? new BigDecimal(row[2].toString()) : BigDecimal.ZERO,
+                        row[3] != null ? row[3].toString() : null))
                 .toList();
         return ResponseEntity.ok(result);
     }
@@ -95,12 +100,17 @@ public class DashboardController {
             BigDecimal revenueYesterday,
             int        ordersYesterday,
             int        customersYesterday,
-            BigDecimal ticketMedioYesterday
+            BigDecimal ticketMedioYesterday,
+            BigDecimal revenueSameDayLastWeek,
+            int        ordersSameDayLastWeek,
+            int        customersSameDayLastWeek,
+            BigDecimal ticketMedioSameDayLastWeek,
+            int        openOrdersToday
     ) {}
 
     public record DailySales(LocalDate date, BigDecimal total) {}
 
-    public record TopProduct(String name, int quantity, BigDecimal revenue) {}
+    public record TopProduct(String name, int quantity, BigDecimal revenue, String imageUrl) {}
 
     public record PaymentSummary(String method, int ordersCount, BigDecimal total) {}
 
