@@ -20,16 +20,16 @@ public class GetDashboardMetricsUseCase {
         long       ordersToday    = repo.ordersToday();
         long       customersToday = repo.customersToday();
 
-        BigDecimal ticketMedio = customersToday > 0
-                ? revenueToday.divide(BigDecimal.valueOf(customersToday), 2, RoundingMode.HALF_UP)
+        BigDecimal ticketMedio = ordersToday > 0
+                ? revenueToday.divide(BigDecimal.valueOf(ordersToday), 2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
         BigDecimal revenueYesterday   = repo.revenueYesterday();
         long       ordersYesterday    = repo.ordersYesterday();
         long       customersYesterday = repo.customersYesterday();
 
-        BigDecimal ticketMedioYesterday = customersYesterday > 0
-                ? revenueYesterday.divide(BigDecimal.valueOf(customersYesterday), 2, RoundingMode.HALF_UP)
+        BigDecimal ticketMedioYesterday = ordersYesterday > 0
+                ? revenueYesterday.divide(BigDecimal.valueOf(ordersYesterday), 2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
         return new Output(
